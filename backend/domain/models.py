@@ -217,6 +217,16 @@ class FeedbackEvent(BaseModel):
     processing_status: FeedbackProcessingStatus
     created_at: datetime
 
+    def to_capi_payload(self) -> dict:
+        """Serialize to the exact Meta Conversions API event object format."""
+        return {
+            "event_name": self.event_name,
+            "event_time": self.event_time,
+            "action_source": self.action_source,
+            "user_data": self.user_data,
+            "custom_data": self.custom_data,
+        }
+
 
 class SimulationRun(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))

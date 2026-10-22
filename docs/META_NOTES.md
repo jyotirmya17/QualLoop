@@ -1,7 +1,6 @@
 # Meta Conversions API (CAPI) for Conversion Leads — Official Documentation Notes
 
 **Date of Document Review:** 2026-10-22  
-**Source Last Updated Date on Meta Pages:** Oct 19, 2026  
 **Official Pages Consulted:**
 1. `https://developers.facebook.com/documentation/ads-commerce/conversions-api/conversion-leads-integration`
 2. `https://developers.facebook.com/documentation/ads-commerce/conversions-api/conversion-leads-integration/crm-integration/3-implementing-the-crm-integration`
