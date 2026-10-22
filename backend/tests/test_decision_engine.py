@@ -323,12 +323,12 @@ class TestDecisionRecordsAndTiers:
             reachability_ci_high=0.80,
         )
         dec_under_cap = evaluate(pause_snap, ad_spend=300.0, policy=policy)
-        assert dec_under_cap.action == DecisionAction.CONSIDER_PAUSE
+        assert dec_under_cap.action == DecisionAction.PAUSE_AD
         assert dec_under_cap.tier == "within_guardrails"
         assert dec_under_cap.auto_applied is True
         assert dec_under_cap.requires_human_approval is False
 
-        # 3. Pausing above guardrail spend cap (> 500) -> tier=within_guardrails, auto_applied=False
+        # 3. Pausing above guardrail spend cap (> 500) -> tier=within_guardrails, auto_applied=False (recommendation)
         dec_over_cap = evaluate(pause_snap, ad_spend=800.0, policy=policy)
         assert dec_over_cap.action == DecisionAction.CONSIDER_PAUSE
         assert dec_over_cap.tier == "within_guardrails"
@@ -467,4 +467,49 @@ class TestDecisionRecordsAndTiers:
         # Verify plain-language reason is derived from actual numbers
         assert str(snap.n_mature_leads) in decision.reason
         assert f"{snap.reachability_mean:.1%}" in decision.reason
+
+    def test_reallocation_under_and_over_guardrail_cap(self):
+        """Reallocation under cap emits REALLOCATE_BUDGET (auto_applied=True); over cap emits CONSIDER_REALLOCATE."""
+        snap = _make_snapshot(
+            qualification_mean=0.20,
+            qualification_ci_low=0.12,
+            qualification_ci_high=0.30,
+            cpql_mean=750.0,
+            cpql_ci_low=600.0,
+            cpql_ci_high=1000.0,
+            cpql_unstable=False,
+            evidence_sufficient_qualification=True,
+        )
+        policy = DecisionPolicy(guardrail_action_spend_cap=500.0, budget_guardrail_min_spend=100.0)
+
+        # Under cap: auto-applied reallocate
+        dec_under = evaluate(snap, ad_spend=400.0, policy=policy)
+        assert dec_under.action == DecisionAction.REALLOCATE_BUDGET
+        assert dec_under.auto_applied is True
+        assert dec_under.requires_human_approval is False
+
+        # Over cap: recommendation for human review
+        dec_over = evaluate(snap, ad_spend=750.0, policy=policy)
+        assert dec_over.action == DecisionAction.CONSIDER_REALLOCATE
+        assert dec_over.auto_applied is False
+        assert dec_over.requires_human_approval is True
+
+    def test_confidence_clamped_when_cpql_unstable(self):
+        """A decision must never be labeled 'high' confidence when cpql_unstable is True."""
+        snap = _make_snapshot(
+            evidence_sufficient_reachability=True,
+            evidence_sufficient_qualification=True,
+            cpql_unstable=True,
+        )
+        decision = evaluate(snap, ad_spend=200.0)
+        assert decision.confidence_level != "high"
+        assert decision.confidence_level in ("medium", "low")
+
+    def test_single_spend_shift_cap_used_consistently(self):
+        """The spend-shift cap configured value must be the single parameter used everywhere."""
+        policy = DecisionPolicy(spend_shift_cap_fraction=0.35)
+        snap = _make_snapshot()
+        decision = evaluate(snap, ad_spend=200.0, policy=policy)
+        assert decision.supporting_metrics["thresholds"]["spend_shift_cap_fraction"] == 0.35
+
 

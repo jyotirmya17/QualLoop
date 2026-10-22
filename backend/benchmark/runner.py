@@ -130,9 +130,10 @@ class BenchmarkRunner:
         max_runs_per_scenario: Optional[int] = None,
         executed_at: Optional[str] = None,
         enable_shrinkage: bool = True,
+        seeds: Optional[dict[str, list[int]]] = None,
     ) -> BenchmarkReport:
         """Run the paired benchmark across all pre-committed seeds."""
-        scenario_seeds = self.load_seeds()
+        scenario_seeds = seeds if seeds is not None else self.load_seeds()
         evaluations: list[AdEvaluation] = []
         simulations_count = 0
         worse_cases: list[dict[str, Any]] = []
@@ -211,7 +212,10 @@ class BenchmarkRunner:
                     baseline_dec = self.baseline_policy.evaluate(
                         ad, ad_leads, ad_calls, ad_quals
                     )
-                    b_paused = baseline_dec.action == DecisionAction.CONSIDER_PAUSE
+                    b_paused = baseline_dec.action in (
+                        DecisionAction.PAUSE_AD,
+                        DecisionAction.CONSIDER_PAUSE,
+                    )
                     b_false_positive = is_good_ad and b_paused
                     b_false_negative = is_poor_ad and not b_paused
 
@@ -223,7 +227,10 @@ class BenchmarkRunner:
                         policy=self.decision_policy,
                         campaign_snapshots=snapshots,
                     )
-                    q_paused = qualloop_dec.action == DecisionAction.CONSIDER_PAUSE
+                    q_paused = qualloop_dec.action in (
+                        DecisionAction.PAUSE_AD,
+                        DecisionAction.CONSIDER_PAUSE,
+                    )
                     q_false_positive = is_good_ad and q_paused
                     q_false_negative = is_poor_ad and not q_paused
                     q_insufficient = qualloop_dec.action in (

@@ -62,12 +62,17 @@ def _determine_tier_and_auto_applied(
     elif action == DecisionAction.FLAG_ABNORMAL_CHANGE:
         return (DecisionTier.GATED.value, False, True)
     elif action in (
-        DecisionAction.CONSIDER_PAUSE,
-        DecisionAction.CONSIDER_REALLOCATE,
+        DecisionAction.PAUSE_AD,
+        DecisionAction.REALLOCATE_BUDGET,
         DecisionAction.SHIFT_SPEND,
     ):
         is_under_cap = ad_spend <= policy.guardrail_action_spend_cap
         return (DecisionTier.WITHIN_GUARDRAILS.value, is_under_cap, not is_under_cap)
+    elif action in (
+        DecisionAction.CONSIDER_PAUSE,
+        DecisionAction.CONSIDER_REALLOCATE,
+    ):
+        return (DecisionTier.WITHIN_GUARDRAILS.value, False, True)
     else:
         return (DecisionTier.AUTONOMOUS.value, True, False)
 
@@ -236,16 +241,19 @@ def evaluate(
                 now=now,
             )
 
+        is_under_cap = ad_spend <= policy.guardrail_action_spend_cap
+        action = DecisionAction.PAUSE_AD if is_under_cap else DecisionAction.CONSIDER_PAUSE
+        action_verb = "Pausing ad within guardrails" if is_under_cap else "Recommending pause for human review"
         return _make_decision(
             estimate=estimate,
             ad_spend=ad_spend,
-            action=DecisionAction.CONSIDER_PAUSE,
+            action=action,
             reason=(
                 f"With {estimate.n_mature_contacts} mature contacts ({estimate.k_qualified} qualified), the 90% credible "
                 f"interval for qualification rate is [{estimate.qualification_ci_low:.1%}, {estimate.qualification_ci_high:.1%}], "
                 f"sitting entirely below threshold {policy.low_qualification_upper_bound:.1%}. Reachability is adequate "
                 f"({estimate.reachability_mean:.1%}), confirming poor buying intent. "
-                f"Recommend pausing ad within guardrails (spend: ${ad_spend:.2f}, guardrail cap: ${policy.guardrail_action_spend_cap:.2f})."
+                f"{action_verb} (spend: ${ad_spend:.2f}, guardrail cap: ${policy.guardrail_action_spend_cap:.2f})."
             ),
             policy=policy,
             now=now,
@@ -298,15 +306,18 @@ def evaluate(
         and estimate.evidence_sufficient_qualification
     ):
         if ad_spend >= policy.budget_guardrail_min_spend:
+            is_under_cap = ad_spend <= policy.guardrail_action_spend_cap
+            action = DecisionAction.REALLOCATE_BUDGET if is_under_cap else DecisionAction.CONSIDER_REALLOCATE
+            action_verb = "Reallocating spend within guardrails" if is_under_cap else "Recommending spend reallocation for human review"
             return _make_decision(
                 estimate=estimate,
                 ad_spend=ad_spend,
-                action=DecisionAction.CONSIDER_REALLOCATE,
+                action=action,
                 reason=(
                     f"Estimated cost per qualified lead has a 90% credible interval lower bound of "
                     f"${estimate.cpql_ci_low:.2f} (mean: ${estimate.cpql_mean:.2f}), exceeding threshold "
                     f"${policy.high_cpql_lower_bound:.2f} on spend ${ad_spend:.2f} and EQL {estimate.eql_mean:.1f}. "
-                    f"Recommend reallocating spend within guardrails."
+                    f"{action_verb} (spend: ${ad_spend:.2f}, guardrail cap: ${policy.guardrail_action_spend_cap:.2f})."
                 ),
                 policy=policy,
                 now=now,
@@ -483,6 +494,7 @@ def _compute_confidence(estimate: EstimateSnapshot) -> str:
     if (
         estimate.evidence_sufficient_reachability
         and estimate.evidence_sufficient_qualification
+        and not estimate.cpql_unstable
     ):
         return "high"
     elif estimate.evidence_sufficient_reachability:
