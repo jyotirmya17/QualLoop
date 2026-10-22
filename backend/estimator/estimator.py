@@ -22,7 +22,7 @@ from domain.models import (
     Lead,
     QualificationOutcome,
 )
-from estimator.beta_binomial import estimate_rate
+from estimator.beta_binomial import derive_rng, estimate_rate
 from estimator.cpql import estimate_cpql
 from estimator.maturity import compute_maturity_observations
 
@@ -69,6 +69,7 @@ def compute_estimates(
     observation_time: datetime | None = None,
     config: EstimatorConfig | None = None,
     rng: np.random.Generator | None = None,
+    seed: int | None = None,
 ) -> EstimateSnapshot:
     """
     Compute a full estimate snapshot for one advertisement.
@@ -81,6 +82,7 @@ def compute_estimates(
         observation_time: Reference "now" — defaults to current UTC time
         config: Estimator configuration (defaults to EstimatorConfig())
         rng: Optional numpy random generator for reproducibility
+        seed: Optional run seed to derive deterministic RNG from (seed, ad_id)
 
     Returns:
         EstimateSnapshot with all estimates and uncertainty intervals
@@ -93,7 +95,7 @@ def compute_estimates(
     if config is None:
         config = EstimatorConfig()
     if rng is None:
-        rng = np.random.default_rng()
+        rng = derive_rng(seed, advertisement.id)
 
     # Step 1: Compute maturity-respecting observation counts
     obs = compute_maturity_observations(

@@ -128,6 +128,7 @@ class BenchmarkRunner:
     def run_benchmark(
         self,
         max_runs_per_scenario: Optional[int] = None,
+        executed_at: Optional[str] = None,
     ) -> BenchmarkReport:
         """Run the paired benchmark across all pre-committed seeds."""
         scenario_seeds = self.load_seeds()
@@ -203,6 +204,7 @@ class BenchmarkRunner:
                         qualification_outcomes=ad_quals,
                         observation_time=obs_time,
                         config=self.estimator_config,
+                        seed=seed,
                     )
                     qualloop_dec = evaluate(
                         snapshot, ad_spend=ad.spend, policy=self.decision_policy
@@ -346,7 +348,7 @@ class BenchmarkRunner:
                 "seed_file": str(self.seeds_path.name),
                 "qualloop_policy_version": self.decision_policy.version,
                 "baseline_description": "Naive 10% threshold on un-matured contact/qualification ratios",
-                "executed_at": datetime.now(timezone.utc).isoformat(),
+                "executed_at": executed_at or datetime.now(timezone.utc).isoformat(),
             },
             aggregate_metrics={
                 "qualloop": {

@@ -17,7 +17,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from estimator.beta_binomial import BetaBinomialEstimate, sample_posterior
+from estimator.beta_binomial import BetaBinomialEstimate, derive_rng, sample_posterior
 
 
 @dataclass(frozen=True)
@@ -58,6 +58,8 @@ def estimate_cpql(
     ci_level: float = 0.90,
     instability_threshold: float = 0.20,
     rng: np.random.Generator | None = None,
+    seed: int | None = None,
+    ad_id: str = "",
 ) -> CPQLEstimate:
     """
     Estimate CPQL using Monte Carlo propagation of posterior uncertainty.
@@ -72,6 +74,8 @@ def estimate_cpql(
         ci_level: Credible interval level
         instability_threshold: CPQL is marked unstable if zero_eql_fraction exceeds this
         rng: Optional numpy random generator for reproducibility
+        seed: Optional run seed to derive deterministic RNG if rng is None
+        ad_id: Ad identifier for deterministic RNG isolation
 
     Returns:
         CPQLEstimate with full uncertainty characterization
@@ -81,7 +85,7 @@ def estimate_cpql(
         When n_leads = 0 or spend = 0, returns a degenerate result with flags set.
     """
     if rng is None:
-        rng = np.random.default_rng()
+        rng = derive_rng(seed, ad_id)
 
     alpha_tail = (1.0 - ci_level) / 2.0
 

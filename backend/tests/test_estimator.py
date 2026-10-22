@@ -397,3 +397,70 @@ class TestComputeEstimates:
         # CPQL should be defined (we have enough data)
         assert snapshot.cpql_mean is not None
         assert snapshot.cpql_mean > 0
+
+    def test_compute_estimates_and_decision_determinism(self):
+        """Prove that the same inputs and seed give identical estimates and decisions across repeated calls."""
+        from decision_engine import DecisionPolicy, evaluate
+        from domain.enums import CallOutcome, QualificationResult, LeadStatus
+        from domain.models import Advertisement, Lead, CallAttempt, QualificationOutcome
+
+        now = datetime(2026, 1, 15, 12, 0, 0, tzinfo=timezone.utc)
+        ad = Advertisement(
+            id="ad_det_1",
+            ad_set_id="as1",
+            creative_id="cr1",
+            spend=500.0,
+            impressions=10000,
+            clicks=200,
+        )
+        leads = [
+            Lead(id=f"l{i}", advertisement_id=ad.id,
+                 created_at=now - timedelta(days=10),
+                 status=LeadStatus.SUBMITTED)
+            for i in range(25)
+        ]
+        call_attempts = [
+            CallAttempt(id=f"c{i}", lead_id=f"l{i}",
+                        attempted_at=now - timedelta(days=9),
+                        outcome=CallOutcome.ANSWERED)
+            for i in range(15)
+        ]
+        quals = [
+            QualificationOutcome(
+                id=f"q{i}", lead_id=f"l{i}",
+                resolved_at=now - timedelta(days=8),
+                result=QualificationResult.QUALIFIED if i < 5 else QualificationResult.DISQUALIFIED,
+            )
+            for i in range(15)
+        ]
+        policy = DecisionPolicy()
+
+        # Run 1 without passing explicit rng (uses derived RNG from seed and ad.id)
+        s1 = compute_estimates(ad, leads, call_attempts, quals, observation_time=now, seed=12345)
+        d1 = evaluate(s1, ad_spend=ad.spend, policy=policy)
+
+        # Run 2
+        s2 = compute_estimates(ad, leads, call_attempts, quals, observation_time=now, seed=12345)
+        d2 = evaluate(s2, ad_spend=ad.spend, policy=policy)
+
+        # Exact equality check on all estimate fields
+        assert s1.reachability_mean == s2.reachability_mean
+        assert s1.reachability_ci_low == s2.reachability_ci_low
+        assert s1.reachability_ci_high == s2.reachability_ci_high
+        assert s1.qualification_mean == s2.qualification_mean
+        assert s1.qualification_ci_low == s2.qualification_ci_low
+        assert s1.qualification_ci_high == s2.qualification_ci_high
+        assert s1.eql_mean == s2.eql_mean
+        assert s1.eql_ci_low == s2.eql_ci_low
+        assert s1.eql_ci_high == s2.eql_ci_high
+        assert s1.cpql_mean == s2.cpql_mean
+        assert s1.cpql_ci_low == s2.cpql_ci_low
+        assert s1.cpql_ci_high == s2.cpql_ci_high
+        assert s1.zero_eql_fraction == s2.zero_eql_fraction
+        assert s1.cpql_unstable == s2.cpql_unstable
+
+        # Exact equality check on decision
+        assert d1.action == d2.action
+        assert d1.confidence_level == d2.confidence_level
+        assert d1.reason == d2.reason
+

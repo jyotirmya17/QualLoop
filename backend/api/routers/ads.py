@@ -32,17 +32,20 @@ def _build_ad_analysis(
     leads: list,
     call_attempts: list,
     qual_outcomes: list,
+    seed: int | None = None,
+    observation_time: datetime | None = None,
 ) -> AdAnalysisOut:
     """Compute estimate + decision for one ad using current simulation state."""
-    now = datetime.now(timezone.utc)
+    obs_time = observation_time or datetime.now(timezone.utc)
 
     snapshot = compute_estimates(
         advertisement=ad,
         leads=leads,
         call_attempts=call_attempts,
         qualification_outcomes=qual_outcomes,
-        observation_time=now,
+        observation_time=obs_time,
         config=_DEFAULT_CONFIG,
+        seed=seed,
     )
     decision = evaluate(snapshot, ad_spend=ad.spend, policy=_DEFAULT_POLICY)
 
@@ -112,6 +115,8 @@ def get_run_analysis(run_id: str):
                 leads=leads_by_ad.get(ad.id, []),
                 call_attempts=calls_by_ad.get(ad.id, []),
                 qual_outcomes=quals_by_ad.get(ad.id, []),
+                seed=result.run.seed,
+                observation_time=result.run.completed_at,
             )
             ad_analyses.append(analysis)
 

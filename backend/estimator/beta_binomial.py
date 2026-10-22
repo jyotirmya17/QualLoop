@@ -14,10 +14,24 @@ No approximations (normal, etc.) are used.
 
 from __future__ import annotations
 
+import hashlib
 from dataclasses import dataclass
 
 import numpy as np
 from scipy import stats
+
+
+def derive_rng(seed: int | None = None, entity_id: str = "") -> np.random.Generator:
+    """
+    Derive a deterministic NumPy Generator from (run seed, entity id).
+
+    Guarantees that every random draw in the estimation pipeline is fully
+    reproducible and isolated per entity (e.g. ad id).
+    """
+    base_seed = seed if seed is not None else 0
+    h = hashlib.sha256(f"{base_seed}:{entity_id}".encode("utf-8")).digest()
+    int_seed = int.from_bytes(h[:8], byteorder="big") % (2**63 - 1)
+    return np.random.default_rng(int_seed)
 
 
 @dataclass(frozen=True)
@@ -123,6 +137,8 @@ def sample_posterior(
     estimate: BetaBinomialEstimate,
     n_samples: int = 10_000,
     rng: np.random.Generator | None = None,
+    seed: int | None = None,
+    entity_id: str = "",
 ) -> np.ndarray:
     """
     Draw samples from the posterior Beta distribution.
@@ -132,12 +148,14 @@ def sample_posterior(
     Args:
         estimate: A BetaBinomialEstimate from estimate_rate()
         n_samples: Number of samples to draw
-        rng: Optional numpy random generator (for reproducibility in tests)
+        rng: Optional numpy random generator
+        seed: Optional seed to derive deterministic RNG if rng is None
+        entity_id: Entity identifier (e.g. ad_id) for RNG derivation
 
     Returns:
         numpy array of shape (n_samples,) with values in [0, 1]
     """
     if rng is None:
-        rng = np.random.default_rng()
+        rng = derive_rng(seed, entity_id)
 
     return rng.beta(estimate.posterior_alpha, estimate.posterior_beta, size=n_samples)
