@@ -18,7 +18,7 @@ import numpy as np
 
 from benchmark.baseline import BaselineDecision, BaselinePolicy
 from decision_engine.engine import DecisionPolicy, evaluate_campaign
-from domain.enums import DecisionAction
+from domain.enums import DecisionAction, QualificationResult
 from domain.models import Advertisement, CallAttempt, Lead, QualificationOutcome
 from estimator.estimator import EstimatorConfig, compute_campaign_estimates
 from simulator.engine import SimulationResult, run_simulation
@@ -50,6 +50,14 @@ class AdTimeSliceTrajectory:
     qualloop_days_to_correct: Optional[int] = None
     baseline_days_to_correct: Optional[int] = None
 
+    # Spend and conversion accounting
+    full_ad_spend: float = 0.0
+    total_qualified_leads: int = 0
+    qualloop_spend_incurred: float = 0.0
+    baseline_spend_incurred: float = 0.0
+    qualloop_lost_qualified_leads: int = 0
+    baseline_lost_qualified_leads: int = 0
+
 
 @dataclass
 class TimeSlicedBenchmarkSummary:
@@ -75,6 +83,19 @@ class TimeSlicedBenchmarkSummary:
     # Good ad false pause counts by checkpoint
     qualloop_fp_by_day: dict[int, int]
     baseline_fp_by_day: dict[int, int]
+
+    # Spend-weighted metrics
+    qualloop_poor_ad_spend_before_pause: float = 0.0
+    baseline_poor_ad_spend_before_pause: float = 0.0
+    qualloop_qualified_leads_lost_from_good_ads: int = 0
+    baseline_qualified_leads_lost_from_good_ads: int = 0
+    oracle_spend: float = 0.0
+    oracle_qualified_leads: int = 0
+    oracle_ql_per_rupee: float = 0.0
+    qualloop_ql_per_rupee: float = 0.0
+    baseline_ql_per_rupee: float = 0.0
+    qualloop_vs_oracle_efficiency: float = 0.0
+    baseline_vs_oracle_efficiency: float = 0.0
 
     trajectories: list[AdTimeSliceTrajectory] = field(default_factory=list)
 
@@ -230,8 +251,43 @@ class TimeSlicedBenchmarkRunner:
                         if traj.baseline_paused_day is None and is_pause_action(base_act):
                             traj.baseline_paused_day = cp_day
 
+                ad_map = {ad.id: ad for ad in sim.advertisements}
+                lead_to_ad = {l.id: l.advertisement_id for l in sim.leads}
+                ad_quals_map: dict[str, list[QualificationOutcome]] = {ad.id: [] for ad in sim.advertisements}
+                for qo in sim.qualification_outcomes:
+                    if qo.result == QualificationResult.QUALIFIED:
+                        ad_id = lead_to_ad.get(qo.lead_id)
+                        if ad_id and ad_id in ad_quals_map:
+                            ad_quals_map[ad_id].append(qo)
+
                 # Finalize trajectories for this simulation
                 for traj in sim_trajectories.values():
+                    ad = ad_map[traj.ad_id]
+                    full_spend = ad.spend
+                    quals = ad_quals_map.get(traj.ad_id, [])
+                    traj.full_ad_spend = full_spend
+                    traj.total_qualified_leads = len(quals)
+
+                    # QualLoop spend & lost conversions
+                    if traj.qualloop_paused_day is not None:
+                        traj.qualloop_spend_incurred = round(full_spend * (traj.qualloop_paused_day / horizon), 2)
+                        t_pause = epoch + timedelta(days=traj.qualloop_paused_day)
+                        if traj.is_good_ad:
+                            traj.qualloop_lost_qualified_leads = sum(1 for q in quals if q.resolved_at > t_pause)
+                    else:
+                        traj.qualloop_spend_incurred = full_spend
+                        traj.qualloop_lost_qualified_leads = 0
+
+                    # Baseline spend & lost conversions
+                    if traj.baseline_paused_day is not None:
+                        traj.baseline_spend_incurred = round(full_spend * (traj.baseline_paused_day / horizon), 2)
+                        t_pause = epoch + timedelta(days=traj.baseline_paused_day)
+                        if traj.is_good_ad:
+                            traj.baseline_lost_qualified_leads = sum(1 for q in quals if q.resolved_at > t_pause)
+                    else:
+                        traj.baseline_spend_incurred = full_spend
+                        traj.baseline_lost_qualified_leads = 0
+
                     if traj.is_poor_ad:
                         # QualLoop
                         if traj.qualloop_paused_day is not None:
@@ -291,6 +347,33 @@ class TimeSlicedBenchmarkRunner:
         ql_missed_cnt = ql_dist["missed"]
         base_missed_cnt = base_dist["missed"]
 
+        # Spend on truly poor ads before they were paused
+        ql_poor_spend = round(sum(t.qualloop_spend_incurred for t in poor_trajs), 2)
+        base_poor_spend = round(sum(t.baseline_spend_incurred for t in poor_trajs), 2)
+
+        # Qualified leads lost from wrongly paused good ads
+        ql_lost_good_quals = sum(t.qualloop_lost_qualified_leads for t in good_trajs)
+        base_lost_good_quals = sum(t.baseline_lost_qualified_leads for t in good_trajs)
+
+        # Oracle metrics: Oracle pauses all poor ads immediately and runs good ads fully
+        oracle_spend = round(sum(t.full_ad_spend for t in good_trajs), 2)
+        oracle_qual_leads = sum(t.total_qualified_leads for t in good_trajs)
+        oracle_ql_per_rupee = oracle_qual_leads / oracle_spend if oracle_spend > 0 else 0.0
+
+        # Total spend across all ads
+        ql_total_spend = sum(t.qualloop_spend_incurred for t in trajectories)
+        base_total_spend = sum(t.baseline_spend_incurred for t in trajectories)
+
+        # Preserved qualified leads across all ads
+        ql_preserved_quals = sum(t.total_qualified_leads - t.qualloop_lost_qualified_leads for t in trajectories)
+        base_preserved_quals = sum(t.total_qualified_leads - t.baseline_lost_qualified_leads for t in trajectories)
+
+        ql_per_rupee = ql_preserved_quals / ql_total_spend if ql_total_spend > 0 else 0.0
+        base_per_rupee = base_preserved_quals / base_total_spend if base_total_spend > 0 else 0.0
+
+        ql_eff = round(ql_per_rupee / oracle_ql_per_rupee, 4) if oracle_ql_per_rupee > 0 else 0.0
+        base_eff = round(base_per_rupee / oracle_ql_per_rupee, 4) if oracle_ql_per_rupee > 0 else 0.0
+
         return TimeSlicedBenchmarkSummary(
             checkpoints=self.checkpoints,
             n_simulations=n_simulations,
@@ -306,5 +389,16 @@ class TimeSlicedBenchmarkRunner:
             baseline_mean_days_to_correct=float(np.mean(base_days)) if base_days else None,
             qualloop_fp_by_day=ql_fp_by_day,
             baseline_fp_by_day=base_fp_by_day,
+            qualloop_poor_ad_spend_before_pause=ql_poor_spend,
+            baseline_poor_ad_spend_before_pause=base_poor_spend,
+            qualloop_qualified_leads_lost_from_good_ads=ql_lost_good_quals,
+            baseline_qualified_leads_lost_from_good_ads=base_lost_good_quals,
+            oracle_spend=oracle_spend,
+            oracle_qualified_leads=oracle_qual_leads,
+            oracle_ql_per_rupee=round(oracle_ql_per_rupee, 6),
+            qualloop_ql_per_rupee=round(ql_per_rupee, 6),
+            baseline_ql_per_rupee=round(base_per_rupee, 6),
+            qualloop_vs_oracle_efficiency=ql_eff,
+            baseline_vs_oracle_efficiency=base_eff,
             trajectories=trajectories,
         )
