@@ -209,6 +209,7 @@ def compute_campaign_estimates(
     config: EstimatorConfig | None = None,
     seed: int | None = None,
     min_ads_for_shrinkage: int = 3,
+    enable_shrinkage: bool = True,
 ) -> list[EstimateSnapshot]:
     """
     Compute estimates for an entire campaign or portfolio of ads using
@@ -225,6 +226,7 @@ def compute_campaign_estimates(
         config: EstimatorConfig
         seed: Random seed for deterministic simulation/estimation
         min_ads_for_shrinkage: Minimum ads with data required to fit empirical priors
+        enable_shrinkage: If False, disables empirical pooling and uses fixed priors for ablation
 
     Returns:
         List of EstimateSnapshot corresponding to the input ads_data order
@@ -234,35 +236,47 @@ def compute_campaign_estimates(
     if config is None:
         config = EstimatorConfig()
 
-    # Precompute maturity observations to extract empirical rates
-    reach_obs: list[tuple[int, int]] = []
-    qual_obs: list[tuple[int, int]] = []
+    if not enable_shrinkage:
+        reach_alpha = config.reachability_alpha_prior
+        reach_beta = config.reachability_beta_prior
+        qual_alpha = config.qualification_alpha_prior
+        qual_beta = config.qualification_beta_prior
+        reach_prior_empirical = False
+        qual_prior_empirical = False
+    else:
+        # Precompute maturity observations to extract empirical rates
+        reach_obs: list[tuple[int, int]] = []
+        qual_obs: list[tuple[int, int]] = []
 
-    for ad, leads, call_attempts, qual_outcomes in ads_data:
-        obs = compute_maturity_observations(
-            leads=leads,
-            call_attempts=call_attempts,
-            qualification_outcomes=qual_outcomes,
-            observation_time=observation_time,
-            contact_maturity_days=config.contact_maturity_days,
-            qualification_maturity_days=config.qualification_maturity_days,
+        for ad, leads, call_attempts, qual_outcomes in ads_data:
+            obs = compute_maturity_observations(
+                leads=leads,
+                call_attempts=call_attempts,
+                qualification_outcomes=qual_outcomes,
+                observation_time=observation_time,
+                contact_maturity_days=config.contact_maturity_days,
+                qualification_maturity_days=config.qualification_maturity_days,
+            )
+            reach_obs.append((obs.k_contacted, obs.n_mature_leads))
+            qual_obs.append((obs.k_qualified, obs.n_mature_contacts))
+
+        # Fit empirical priors via Method of Moments across the campaign
+        reach_prior = fit_beta_prior_moments(
+            observations=reach_obs,
+            fallback_alpha=config.reachability_alpha_prior,
+            fallback_beta=config.reachability_beta_prior,
+            min_ads=min_ads_for_shrinkage,
         )
-        reach_obs.append((obs.k_contacted, obs.n_mature_leads))
-        qual_obs.append((obs.k_qualified, obs.n_mature_contacts))
-
-    # Fit empirical priors via Method of Moments across the campaign
-    reach_prior = fit_beta_prior_moments(
-        observations=reach_obs,
-        fallback_alpha=config.reachability_alpha_prior,
-        fallback_beta=config.reachability_beta_prior,
-        min_ads=min_ads_for_shrinkage,
-    )
-    qual_prior = fit_beta_prior_moments(
-        observations=qual_obs,
-        fallback_alpha=config.qualification_alpha_prior,
-        fallback_beta=config.qualification_beta_prior,
-        min_ads=min_ads_for_shrinkage,
-    )
+        qual_prior = fit_beta_prior_moments(
+            observations=qual_obs,
+            fallback_alpha=config.qualification_alpha_prior,
+            fallback_beta=config.qualification_beta_prior,
+            min_ads=min_ads_for_shrinkage,
+        )
+        reach_alpha, reach_beta = reach_prior.alpha, reach_prior.beta
+        qual_alpha, qual_beta = qual_prior.alpha, qual_prior.beta
+        reach_prior_empirical = reach_prior.is_empirical
+        qual_prior_empirical = qual_prior.is_empirical
 
     snapshots: list[EstimateSnapshot] = []
     for ad, leads, call_attempts, qual_outcomes in ads_data:
@@ -274,9 +288,9 @@ def compute_campaign_estimates(
             observation_time=observation_time,
             config=config,
             seed=seed,
-            reachability_prior=(reach_prior.alpha, reach_prior.beta),
-            qualification_prior=(qual_prior.alpha, qual_prior.beta),
-            is_empirical_prior=reach_prior.is_empirical or qual_prior.is_empirical,
+            reachability_prior=(reach_alpha, reach_beta),
+            qualification_prior=(qual_alpha, qual_beta),
+            is_empirical_prior=reach_prior_empirical or qual_prior_empirical,
         )
         snapshots.append(snap)
 

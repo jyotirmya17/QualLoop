@@ -129,6 +129,7 @@ class BenchmarkRunner:
         self,
         max_runs_per_scenario: Optional[int] = None,
         executed_at: Optional[str] = None,
+        enable_shrinkage: bool = True,
     ) -> BenchmarkReport:
         """Run the paired benchmark across all pre-committed seeds."""
         scenario_seeds = self.load_seeds()
@@ -184,6 +185,7 @@ class BenchmarkRunner:
                     observation_time=obs_time,
                     config=self.estimator_config,
                     seed=seed,
+                    enable_shrinkage=enable_shrinkage,
                 )
                 snapshots_by_ad = {ad.id: snap for ad, snap in zip(result.advertisements, snapshots)}
 
