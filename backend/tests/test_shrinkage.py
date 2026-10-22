@@ -56,6 +56,25 @@ def test_fit_beta_prior_moments_minimum_prior_strength():
     assert prior.alpha + prior.beta >= 4.0
 
 
+def test_fit_beta_prior_moments_zero_variance_clamps_to_max_prior_strength():
+    """When all ads have identical conversion rates, between-ad variance is zero, clamping kappa to max_prior_strength."""
+    # 4 ads with identical 25% conversion rate
+    obs = [(5, 20), (5, 20), (5, 20), (5, 20)]
+    prior = fit_beta_prior_moments(
+        observations=obs,
+        fallback_alpha=1.0,
+        fallback_beta=4.0,
+        min_ads=3,
+        min_prior_strength=4.0,
+        max_prior_strength=50.0,
+    )
+    assert prior.is_empirical
+    assert prior.mean == pytest.approx(0.25, abs=1e-4)
+    assert prior.sample_size == 50.0
+    assert prior.alpha == pytest.approx(12.5, abs=1e-4)
+    assert prior.beta == pytest.approx(37.5, abs=1e-4)
+
+
 def test_small_sample_shrinks_toward_portfolio_mean():
     """
     Prove that small samples shrink toward the portfolio mean, NOT the fixed prior mean.

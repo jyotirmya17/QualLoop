@@ -46,8 +46,17 @@ def fit_beta_prior_moments(
 
     Enforces:
     1. Fallback to fixed prior if M < min_ads or p_bar in {0, 1}
-    2. Minimum prior strength (kappa >= min_prior_strength) for stability
-    3. Maximum prior strength (kappa <= max_prior_strength) to avoid over-rigidity
+    2. Minimum prior strength (kappa >= min_prior_strength, default 4.0):
+       Prevents under-dispersed or noisy samples from collapsing into a flat or degenerate
+       prior (kappa < 2). Guarantees the fitted prior has at least the stabilizing weight
+       of a modest weakly informative prior (e.g. Beta(2, 2)), preventing wild swings.
+    3. Maximum prior strength (kappa <= max_prior_strength, default 50.0):
+       Prevents over-rigidity. At zero between-ad variance (s2 -> 0), theoretical Method
+       of Moments diverges (kappa -> infinity). Capping kappa at 50.0 bounds the pseudo-sample
+       weight to at most 50 trials, allowing accumulating ad-level evidence to override the prior.
+    4. Zero-variance handling:
+       When s2 < 1e-6 (e.g. all ads share the exact same conversion rate), kappa is
+       clamped to max_prior_strength (50.0).
 
     Args:
         observations: List of (k_successes, n_trials) for each ad in campaign.
