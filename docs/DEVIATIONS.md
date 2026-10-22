@@ -7,54 +7,58 @@
 
 ## 1. Statistical Estimator & Priors
 
-| Specification Item | Current Implementation | Status | Deviation Details |
-|---|---|---|---|
-| **Hierarchical Empirical-Bayes Shrinkage** | Fixed conjugate prior in `estimator/estimator.py:32-36` ($\text{Beta}(1,1)$ for reach, $\text{Beta}(1,4)$ for qualification). | **DEVIATION** | No empirical Bayes pooling or Method-of-Moments fitting across campaign/portfolio ads. Priors are static constants. |
-| **Random Number Generator Seed** | `compute_estimates` in `estimator/estimator.py:96` uses `rng = np.random.default_rng()` if `rng` is None. | **DEVIATION** | Non-deterministic Monte Carlo CPQL estimates across repeated calls on identical data when `rng` is omitted. Must derive RNG from `(run_seed, ad_id)`. |
-| **Maturity Window Gating** | Enforced in `estimator/maturity.py:110-151`. | **ALIGNED** | Pending leads (inside 3-day contact window) and pending contacts (inside 7-day qualification window) are excluded from respective denominators. |
-| **Separation of Reach & Intent** | `reach_est` and `qual_est` computed independently in `estimator/estimator.py:109-124`. | **ALIGNED** | Contactability $r$ and qualification intent $q$ are estimated separately. Unreached leads never enter qualification denominator. |
-| **CPQL Monte Carlo Propagation** | `estimator/cpql.py:51-147` draws 10,000 samples and evaluates joint distribution. | **ALIGNED** | Correctly captures non-linear ratio uncertainty and flags numerical instability when zero-EQL draws exceed threshold (0.20). |
+| Specification Item | Initial Implementation | Initial Status | Status After Fixes | Details & Resolution |
+|---|---|---|---|---|
+| **Hierarchical Empirical-Bayes Shrinkage** | Fixed conjugate prior in `estimator/estimator.py` ($\text{Beta}(1,1)$, $\text{Beta}(1,4)$). | **DEVIATION** | **RESOLVED** | Implemented Method of Moments prior fitting across campaign ads in `estimator/shrinkage.py` with $\kappa \in [4.0, 50.0]$ bounds and fallback. Wired into `compute_campaign_estimates`. |
+| **Random Number Generator Seed** | Unseeded default RNG in Monte Carlo sampling. | **DEVIATION** | **RESOLVED** | Derived deterministic isolated RNGs from `(seed, ad_id)` via SHA-256 in `derive_rng`. Verified byte-identical benchmark outputs. |
+| **Maturity Window Gating** | Enforced in `estimator/maturity.py`. | **ALIGNED** | **ALIGNED** | Pending leads (inside 3-day window) and pending contacts (inside 7-day window) are excluded from respective denominators. |
+| **Separation of Reach & Intent** | `reach_est` and `qual_est` computed independently. | **ALIGNED** | **ALIGNED** | Contactability $r$ and qualification intent $q$ estimated separately. Unreached leads never enter qualification denominator. |
+| **CPQL Monte Carlo Propagation** | 10,000 samples drawn and joint ratio evaluated. | **ALIGNED** | **ALIGNED** | Correctly captures non-linear ratio uncertainty and flags numerical instability when zero-EQL draws exceed 0.20. |
 
 ---
 
 ## 2. Decision Engine & Record Schema
 
-| Specification Item | Current Implementation | Status | Deviation Details |
-|---|---|---|---|
-| **`tier` field** | Uses `confidence_level` (`"high"`, `"medium"`, `"low"`) in `domain/models.py:172`. | **DEVIATION** | Missing explicit `tier` enum (`gated`, `within_guardrails`, `autonomous`). |
-| **`auto_applied` field** | Uses `requires_human_approval` (bool) and `approval_status` (`ApprovalStatus`) in `domain/models.py:173-174`. | **DEVIATION** | Missing explicit `auto_applied` boolean field on `Decision` model. |
-| **Action Tier Classification** | Generic `requires_approval` boolean in `decision_engine/engine.py:281`. | **DEVIATION** | Budget raises/launches must strictly be `tier=gated, auto_applied=false`. Pausing/reallocating must be `within_guardrails` with configurable caps. |
-| **Relative Cross-Ad Comparison Rule** | Only evaluates absolute thresholds (`cpql_ci_low > high_cpql_lower_bound`). | **DEVIATION** | Missing relative rule: If one ad's CPQL credible interval sits entirely above another ad's interval in the same campaign, emit guardrailed spend shift recommendation. |
-| **Reason Formulation** | Semi-templated strings in `decision_engine/engine.py`. | **PARTIAL** | Plain-language explanations must directly incorporate exact calculated bounds, delta numbers, and context without generic boilerplates. |
+| Specification Item | Initial Implementation | Initial Status | Status After Fixes | Details & Resolution |
+|---|---|---|---|---|
+| **`tier` field** | Uses `confidence_level` (`"high"`, `"medium"`, `"low"`). | **DEVIATION** | **RESOLVED** | Added `DecisionTier` enum (`gated`, `within_guardrails`, `autonomous`) and assigned to every `Decision`. |
+| **`auto_applied` field** | Relied solely on `requires_human_approval`. | **DEVIATION** | **RESOLVED** | Added explicit `auto_applied: bool` field to `Decision` model and evaluation logic. |
+| **Action Tier Classification** | Generic `requires_approval` boolean. | **DEVIATION** | **RESOLVED** | Budget raises/launches are hardcoded to `tier="gated"`, `auto_applied=False`. Pauses and spend shifts are `within_guardrails` up to spend cap ($2,000). |
+| **Relative Cross-Ad Comparison Rule** | Only evaluated absolute CPQL thresholds. | **DEVIATION** | **RESOLVED** | Rule 7 evaluates credible interval separation between ads in a campaign and emits guardrailed `DecisionAction.SHIFT_SPEND`. |
+| **Reason Formulation** | Semi-templated generic strings. | **PARTIAL** | **RESOLVED** | Reasons incorporate exact observed counts, credible intervals, delta percentages, and threshold numbers without boilerplate. |
 
 ---
 
 ## 3. Decision Audit & Storage
 
-| Specification Item | Current Implementation | Status | Deviation Details |
-|---|---|---|---|
-| **PostgreSQL Persistence** | In-memory store in `api/store.py` and `audit/trail.py`. `persistence/alembic` is empty scaffolding. | **DEVIATION** | All runs and decisions vanish on process restart. |
-| **Audit Completeness** | `Decision` records inputs, posterior stats, and thresholds in `supporting_metrics`. | **ALIGNED** | Records are immutable and append-only in memory. |
+| Specification Item | Initial Implementation | Initial Status | Status After Fixes | Details & Resolution |
+|---|---|---|---|---|
+| **PostgreSQL Persistence** | In-memory store in `api/store.py` and `audit/trail.py`. Alembic scaffolding empty. | **DEVIATION** | **REMAINS DEVIATION** | In-memory persistence only; runs and decision records do not survive process termination. |
+| **Audit Completeness** | Inputs, posterior stats, and thresholds recorded in `supporting_metrics`. | **ALIGNED** | **ALIGNED** | Records are immutable and append-only in memory with full evidence structure. |
 
 ---
 
 ## 4. Meta Conversions API (CAPI) Module
 
-| Specification Item | Current Implementation | Status | Deviation Details |
-|---|---|---|---|
-| **Dry-Run Enforcement** | `feedback/builder.py:153` sets status to `DRY_RUN`. No live HTTP transmission. | **ALIGNED** | Payloads are created and validated without transmitting. |
-| **Event Ingestion Timing Window** | `feedback/builder.py:114` rejects events older than 7 days (`age_days > 7.0`). | **DEVIATION** | Needs reconciliation against official Meta documentation regarding the 7-day server event ingestion window vs. 28-day conversion attribution window. |
-| **Placement of `lead_id`** | Placed in `custom_data.lead_id` in `feedback/builder.py:131`. | **PENDING VERIFICATION** | Must verify against official Meta Conversion Leads CRM integration documentation whether `lead_id` belongs in `user_data` or `custom_data`. |
-| **PII Hashing** | SHA-256 applied to synthetic lead ID proxy. | **ALIGNED** | Correctly enforces normalized SHA-256 hex digest. |
-| **Idempotency Keying** | 32-character SHA-256 key derived from outcome and lead IDs. | **ALIGNED** | Prevents duplicate ingestion. |
+| Specification Item | Initial Implementation | Initial Status | Status After Fixes | Details & Resolution |
+|---|---|---|---|---|
+| **Dry-Run Enforcement** | `feedback/builder.py` sets status to `DRY_RUN`. No HTTP calls. | **ALIGNED** | **ALIGNED** | Payloads are generated and validated without outbound transmission. |
+| **`action_source` Parameter** | Was set to `"crm"`. | **DEVIATION** | **RESOLVED** | Corrected to `"system_generated"` per official Meta Conversion Leads CRM integration documentation. |
+| **`custom_data` Source Tracking** | Only included `lead_id` and `ad_id`. | **DEVIATION** | **RESOLVED** | Now includes `lead_event_source` (CRM name) and `event_source="crm"` as required for Conversion Leads registration. |
+| **Placement of `lead_id`** | Placed inside `custom_data`. | **DEVIATION** | **RESOLVED** | Placed in `user_data["lead_id"]` as raw unhashed string (15–17 digits) per Meta specification. |
+| **Full Lifecycle History** | Emitted only final qualification snapshot. | **DEVIATION** | **RESOLVED** | Implemented `build_lead_history_events` emitting raw-lead creation event plus distinct status transitions. |
+| **Event Ingestion Timing Window** | Enforced 7-day cutoff without lead creation order check. | **DEVIATION** | **RESOLVED** | Enforces `upload_time - event_time <= 7 days`, `event_time >= lead_created_at`, and `event_time - lead_created_at <= 28 days`. |
+| **Batch Size Cap & Fit Checks** | No batch limit validation or account fit checks. | **DEVIATION** | **RESOLVED** | Added `validate_batch` (1,000-event cap) and `check_business_fit` (200 leads/mo, 1%–40% stage conversion rate). |
+| **PII Hashing** | SHA-256 applied to emails and phone numbers. | **ALIGNED** | **ALIGNED** | Correctly enforces normalized SHA-256 hex digest. |
+| **Idempotency Keying** | 32-character SHA-256 key from outcome and lead IDs. | **ALIGNED** | **ALIGNED** | Deterministic deduplication keying. |
 
 ---
 
 ## 5. Benchmark Module & Presets
 
-| Specification Item | Current Implementation | Status | Deviation Details |
-|---|---|---|---|
-| **Paired Evaluation Across Seeds** | 200 pre-committed seeds in `benchmark/seeds.json` across 9 scenarios. | **ALIGNED** | Evaluates naive baseline vs QualLoop against hidden simulator ground truth. |
-| **Reported Metrics** | FPPR, FNDR, IER, QLUS, and cases where QualLoop performed worse. | **ALIGNED** | Reports honest tradeoffs and error rates. |
-| **`days_to_correct_decision` Metric** | Not tracked or reported in `benchmark/runner.py`. | **DEVIATION** | Days elapsed before reaching correct decision is not calculated. |
-| **Correlation-Variant Scenarios** | Simulator draws reachability and intent independently per ad. | **DEVIATION** | No joint reach-intent correlated scenario preset. |
+| Specification Item | Initial Implementation | Initial Status | Status After Fixes | Details & Resolution |
+|---|---|---|---|---|
+| **Paired Evaluation Across Seeds** | 200 pre-committed seeds in `benchmark/seeds.json` across 9 scenarios. | **ALIGNED** | **ALIGNED** | A total of **200 simulations** (evaluating 350 ads) are executed across 9 scenario presets (25 each for 6 scenarios, 20 each for 2 scenarios, 10 for 1 scenario), paired seed-by-seed against baseline. |
+| **Reported Metrics** | FPPR, FNDR, IER, QLUS, and worse cases. | **ALIGNED** | **ALIGNED** | Accurately reports tradeoff metrics with Wilson score confidence intervals. |
+| **`days_to_correct_decision` Metric** | Not tracked in `benchmark/runner.py`. | **DEVIATION** | **REMAINS DEVIATION** | Rolling time-to-decision tracking is not implemented. |
+| **Correlation-Variant Scenarios** | Reachability and intent drawn independently. | **DEVIATION** | **REMAINS DEVIATION** | Joint reach-intent bivariate correlation distribution is not simulated. |
