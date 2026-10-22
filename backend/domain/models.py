@@ -206,7 +206,7 @@ class FeedbackEvent(BaseModel):
     idempotency_key: str  # prevents duplicate processing
     event_name: str  # e.g. "Lead", "QualifiedLead"
     event_time: int  # Unix timestamp
-    action_source: str = "crm"
+    action_source: str = "system_generated"
 
     # User data — all PII must be SHA-256 hashed
     user_data: dict  # {em: hashed_email, ph: hashed_phone, ...}
