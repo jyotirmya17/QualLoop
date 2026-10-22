@@ -393,6 +393,48 @@ class TestDecisionRecordsAndTiers:
         assert dec_a.supporting_metrics.get("relative_rule_triggered") is True
         assert dec_a.supporting_metrics.get("target_ad_id") == "ad_efficient"
 
+    def test_evaluate_campaign_relative_spend_shift(self):
+        """Campaign-level evaluation triggers spend shift from inefficient ad to efficient ad."""
+        from decision_engine.engine import evaluate_campaign
+        ad_expensive = _make_snapshot(
+            ad_id="ad_exp",
+            cpql_mean=900.0,
+            cpql_ci_low=750.0,
+            cpql_ci_high=1100.0,
+            cpql_unstable=False,
+            evidence_sufficient_qualification=True,
+            qualification_ci_low=0.15,
+            qualification_ci_high=0.25,
+            reachability_ci_low=0.50,
+            reachability_ci_high=0.70,
+        )
+        ad_cheap = _make_snapshot(
+            ad_id="ad_chp",
+            cpql_mean=180.0,
+            cpql_ci_low=120.0,
+            cpql_ci_high=240.0,
+            cpql_unstable=False,
+            evidence_sufficient_qualification=True,
+            qualification_ci_low=0.35,
+            qualification_ci_high=0.50,
+            reachability_ci_low=0.75,
+            reachability_ci_high=0.90,
+        )
+        policy = DecisionPolicy(spend_shift_cap_fraction=0.25, guardrail_action_spend_cap=2000.0)
+        ad_spends = {"ad_exp": 1200.0, "ad_chp": 1200.0}
+
+        decisions = evaluate_campaign(
+            snapshots=[ad_expensive, ad_cheap],
+            ad_spends=ad_spends,
+            policy=policy,
+        )
+        dec_exp = next(d for d in decisions if d.advertisement_id == "ad_exp")
+        assert dec_exp.action == DecisionAction.SHIFT_SPEND
+        assert dec_exp.tier == "within_guardrails"
+        assert dec_exp.auto_applied is True
+        assert dec_exp.supporting_metrics["target_ad_id"] == "ad_chp"
+        assert "25%" in dec_exp.reason
+
     def test_decision_record_stores_required_structured_fields(self):
         """Every decision must store inputs, posterior summary, thresholds, tier, auto_applied, policy version."""
         snap = _make_snapshot(
