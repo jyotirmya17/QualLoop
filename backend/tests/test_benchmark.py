@@ -97,3 +97,20 @@ def test_benchmark_runner_execution():
         content = (results_dir / "REPORT.md").read_text(encoding="utf-8")
         assert "QualLoop vs. Naive Baseline Benchmark Report" in content
         assert "False Positive Pause Rate (FPPR)" in content
+
+
+def test_time_sliced_benchmark_runner():
+    from benchmark.time_sliced import TimeSlicedBenchmarkRunner
+
+    runner = TimeSlicedBenchmarkRunner(checkpoints=(3, 7, 14, 21))
+    summary = runner.run(max_runs_per_scenario=1)
+
+    assert summary.n_simulations == 9
+    assert summary.n_poor_ads > 0
+    assert "day_3" in summary.qualloop_distribution
+    assert "day_7" in summary.qualloop_distribution
+    assert "day_14" in summary.qualloop_distribution
+    assert "day_21" in summary.qualloop_distribution
+    assert "missed" in summary.qualloop_distribution
+    assert summary.qualloop_missed_count >= 0
+    assert 0.0 <= summary.qualloop_missed_rate <= 1.0
