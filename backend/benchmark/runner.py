@@ -216,7 +216,10 @@ class BenchmarkRunner:
                     # 2. QualLoop policy
                     snapshot = snapshots_by_ad[ad.id]
                     qualloop_dec = evaluate(
-                        snapshot, ad_spend=ad.spend, policy=self.decision_policy
+                        snapshot,
+                        ad_spend=ad.spend,
+                        policy=self.decision_policy,
+                        campaign_snapshots=snapshots,
                     )
                     q_paused = qualloop_dec.action == DecisionAction.CONSIDER_PAUSE
                     q_false_positive = is_good_ad and q_paused

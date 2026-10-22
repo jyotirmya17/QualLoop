@@ -74,6 +74,8 @@ class DecisionOut(BaseModel):
     reason: str
     supporting_metrics: dict
     confidence_level: str
+    tier: str = "autonomous"
+    auto_applied: bool = False
     requires_human_approval: bool
     approval_status: ApprovalStatus
     created_at: datetime

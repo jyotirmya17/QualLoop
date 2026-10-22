@@ -6,6 +6,7 @@ from fastapi.testclient import TestClient
 from api.main import app
 from api.store import clear as clear_store
 from audit.trail import clear_all as clear_audit
+from domain.enums import DecisionAction, DecisionTier
 
 client = TestClient(app)
 
@@ -107,16 +108,9 @@ def test_get_run_analysis():
             assert 0.0 <= est["reachability_mean"] <= 1.0
             assert 0.0 <= est["qualification_mean"] <= 1.0
             assert est["reachability_ci_low"] <= est["reachability_ci_high"]
-            assert dec["action"] in [
-                "collect_more_data",
-                "continue_monitoring",
-                "investigate_low_reachability",
-                "refresh_creative",
-                "consider_pause",
-                "consider_reallocate",
-                "flag_insufficient_evidence",
-                "flag_abnormal_change",
-            ]
+            assert dec["action"] in [a.value for a in DecisionAction]
+            assert dec["tier"] in [t.value for t in DecisionTier]
+            assert isinstance(dec["auto_applied"], bool)
 
 
 def test_get_run_analysis_not_found():

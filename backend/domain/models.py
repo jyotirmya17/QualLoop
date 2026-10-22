@@ -177,6 +177,8 @@ class Decision(BaseModel):
     reason: str
     supporting_metrics: dict
     confidence_level: str  # "high", "medium", "low"
+    tier: str = "autonomous"  # "gated" | "within_guardrails" | "autonomous"
+    auto_applied: bool = False
     requires_human_approval: bool
     approval_status: ApprovalStatus = ApprovalStatus.NOT_REQUIRED
     created_at: datetime

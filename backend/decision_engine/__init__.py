@@ -1,5 +1,5 @@
 """Decision engine package."""
 
-from decision_engine.engine import DecisionPolicy, evaluate
+from decision_engine.engine import DecisionPolicy, evaluate, evaluate_campaign
 
-__all__ = ["evaluate", "DecisionPolicy"]
+__all__ = ["evaluate", "evaluate_campaign", "DecisionPolicy"]

@@ -33,8 +33,17 @@ class DecisionAction(str, Enum):
     REFRESH_CREATIVE = "refresh_creative"
     CONSIDER_PAUSE = "consider_pause"
     CONSIDER_REALLOCATE = "consider_reallocate"
+    SHIFT_SPEND = "shift_spend"
+    RAISE_BUDGET = "raise_budget"
+    LAUNCH_AD = "launch_ad"
     FLAG_INSUFFICIENT_EVIDENCE = "flag_insufficient_evidence"
     FLAG_ABNORMAL_CHANGE = "flag_abnormal_change"
+
+
+class DecisionTier(str, Enum):
+    GATED = "gated"
+    WITHIN_GUARDRAILS = "within_guardrails"
+    AUTONOMOUS = "autonomous"
 
 
 class ApprovalStatus(str, Enum):

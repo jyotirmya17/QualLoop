@@ -11,14 +11,14 @@ The engine is deterministic: identical inputs always produce identical outputs.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from datetime import datetime, timedelta, timezone
+from dataclasses import dataclass
+from datetime import datetime, timezone
 from typing import Optional
 
-from domain.enums import ApprovalStatus, DecisionAction
+from domain.enums import ApprovalStatus, DecisionAction, DecisionTier
 from domain.models import Decision, EstimateSnapshot
 
-POLICY_VERSION = "v0.1.0"
+POLICY_VERSION = "v0.2.0"
 
 
 @dataclass
@@ -39,6 +39,37 @@ class DecisionPolicy:
     floor_spend_fraction: float = 0.20
     budget_guardrail_min_spend: float = 100.0
     abnormal_change_threshold: float = 0.30
+    spend_shift_cap_fraction: float = 0.25
+    guardrail_action_spend_cap: float = 500.0
+
+
+def _determine_tier_and_auto_applied(
+    action: DecisionAction,
+    ad_spend: float,
+    policy: DecisionPolicy,
+) -> tuple[str, bool, bool]:
+    """
+    Derive (tier, auto_applied, requires_approval) based on action and spend guardrails.
+
+    Rules:
+    - Raising budget and launching: ALWAYS tier=gated and auto_applied=false.
+    - Pausing and reallocating / shifting spend: ALWAYS tier=within_guardrails.
+      auto_applied=true if ad_spend <= policy.guardrail_action_spend_cap, else false.
+    - Observational / monitoring: tier=autonomous and auto_applied=true.
+    """
+    if action in (DecisionAction.RAISE_BUDGET, DecisionAction.LAUNCH_AD):
+        return (DecisionTier.GATED.value, False, True)
+    elif action == DecisionAction.FLAG_ABNORMAL_CHANGE:
+        return (DecisionTier.GATED.value, False, True)
+    elif action in (
+        DecisionAction.CONSIDER_PAUSE,
+        DecisionAction.CONSIDER_REALLOCATE,
+        DecisionAction.SHIFT_SPEND,
+    ):
+        is_under_cap = ad_spend <= policy.guardrail_action_spend_cap
+        return (DecisionTier.WITHIN_GUARDRAILS.value, is_under_cap, not is_under_cap)
+    else:
+        return (DecisionTier.AUTONOMOUS.value, True, False)
 
 
 def evaluate(
@@ -47,6 +78,7 @@ def evaluate(
     policy: DecisionPolicy | None = None,
     prior_decisions: list[Decision] | None = None,
     prior_estimate: Optional[EstimateSnapshot] = None,
+    campaign_snapshots: list[EstimateSnapshot] | None = None,
 ) -> Decision:
     """
     Evaluate an estimate snapshot and produce a recommendation.
@@ -57,9 +89,10 @@ def evaluate(
         policy: DecisionPolicy to apply (defaults to DecisionPolicy())
         prior_decisions: Previous decisions for this ad (for cooldown check)
         prior_estimate: Previous estimate snapshot (for anomaly detection)
+        campaign_snapshots: Optional snapshots of all ads in campaign (for relative cross-ad rules)
 
     Returns:
-        Decision object with action, reason, and full evidence record
+        Decision object with action, tier, auto_applied, reason, and full evidence record
 
     The function evaluates rules in priority order and returns on first match.
     """
@@ -81,33 +114,33 @@ def evaluate(
             hours_since < policy.cooldown_hours
             and latest.action != DecisionAction.CONTINUE_MONITORING
         ):
-            # Within cooldown — repeat the monitoring action
             return _make_decision(
                 estimate=estimate,
+                ad_spend=ad_spend,
                 action=DecisionAction.CONTINUE_MONITORING,
                 reason=(
                     f"Cooldown active: previous recommendation '{latest.action.value}' was made "
-                    f"{hours_since:.1f} hours ago. Cooldown period is "
-                    f"{policy.cooldown_hours:.0f} hours."
+                    f"{hours_since:.1f} hours ago (less than {policy.cooldown_hours:.0f}h limit). "
+                    f"Maintaining autonomous monitoring."
                 ),
                 policy=policy,
-                requires_approval=False,
                 now=now,
             )
 
     # Rule 1: Insufficient maturity fraction
     if estimate.maturity_fraction_contact < policy.min_maturity_fraction:
+        pending_leads = estimate.n_leads - estimate.n_mature_leads
         return _make_decision(
             estimate=estimate,
+            ad_spend=ad_spend,
             action=DecisionAction.FLAG_INSUFFICIENT_EVIDENCE,
             reason=(
-                f"Only {estimate.maturity_fraction_contact:.0%} of leads have reached the "
-                f"contact maturity window (minimum: {policy.min_maturity_fraction:.0%}). "
-                f"Current estimates reflect early data only. "
-                f"Pending leads: {estimate.n_leads - estimate.n_mature_leads}."
+                f"Maturity fraction for ad '{estimate.advertisement_id}' is {estimate.maturity_fraction_contact:.1%}, "
+                f"which is below the required {policy.min_maturity_fraction:.1%} threshold. Only {estimate.n_mature_leads} "
+                f"of {estimate.n_leads} leads have aged past contact maturity window (pending leads: {pending_leads}). "
+                f"Autonomous data collection in progress."
             ),
             policy=policy,
-            requires_approval=False,
             now=now,
         )
 
@@ -115,14 +148,14 @@ def evaluate(
     if estimate.n_mature_leads < policy.min_mature_leads_for_reachability:
         return _make_decision(
             estimate=estimate,
+            ad_spend=ad_spend,
             action=DecisionAction.COLLECT_MORE_DATA,
             reason=(
-                f"Only {estimate.n_mature_leads} mature leads observed. "
-                f"Minimum required for reliable reachability estimates: "
-                f"{policy.min_mature_leads_for_reachability}."
+                f"Observed {estimate.n_mature_leads} mature leads for ad '{estimate.advertisement_id}', "
+                f"below required threshold of {policy.min_mature_leads_for_reachability}. "
+                f"Reachability rate cannot be evaluated reliably yet."
             ),
             policy=policy,
-            requires_approval=False,
             now=now,
         )
 
@@ -130,15 +163,14 @@ def evaluate(
     if estimate.n_mature_contacts < policy.min_mature_contacts_for_qualification:
         return _make_decision(
             estimate=estimate,
+            ad_spend=ad_spend,
             action=DecisionAction.COLLECT_MORE_DATA,
             reason=(
-                f"Only {estimate.n_mature_contacts} contacts with resolved qualification. "
-                f"Minimum required: {policy.min_mature_contacts_for_qualification}. "
-                f"Reachability evidence ({estimate.n_mature_leads} mature leads) is "
-                f"sufficient but intent cannot yet be assessed."
+                f"Observed {estimate.n_mature_contacts} mature contacts ({estimate.k_qualified} qualified) for ad '{estimate.advertisement_id}', "
+                f"below required threshold of {policy.min_mature_contacts_for_qualification}. "
+                f"Reachability sample ({estimate.n_mature_leads} mature leads) is sufficient, but qualification intent cannot yet be assessed."
             ),
             policy=policy,
-            requires_approval=False,
             now=now,
         )
 
@@ -152,17 +184,16 @@ def evaluate(
             direction = "improved" if qual_change > 0 else "declined"
             return _make_decision(
                 estimate=estimate,
+                ad_spend=ad_spend,
                 action=DecisionAction.FLAG_ABNORMAL_CHANGE,
                 reason=(
-                    f"Qualification rate has {direction} by "
-                    f"{abs(qual_change):.0%} relative to the prior estimate "
-                    f"({prior_estimate.qualification_mean:.1%} → "
-                    f"{estimate.qualification_mean:.1%}). "
-                    f"This may indicate creative fatigue, targeting drift, or a data "
-                    f"quality issue. Investigate before acting."
+                    f"Qualification rate for ad '{estimate.advertisement_id}' has {direction} by "
+                    f"{abs(qual_change):.1%} relative to the prior estimate "
+                    f"({prior_estimate.qualification_mean:.1%} → {estimate.qualification_mean:.1%}), "
+                    f"exceeding abnormal change threshold {policy.abnormal_change_threshold:.1%}. "
+                    f"Gated human review required before acting."
                 ),
                 policy=policy,
-                requires_approval=True,
                 now=now,
             )
 
@@ -170,17 +201,16 @@ def evaluate(
     if estimate.reachability_ci_high < policy.low_reachability_upper_bound:
         return _make_decision(
             estimate=estimate,
+            ad_spend=ad_spend,
             action=DecisionAction.INVESTIGATE_LOW_REACHABILITY,
             reason=(
-                f"The 90% credible interval for reachability is "
-                f"[{estimate.reachability_ci_low:.1%}, {estimate.reachability_ci_high:.1%}], "
-                f"entirely below {policy.low_reachability_upper_bound:.0%}. "
-                f"This ad generates leads that are difficult to contact. "
-                f"Buying intent cannot be reliably assessed until reachability improves. "
-                f"Do NOT interpret this as evidence of low intent."
+                f"The 90% credible interval for reachability on ad '{estimate.advertisement_id}' is "
+                f"[{estimate.reachability_ci_low:.1%}, {estimate.reachability_ci_high:.1%}] (mean {estimate.reachability_mean:.1%}), "
+                f"entirely below {policy.low_reachability_upper_bound:.1%}. "
+                f"Generated {estimate.n_contacts}/{estimate.n_mature_leads} contacts. "
+                f"Buying intent cannot be assessed until contact cadence improves. Do not misinterpret as low intent."
             ),
             policy=policy,
-            requires_approval=False,
             now=now,
         )
 
@@ -195,94 +225,235 @@ def evaluate(
         if ad_spend < policy.budget_guardrail_min_spend:
             return _make_decision(
                 estimate=estimate,
+                ad_spend=ad_spend,
                 action=DecisionAction.CONTINUE_MONITORING,
                 reason=(
-                    f"Qualification rate appears low "
-                    f"[{estimate.qualification_ci_low:.1%}, {estimate.qualification_ci_high:.1%}], "
-                    f"but ad spend (${ad_spend:.0f}) is below the minimum guardrail "
-                    f"(${policy.budget_guardrail_min_spend:.0f}). Increase budget for a "
-                    f"statistically meaningful test before considering a pause."
+                    f"Qualification rate interval [{estimate.qualification_ci_low:.1%}, {estimate.qualification_ci_high:.1%}] "
+                    f"(mean {estimate.qualification_mean:.1%}) is low, but ad spend (${ad_spend:.2f}) is below minimum "
+                    f"guardrail (${policy.budget_guardrail_min_spend:.2f}). Continue monitoring to reach statistical significance."
                 ),
                 policy=policy,
-                requires_approval=False,
                 now=now,
             )
 
         return _make_decision(
             estimate=estimate,
+            ad_spend=ad_spend,
             action=DecisionAction.CONSIDER_PAUSE,
             reason=(
-                f"With {estimate.n_mature_contacts} resolved contacts, the 90% credible "
-                f"interval for qualification rate is "
-                f"[{estimate.qualification_ci_low:.1%}, {estimate.qualification_ci_high:.1%}], "
-                f"entirely below {policy.low_qualification_upper_bound:.0%}. "
-                f"Reachability is adequate "
-                f"({estimate.reachability_mean:.1%}), so low intent — not low reachability "
-                f"— is the driver. There is strong evidence this ad generates leads with low "
-                f"buying intent. Human approval required before any action."
+                f"With {estimate.n_mature_contacts} mature contacts ({estimate.k_qualified} qualified), the 90% credible "
+                f"interval for qualification rate is [{estimate.qualification_ci_low:.1%}, {estimate.qualification_ci_high:.1%}], "
+                f"sitting entirely below threshold {policy.low_qualification_upper_bound:.1%}. Reachability is adequate "
+                f"({estimate.reachability_mean:.1%}), confirming poor buying intent. "
+                f"Recommend pausing ad within guardrails (spend: ${ad_spend:.2f}, guardrail cap: ${policy.guardrail_action_spend_cap:.2f})."
             ),
             policy=policy,
-            requires_approval=True,
             now=now,
         )
 
-    # Rule 7: High CPQL
+    # Rule 7: Relative rule across campaign ads (spend-shift recommendation)
+    if (
+        campaign_snapshots
+        and not estimate.cpql_unstable
+        and estimate.cpql_ci_low is not None
+        and estimate.evidence_sufficient_qualification
+    ):
+        for other in campaign_snapshots:
+            if (
+                other.advertisement_id != estimate.advertisement_id
+                and not other.cpql_unstable
+                and other.cpql_ci_high is not None
+                and other.evidence_sufficient_qualification
+            ):
+                if estimate.cpql_ci_low > other.cpql_ci_high:
+                    shift_percent = int(round(policy.spend_shift_cap_fraction * 100))
+                    return _make_decision(
+                        estimate=estimate,
+                        ad_spend=ad_spend,
+                        action=DecisionAction.SHIFT_SPEND,
+                        reason=(
+                            f"Cost-per-qualified-lead interval for ad '{estimate.advertisement_id}' "
+                            f"[${estimate.cpql_ci_low:.2f}, ${estimate.cpql_ci_high:.2f}] (mean: ${estimate.cpql_mean:.2f}) "
+                            f"sits entirely above ad '{other.advertisement_id}' interval "
+                            f"[${other.cpql_ci_low:.2f}, ${other.cpql_ci_high:.2f}] (mean: ${other.cpql_mean:.2f}). "
+                            f"Recommend guardrailed spend shift of up to {shift_percent}% from ad '{estimate.advertisement_id}' "
+                            f"to ad '{other.advertisement_id}'."
+                        ),
+                        policy=policy,
+                        now=now,
+                        extra_metrics={
+                            "relative_rule_triggered": True,
+                            "target_ad_id": other.advertisement_id,
+                            "target_cpql_mean": other.cpql_mean,
+                            "target_cpql_ci": [other.cpql_ci_low, other.cpql_ci_high],
+                            "spend_shift_cap_fraction": policy.spend_shift_cap_fraction,
+                        },
+                    )
+
+    # Rule 8: High CPQL (generic reallocation)
     if (
         not estimate.cpql_unstable
         and estimate.cpql_ci_low is not None
         and estimate.cpql_ci_low > policy.high_cpql_lower_bound
         and estimate.evidence_sufficient_qualification
     ):
-        if ad_spend < policy.budget_guardrail_min_spend:
-            pass  # fall through to continue_monitoring
-        else:
+        if ad_spend >= policy.budget_guardrail_min_spend:
             return _make_decision(
                 estimate=estimate,
+                ad_spend=ad_spend,
                 action=DecisionAction.CONSIDER_REALLOCATE,
                 reason=(
-                    f"Estimated cost per qualified lead has a 90% CI lower bound of "
-                    f"${estimate.cpql_ci_low:.0f}, exceeding the threshold of "
-                    f"${policy.high_cpql_lower_bound:.0f}. "
-                    f"Point estimate: ${estimate.cpql_mean:.0f}. "
-                    f"Consider reallocating spend to better-performing ads."
+                    f"Estimated cost per qualified lead has a 90% credible interval lower bound of "
+                    f"${estimate.cpql_ci_low:.2f} (mean: ${estimate.cpql_mean:.2f}), exceeding threshold "
+                    f"${policy.high_cpql_lower_bound:.2f} on spend ${ad_spend:.2f} and EQL {estimate.eql_mean:.1f}. "
+                    f"Recommend reallocating spend within guardrails."
                 ),
                 policy=policy,
-                requires_approval=True,
                 now=now,
             )
 
-    # Rule 10: Default — continue monitoring
+    # Rule 9: Default — continue monitoring
     return _make_decision(
         estimate=estimate,
+        ad_spend=ad_spend,
         action=DecisionAction.CONTINUE_MONITORING,
         reason=(
-            f"Sample is mature and sufficient. "
-            f"Reachability: {estimate.reachability_mean:.1%} "
-            f"[{estimate.reachability_ci_low:.1%}, {estimate.reachability_ci_high:.1%}]. "
-            f"Qualification: {estimate.qualification_mean:.1%} "
-            f"[{estimate.qualification_ci_low:.1%}, {estimate.qualification_ci_high:.1%}]. "
-            f"No strong signal detected. Continue collecting data."
+            f"Sample is mature ({estimate.n_mature_leads} mature leads, {estimate.n_mature_contacts} mature contacts, "
+            f"{estimate.k_qualified} qualified). Reachability mean {estimate.reachability_mean:.1%} "
+            f"(90% CI: [{estimate.reachability_ci_low:.1%}, {estimate.reachability_ci_high:.1%}]), "
+            f"qualification mean {estimate.qualification_mean:.1%} "
+            f"(90% CI: [{estimate.qualification_ci_low:.1%}, {estimate.qualification_ci_high:.1%}]), "
+            f"EQL {estimate.eql_mean:.1f}, spend ${ad_spend:.2f}. No failure threshold triggered; continue autonomous monitoring."
         ),
         policy=policy,
-        requires_approval=False,
         now=now,
     )
 
 
+def evaluate_campaign(
+    snapshots: list[EstimateSnapshot],
+    ad_spends: dict[str, float],
+    policy: DecisionPolicy | None = None,
+    prior_decisions: list[Decision] | None = None,
+) -> list[Decision]:
+    """
+    Evaluate all ads in a campaign, enabling relative cross-ad rules.
+
+    Args:
+        snapshots: EstimateSnapshot objects for all ads in the campaign
+        ad_spends: Mapping of ad_id to current ad spend
+        policy: Configured DecisionPolicy
+        prior_decisions: Prior decisions for cooldown tracking
+
+    Returns:
+        List of Decision objects for the campaign ads
+    """
+    if policy is None:
+        policy = DecisionPolicy()
+
+    decisions: list[Decision] = []
+    for snap in snapshots:
+        spend = ad_spends.get(snap.advertisement_id, 0.0)
+        dec = evaluate(
+            estimate=snap,
+            ad_spend=spend,
+            policy=policy,
+            prior_decisions=prior_decisions,
+            campaign_snapshots=snapshots,
+        )
+        decisions.append(dec)
+
+    return decisions
+
+
 def _make_decision(
     estimate: EstimateSnapshot,
+    ad_spend: float,
     action: DecisionAction,
     reason: str,
     policy: DecisionPolicy,
-    requires_approval: bool,
     now: datetime,
+    extra_metrics: dict | None = None,
 ) -> Decision:
-    """Construct a Decision object with full evidence record."""
+    """Construct a Decision object storing inputs, posterior summary, thresholds, tier, and auto_applied."""
+    tier, auto_applied, requires_approval = _determine_tier_and_auto_applied(
+        action=action,
+        ad_spend=ad_spend,
+        policy=policy,
+    )
     approval_status = (
         ApprovalStatus.PENDING if requires_approval else ApprovalStatus.NOT_REQUIRED
     )
-
     confidence_level = _compute_confidence(estimate)
+
+    inputs = {
+        "ad_spend": float(ad_spend),
+        "n_leads": estimate.n_leads,
+        "n_mature_leads": estimate.n_mature_leads,
+        "n_contacts": estimate.n_contacts,
+        "n_mature_contacts": estimate.n_mature_contacts,
+        "k_qualified": estimate.k_qualified,
+        "maturity_fraction_contact": round(estimate.maturity_fraction_contact, 4),
+        "maturity_fraction_qualification": round(estimate.maturity_fraction_qualification, 4),
+    }
+
+    posterior_summary = {
+        "reachability_mean": round(estimate.reachability_mean, 4),
+        "reachability_ci": [round(estimate.reachability_ci_low, 4), round(estimate.reachability_ci_high, 4)],
+        "qualification_mean": round(estimate.qualification_mean, 4),
+        "qualification_ci": [round(estimate.qualification_ci_low, 4), round(estimate.qualification_ci_high, 4)],
+        "eql_mean": round(estimate.eql_mean, 2),
+        "cpql_mean": round(estimate.cpql_mean, 2) if estimate.cpql_mean is not None else None,
+        "cpql_ci": (
+            [round(estimate.cpql_ci_low, 2), round(estimate.cpql_ci_high, 2)]
+            if (estimate.cpql_ci_low is not None and estimate.cpql_ci_high is not None)
+            else None
+        ),
+        "cpql_unstable": estimate.cpql_unstable,
+        "zero_eql_fraction": round(estimate.zero_eql_fraction, 4),
+    }
+
+    thresholds = {
+        "min_mature_leads": policy.min_mature_leads_for_reachability,
+        "min_mature_contacts": policy.min_mature_contacts_for_qualification,
+        "min_maturity_fraction": policy.min_maturity_fraction,
+        "low_reachability_upper_bound": policy.low_reachability_upper_bound,
+        "low_qualification_upper_bound": policy.low_qualification_upper_bound,
+        "high_cpql_lower_bound": policy.high_cpql_lower_bound,
+        "budget_guardrail_min_spend": policy.budget_guardrail_min_spend,
+        "spend_shift_cap_fraction": policy.spend_shift_cap_fraction,
+        "guardrail_action_spend_cap": policy.guardrail_action_spend_cap,
+    }
+
+    supporting_metrics = {
+        "inputs": inputs,
+        "posterior_summary": posterior_summary,
+        "thresholds": thresholds,
+        "tier": tier,
+        "auto_applied": auto_applied,
+        "policy_version": policy.version,
+        # Flat legacy keys for backward compatibility
+        "n_leads": estimate.n_leads,
+        "n_mature_leads": estimate.n_mature_leads,
+        "n_contacts": estimate.n_contacts,
+        "n_mature_contacts": estimate.n_mature_contacts,
+        "k_qualified": estimate.k_qualified,
+        "maturity_fraction_contact": round(estimate.maturity_fraction_contact, 4),
+        "reachability_mean": round(estimate.reachability_mean, 4),
+        "reachability_ci_low": round(estimate.reachability_ci_low, 4),
+        "reachability_ci_high": round(estimate.reachability_ci_high, 4),
+        "qualification_mean": round(estimate.qualification_mean, 4),
+        "qualification_ci_low": round(estimate.qualification_ci_low, 4),
+        "qualification_ci_high": round(estimate.qualification_ci_high, 4),
+        "eql_mean": round(estimate.eql_mean, 2),
+        "cpql_mean": round(estimate.cpql_mean, 2) if estimate.cpql_mean is not None else None,
+        "cpql_unstable": estimate.cpql_unstable,
+        "evidence_sufficient_reachability": estimate.evidence_sufficient_reachability,
+        "evidence_sufficient_qualification": estimate.evidence_sufficient_qualification,
+        "thresholds_applied": thresholds,
+    }
+    if extra_metrics:
+        supporting_metrics.update(extra_metrics)
 
     return Decision(
         advertisement_id=estimate.advertisement_id,
@@ -290,35 +461,10 @@ def _make_decision(
         policy_version=policy.version,
         action=action,
         reason=reason,
-        supporting_metrics={
-            "n_leads": estimate.n_leads,
-            "n_mature_leads": estimate.n_mature_leads,
-            "n_contacts": estimate.n_contacts,
-            "n_mature_contacts": estimate.n_mature_contacts,
-            "k_qualified": estimate.k_qualified,
-            "maturity_fraction_contact": round(estimate.maturity_fraction_contact, 4),
-            "reachability_mean": round(estimate.reachability_mean, 4),
-            "reachability_ci_low": round(estimate.reachability_ci_low, 4),
-            "reachability_ci_high": round(estimate.reachability_ci_high, 4),
-            "qualification_mean": round(estimate.qualification_mean, 4),
-            "qualification_ci_low": round(estimate.qualification_ci_low, 4),
-            "qualification_ci_high": round(estimate.qualification_ci_high, 4),
-            "eql_mean": round(estimate.eql_mean, 2),
-            "cpql_mean": round(estimate.cpql_mean, 2) if estimate.cpql_mean else None,
-            "cpql_unstable": estimate.cpql_unstable,
-            "evidence_sufficient_reachability": estimate.evidence_sufficient_reachability,
-            "evidence_sufficient_qualification": estimate.evidence_sufficient_qualification,
-            "policy_version": policy.version,
-            "thresholds_applied": {
-                "min_mature_leads": policy.min_mature_leads_for_reachability,
-                "min_mature_contacts": policy.min_mature_contacts_for_qualification,
-                "min_maturity_fraction": policy.min_maturity_fraction,
-                "low_reachability_upper_bound": policy.low_reachability_upper_bound,
-                "low_qualification_upper_bound": policy.low_qualification_upper_bound,
-                "high_cpql_lower_bound": policy.high_cpql_lower_bound,
-            },
-        },
+        supporting_metrics=supporting_metrics,
         confidence_level=confidence_level,
+        tier=tier,
+        auto_applied=auto_applied,
         requires_human_approval=requires_approval,
         approval_status=approval_status,
         created_at=now,

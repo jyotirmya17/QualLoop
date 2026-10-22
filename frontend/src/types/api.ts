@@ -5,10 +5,15 @@ export type DecisionAction =
   | 'refresh_creative'
   | 'consider_pause'
   | 'consider_reallocate'
+  | 'shift_spend'
+  | 'raise_budget'
+  | 'launch_ad'
   | 'flag_insufficient_evidence'
   | 'flag_abnormal_change';
 
-export type ApprovalStatus = 'pending' | 'approved' | 'rejected';
+export type DecisionTier = 'gated' | 'within_guardrails' | 'autonomous';
+
+export type ApprovalStatus = 'pending' | 'approved' | 'rejected' | 'not_required';
 
 export interface SimulationRun {
   id: string;
@@ -69,6 +74,8 @@ export interface Decision {
   reason: string;
   supporting_metrics: Record<string, any>;
   confidence_level: 'high' | 'medium' | 'low';
+  tier?: DecisionTier;
+  auto_applied?: boolean;
   requires_human_approval: boolean;
   approval_status: ApprovalStatus;
   created_at: string;

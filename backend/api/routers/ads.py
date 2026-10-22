@@ -19,7 +19,7 @@ from api.schemas.responses import (
 )
 from api.store import get, list_runs
 from estimator.estimator import compute_campaign_estimates, compute_estimates, EstimatorConfig
-from decision_engine.engine import evaluate, DecisionPolicy
+from decision_engine.engine import evaluate, evaluate_campaign, DecisionPolicy
 
 router = APIRouter()
 
@@ -123,9 +123,14 @@ def get_run_analysis(run_id: str):
             config=_DEFAULT_CONFIG,
             seed=result.run.seed,
         )
+        ad_spends = {ad.id: ad.spend for ad in campaign_ads}
+        decisions = evaluate_campaign(
+            snapshots=snapshots,
+            ad_spends=ad_spends,
+            policy=_DEFAULT_POLICY,
+        )
         ad_analyses = []
-        for ad, snapshot in zip(campaign_ads, snapshots):
-            decision = evaluate(snapshot, ad_spend=ad.spend, policy=_DEFAULT_POLICY)
+        for ad, snapshot, decision in zip(campaign_ads, snapshots, decisions):
             ad_analyses.append(AdAnalysisOut(
                 advertisement=AdvertisementOut(
                     id=ad.id,

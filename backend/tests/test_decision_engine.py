@@ -290,3 +290,139 @@ class TestEvidenceRecording:
         assert "NOT" in decision.reason.upper() or "not" in decision.reason, (
             "Low reachability decision should explicitly warn against misinterpreting as intent failure"
         )
+
+
+class TestDecisionRecordsAndTiers:
+    def test_decision_tier_and_auto_applied_rules(self):
+        """Test tier assignment and auto_applied behavior across actions."""
+        policy = DecisionPolicy(guardrail_action_spend_cap=500.0)
+
+        # 1. Raising budget and launching must ALWAYS be tier=gated and auto_applied=false
+        from decision_engine.engine import _determine_tier_and_auto_applied
+        tier_launch, auto_launch, req_launch = _determine_tier_and_auto_applied(
+            DecisionAction.LAUNCH_AD, ad_spend=100.0, policy=policy
+        )
+        assert tier_launch == "gated"
+        assert auto_launch is False
+        assert req_launch is True
+
+        tier_raise, auto_raise, req_raise = _determine_tier_and_auto_applied(
+            DecisionAction.RAISE_BUDGET, ad_spend=100.0, policy=policy
+        )
+        assert tier_raise == "gated"
+        assert auto_raise is False
+        assert req_raise is True
+
+        # 2. Pausing within guardrail spend cap (<= 500) -> tier=within_guardrails, auto_applied=True
+        pause_snap = _make_snapshot(
+            qualification_ci_low=0.01,
+            qualification_ci_high=0.08,
+            n_mature_contacts=30,
+            evidence_sufficient_qualification=True,
+            reachability_ci_low=0.50,
+            reachability_ci_high=0.80,
+        )
+        dec_under_cap = evaluate(pause_snap, ad_spend=300.0, policy=policy)
+        assert dec_under_cap.action == DecisionAction.CONSIDER_PAUSE
+        assert dec_under_cap.tier == "within_guardrails"
+        assert dec_under_cap.auto_applied is True
+        assert dec_under_cap.requires_human_approval is False
+
+        # 3. Pausing above guardrail spend cap (> 500) -> tier=within_guardrails, auto_applied=False
+        dec_over_cap = evaluate(pause_snap, ad_spend=800.0, policy=policy)
+        assert dec_over_cap.action == DecisionAction.CONSIDER_PAUSE
+        assert dec_over_cap.tier == "within_guardrails"
+        assert dec_over_cap.auto_applied is False
+        assert dec_over_cap.requires_human_approval is True
+
+        # 4. Observational / monitoring -> tier=autonomous, auto_applied=True
+        normal_snap = _make_snapshot(
+            qualification_ci_low=0.20,
+            qualification_ci_high=0.40,
+            reachability_ci_low=0.60,
+            reachability_ci_high=0.80,
+        )
+        dec_auto = evaluate(normal_snap, ad_spend=100.0, policy=policy)
+        assert dec_auto.action == DecisionAction.CONTINUE_MONITORING
+        assert dec_auto.tier == "autonomous"
+        assert dec_auto.auto_applied is True
+
+    def test_relative_rule_cost_per_qualified_lead_shift(self):
+        """If one ad's CPQL interval sits entirely above another's in the same campaign, emit spend shift."""
+        # Ad A: High CPQL interval [800.0, 1200.0]
+        ad_a = _make_snapshot(
+            ad_id="ad_high_cost",
+            cpql_mean=1000.0,
+            cpql_ci_low=800.0,
+            cpql_ci_high=1200.0,
+            cpql_unstable=False,
+            evidence_sufficient_qualification=True,
+            qualification_ci_low=0.15,
+            qualification_ci_high=0.25,
+            reachability_ci_low=0.50,
+            reachability_ci_high=0.70,
+        )
+        # Ad B: Low CPQL interval [100.0, 300.0]
+        ad_b = _make_snapshot(
+            ad_id="ad_efficient",
+            cpql_mean=200.0,
+            cpql_ci_low=100.0,
+            cpql_ci_high=300.0,
+            cpql_unstable=False,
+            evidence_sufficient_qualification=True,
+            qualification_ci_low=0.30,
+            qualification_ci_high=0.45,
+            reachability_ci_low=0.70,
+            reachability_ci_high=0.85,
+        )
+
+        policy = DecisionPolicy(spend_shift_cap_fraction=0.30, guardrail_action_spend_cap=1000.0)
+        dec_a = evaluate(
+            estimate=ad_a,
+            ad_spend=600.0,
+            policy=policy,
+            campaign_snapshots=[ad_a, ad_b],
+        )
+
+        assert dec_a.action == DecisionAction.SHIFT_SPEND
+        assert dec_a.tier == "within_guardrails"
+        assert "ad_efficient" in dec_a.reason
+        assert "800.00" in dec_a.reason
+        assert "300.00" in dec_a.reason
+        assert "30%" in dec_a.reason
+        assert dec_a.supporting_metrics.get("relative_rule_triggered") is True
+        assert dec_a.supporting_metrics.get("target_ad_id") == "ad_efficient"
+
+    def test_decision_record_stores_required_structured_fields(self):
+        """Every decision must store inputs, posterior summary, thresholds, tier, auto_applied, policy version."""
+        snap = _make_snapshot(
+            cpql_mean=250.0,
+            cpql_ci_low=200.0,
+            cpql_ci_high=320.0,
+        )
+        policy = DecisionPolicy(version="v0.2.0-custom")
+        decision = evaluate(snap, ad_spend=450.0, policy=policy)
+
+        metrics = decision.supporting_metrics
+        assert "inputs" in metrics
+        assert "posterior_summary" in metrics
+        assert "thresholds" in metrics
+        assert "tier" in metrics
+        assert "auto_applied" in metrics
+        assert "policy_version" in metrics
+
+        # Verify inputs content
+        assert metrics["inputs"]["ad_spend"] == 450.0
+        assert metrics["inputs"]["n_leads"] == snap.n_leads
+
+        # Verify posterior summary content
+        assert metrics["posterior_summary"]["reachability_mean"] == round(snap.reachability_mean, 4)
+        assert metrics["posterior_summary"]["cpql_mean"] == 250.0
+
+        # Verify thresholds content
+        assert metrics["thresholds"]["min_maturity_fraction"] == policy.min_maturity_fraction
+
+        # Verify plain-language reason is derived from actual numbers
+        assert str(snap.n_mature_leads) in decision.reason
+        assert f"{snap.reachability_mean:.1%}" in decision.reason
+
