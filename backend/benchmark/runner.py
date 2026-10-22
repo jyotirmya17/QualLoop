@@ -20,7 +20,7 @@ import numpy as np
 from benchmark.baseline import BaselineDecision, BaselinePolicy
 from decision_engine.engine import DecisionPolicy, evaluate
 from domain.enums import DecisionAction
-from estimator.estimator import EstimatorConfig, compute_estimates
+from estimator.estimator import EstimatorConfig, compute_campaign_estimates, compute_estimates
 from simulator.engine import SimulationResult, run_simulation
 from simulator.scenarios import SCENARIO_REGISTRY, ScenarioConfig, get_scenario
 
@@ -170,6 +170,23 @@ class BenchmarkRunner:
                     if lead and lead.advertisement_id in quals_by_ad:
                         quals_by_ad[lead.advertisement_id].append(qo)
 
+                ads_data = [
+                    (
+                        ad,
+                        leads_by_ad.get(ad.id, []),
+                        calls_by_ad.get(ad.id, []),
+                        quals_by_ad.get(ad.id, []),
+                    )
+                    for ad in result.advertisements
+                ]
+                snapshots = compute_campaign_estimates(
+                    ads_data=ads_data,
+                    observation_time=obs_time,
+                    config=self.estimator_config,
+                    seed=seed,
+                )
+                snapshots_by_ad = {ad.id: snap for ad, snap in zip(result.advertisements, snapshots)}
+
                 # Evaluate each ad
                 for ad in result.advertisements:
                     total_spend += ad.spend
@@ -197,15 +214,7 @@ class BenchmarkRunner:
                     b_false_negative = is_poor_ad and not b_paused
 
                     # 2. QualLoop policy
-                    snapshot = compute_estimates(
-                        advertisement=ad,
-                        leads=ad_leads,
-                        call_attempts=ad_calls,
-                        qualification_outcomes=ad_quals,
-                        observation_time=obs_time,
-                        config=self.estimator_config,
-                        seed=seed,
-                    )
+                    snapshot = snapshots_by_ad[ad.id]
                     qualloop_dec = evaluate(
                         snapshot, ad_spend=ad.spend, policy=self.decision_policy
                     )

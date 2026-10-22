@@ -18,7 +18,7 @@ from api.schemas.responses import (
     EstimateSnapshotOut, DecisionOut,
 )
 from api.store import get, list_runs
-from estimator.estimator import compute_estimates, EstimatorConfig
+from estimator.estimator import compute_campaign_estimates, compute_estimates, EstimatorConfig
 from decision_engine.engine import evaluate, DecisionPolicy
 
 router = APIRouter()
@@ -108,17 +108,36 @@ def get_run_analysis(run_id: str):
     summaries = []
     for campaign in result.campaigns:
         campaign_ads = ads_by_campaign.get(campaign.id, [])
-        ad_analyses = []
-        for ad in campaign_ads:
-            analysis = _build_ad_analysis(
-                ad=ad,
-                leads=leads_by_ad.get(ad.id, []),
-                call_attempts=calls_by_ad.get(ad.id, []),
-                qual_outcomes=quals_by_ad.get(ad.id, []),
-                seed=result.run.seed,
-                observation_time=result.run.completed_at,
+        ads_data = [
+            (
+                ad,
+                leads_by_ad.get(ad.id, []),
+                calls_by_ad.get(ad.id, []),
+                quals_by_ad.get(ad.id, []),
             )
-            ad_analyses.append(analysis)
+            for ad in campaign_ads
+        ]
+        snapshots = compute_campaign_estimates(
+            ads_data=ads_data,
+            observation_time=result.run.completed_at,
+            config=_DEFAULT_CONFIG,
+            seed=result.run.seed,
+        )
+        ad_analyses = []
+        for ad, snapshot in zip(campaign_ads, snapshots):
+            decision = evaluate(snapshot, ad_spend=ad.spend, policy=_DEFAULT_POLICY)
+            ad_analyses.append(AdAnalysisOut(
+                advertisement=AdvertisementOut(
+                    id=ad.id,
+                    ad_set_id=ad.ad_set_id,
+                    creative_id=ad.creative_id,
+                    spend=ad.spend,
+                    impressions=ad.impressions,
+                    clicks=ad.clicks,
+                ),
+                estimate=EstimateSnapshotOut(**snapshot.model_dump()),
+                decision=DecisionOut(**decision.model_dump()),
+            ))
 
         summaries.append(CampaignSummaryOut(
             campaign_id=campaign.id,

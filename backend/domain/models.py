@@ -158,6 +158,13 @@ class EstimateSnapshot(BaseModel):
     # Fraction of EQL Monte Carlo samples with zero qualified leads
     zero_eql_fraction: float = 0.0
 
+    # Prior parameters used for estimation
+    reachability_prior_alpha: float = 1.0
+    reachability_prior_beta: float = 1.0
+    qualification_prior_alpha: float = 1.0
+    qualification_prior_beta: float = 4.0
+    is_empirical_prior: bool = False
+
 
 class Decision(BaseModel):
     """A recommendation produced by the decision engine."""

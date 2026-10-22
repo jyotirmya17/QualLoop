@@ -58,6 +58,11 @@ class EstimateSnapshotOut(BaseModel):
     evidence_sufficient_reachability: bool
     evidence_sufficient_qualification: bool
     zero_eql_fraction: float
+    reachability_prior_alpha: float = 1.0
+    reachability_prior_beta: float = 1.0
+    qualification_prior_alpha: float = 1.0
+    qualification_prior_beta: float = 4.0
+    is_empirical_prior: bool = False
 
 
 class DecisionOut(BaseModel):
