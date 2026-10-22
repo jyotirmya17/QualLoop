@@ -23,9 +23,12 @@ policy version. Every recommendation records the policy version used.
 | `low_reachability_upper_bound` | 0.25 | CI upper bound below this → investigate reachability |
 | `low_qualification_upper_bound` | 0.10 | Qualification CI upper bound below this → consider pause |
 | `high_cpql_lower_bound` | 500.0 | CPQL CI lower bound above this → consider reallocation |
+| `target_cpql` | 75.0 | CPQL CI upper bound below this with mature evidence → raise budget (gated) |
 | `cooldown_hours` | 48 | Minimum simulated hours between actions on same ad |
 | `floor_spend_fraction` | 0.20 | Ad cannot be paused if it represents < 20% of campaign |
 | `budget_guardrail_min_spend` | 100.0 | Minimum spend per ad before reallocation is suggested |
+| `spend_shift_cap_fraction` | 0.25 | Maximum fraction of budget shifted between ads in one action |
+| `guardrail_action_spend_cap` | 500.0 | Actions on ads with spend under this cap are auto-applied within guardrails |
 | `abnormal_change_threshold` | 0.30 | Relative change in qualification rate triggering anomaly flag |
 
 ---
@@ -109,12 +112,13 @@ to higher-performing ads."
 for a statistically meaningful test."  
 **Human approval required:** No
 
-### Rule 9: Cooldown
+### Rule 9: High-Performing Ad Budget Expansion
 
-**Condition:** A non-monitoring decision was made on this ad within the last `cooldown_hours`  
-**Action:** Previous decision is preserved; no new decision generated  
-**Reason:** "A recommendation was already made {hours_ago:.0f} hours ago. Cooldown period of
-{cooldown_hours}h has not elapsed."
+**Condition:** Mature evidence on reachability and qualification, `not cpql_unstable`, and `cpql_ci_high < target_cpql`  
+**Action:** `raise_budget`  
+**Tier:** `gated` (`auto_applied=False`, `requires_human_approval=True`)  
+**Reason:** "Mature evidence confirmed ({n_mature_leads} mature leads, {n_mature_contacts} contacts, {k_qualified} qualified). Credible interval upper bound for CPQL (${cpql_ci_high:.2f}) is strictly below target CPQL (${target_cpql:.2f}) with mean CPQL ${cpql_mean:.2f}. Recommend raising budget (gated tier: human approval required)."  
+**Human approval required:** Yes (always gated)
 
 ### Rule 10: Continue Monitoring (Default)
 
@@ -127,15 +131,19 @@ for a statistically meaningful test."
 
 ## 4. Interpretation Guide
 
-| Action | Meaning for User |
-|--------|-----------------|
-| `collect_more_data` | Wait — no reliable estimate exists yet |
-| `flag_insufficient_evidence` | Not enough time has passed, not enough data |
-| `continue_monitoring` | No action needed; system is watching |
-| `investigate_low_reachability` | Check phone numbers, lead forms, contact process |
-| `flag_abnormal_change` | Something changed — investigate before acting |
-| `consider_pause` | Evidence suggests poor quality — human should decide |
-| `consider_reallocate` | Too expensive per qualified lead — human should decide |
+| Action | Tier | Auto-Applied | Meaning for User |
+|--------|------|--------------|-----------------|
+| `collect_more_data` | autonomous | Yes | Wait — sample size insufficient for reliable inference |
+| `flag_insufficient_evidence` | autonomous | Yes | Not enough time has passed; pending leads still maturing |
+| `continue_monitoring` | autonomous | Yes | Performance acceptable or within bounds; ongoing surveillance |
+| `investigate_low_reachability` | autonomous | Yes | Check phone numbers, lead forms, CRM webhook cadence |
+| `flag_abnormal_change` | gated | No | Sudden performance shift detected; human investigation needed |
+| `pause_ad` | within_guardrails | Yes | Poor buying intent confirmed under guardrail spend cap; auto-paused |
+| `consider_pause` | within_guardrails | No | Poor buying intent confirmed over guardrail spend cap; review recommendation |
+| `shift_spend` | within_guardrails | Yes/No | Statistically separated CPQL between ads; shift budget within cap |
+| `reallocate_budget` | within_guardrails | Yes | CPQL exceeded threshold under guardrail spend cap; auto-reallocated |
+| `consider_reallocate` | within_guardrails | No | CPQL exceeded threshold over guardrail spend cap; review recommendation |
+| `raise_budget` | gated | No | Mature ad with CPQL upper bound below target; human approval required to scale |
 
 ---
 

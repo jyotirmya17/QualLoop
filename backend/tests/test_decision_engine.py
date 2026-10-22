@@ -512,4 +512,35 @@ class TestDecisionRecordsAndTiers:
         decision = evaluate(snap, ad_spend=200.0, policy=policy)
         assert decision.supporting_metrics["thresholds"]["spend_shift_cap_fraction"] == 0.35
 
+    def test_naturally_emits_raise_budget_for_mature_ad_below_target_cpql(self):
+        """Engine naturally emits RAISE_BUDGET (tier=gated, auto_applied=false) when CPQL CI high < target_cpql."""
+        snap = _make_snapshot(
+            reachability_mean=0.75,
+            reachability_ci_low=0.60,
+            reachability_ci_high=0.88,
+            qualification_mean=0.45,
+            qualification_ci_low=0.35,
+            qualification_ci_high=0.55,
+            cpql_mean=45.0,
+            cpql_ci_low=32.0,
+            cpql_ci_high=58.0,  # Below target_cpql of 75.0
+            cpql_unstable=False,
+            evidence_sufficient_reachability=True,
+            evidence_sufficient_qualification=True,
+            n_mature_leads=40,
+            n_mature_contacts=30,
+            k_qualified=14,
+        )
+        policy = DecisionPolicy(target_cpql=75.0)
+        decision = evaluate(snap, ad_spend=600.0, policy=policy)
+
+        assert decision.action == DecisionAction.RAISE_BUDGET
+        assert decision.tier == "gated"
+        assert decision.auto_applied is False
+        assert decision.requires_human_approval is True
+        assert decision.approval_status == ApprovalStatus.PENDING
+        assert "target CPQL" in decision.reason
+        assert "$58.00" in decision.reason
+
+
 

@@ -35,6 +35,7 @@ class DecisionPolicy:
     low_reachability_upper_bound: float = 0.25
     low_qualification_upper_bound: float = 0.10
     high_cpql_lower_bound: float = 500.0
+    target_cpql: float = 75.0
     cooldown_hours: float = 48.0
     floor_spend_fraction: float = 0.20
     budget_guardrail_min_spend: float = 100.0
@@ -323,7 +324,29 @@ def evaluate(
                 now=now,
             )
 
-    # Rule 9: Default — continue monitoring
+    # Rule 9: High-performing ad with mature evidence and CPQL below target (budget expansion)
+    if (
+        estimate.evidence_sufficient_reachability
+        and estimate.evidence_sufficient_qualification
+        and not estimate.cpql_unstable
+        and estimate.cpql_ci_high is not None
+        and estimate.cpql_ci_high < policy.target_cpql
+    ):
+        return _make_decision(
+            estimate=estimate,
+            ad_spend=ad_spend,
+            action=DecisionAction.RAISE_BUDGET,
+            reason=(
+                f"Mature evidence confirmed ({estimate.n_mature_leads} mature leads, {estimate.n_mature_contacts} contacts, "
+                f"{estimate.k_qualified} qualified). Credible interval upper bound for CPQL (${estimate.cpql_ci_high:.2f}) "
+                f"is strictly below target CPQL (${policy.target_cpql:.2f}) with mean CPQL ${estimate.cpql_mean:.2f}. "
+                f"Recommend raising budget (gated tier: human approval required)."
+            ),
+            policy=policy,
+            now=now,
+        )
+
+    # Rule 10: Default — continue monitoring
     return _make_decision(
         estimate=estimate,
         ad_spend=ad_spend,
@@ -431,6 +454,7 @@ def _make_decision(
         "low_reachability_upper_bound": policy.low_reachability_upper_bound,
         "low_qualification_upper_bound": policy.low_qualification_upper_bound,
         "high_cpql_lower_bound": policy.high_cpql_lower_bound,
+        "target_cpql": policy.target_cpql,
         "budget_guardrail_min_spend": policy.budget_guardrail_min_spend,
         "spend_shift_cap_fraction": policy.spend_shift_cap_fraction,
         "guardrail_action_spend_cap": policy.guardrail_action_spend_cap,
