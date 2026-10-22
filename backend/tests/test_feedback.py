@@ -214,3 +214,36 @@ class TestValidatePayload:
         )
         errors = validate_payload(event)
         assert any(e.field == "user_data" for e in errors)
+
+    def test_user_data_contains_unhashed_lead_id(self):
+        """Verified CAPI requirement: lead_id must be in user_data as an unhashed string."""
+        lead = _make_lead("meta-lead-123456789")
+        outcome = _make_qualified_outcome("meta-lead-123456789")
+        result = build_event(outcome, lead, ad_id="ad-001")
+
+        assert result.is_valid is True
+        user_data = result.event.user_data
+        assert "lead_id" in user_data
+        assert user_data["lead_id"] == "meta-lead-123456789"
+        # lead_id must NOT be hashed
+        assert len(user_data["lead_id"]) != 64
+
+    def test_conversion_exceeding_28_day_window_is_rejected(self):
+        """Verified Conversion Leads requirement: qualification must occur within 28 days of lead creation."""
+        now = datetime.now(timezone.utc)
+        lead = Lead(
+            id="lead-old-funnel",
+            advertisement_id="ad-001",
+            created_at=now - timedelta(days=35),  # 35 days ago
+            status=LeadStatus.QUALIFIED,
+        )
+        outcome = QualificationOutcome(
+            id="outcome-late",
+            lead_id="lead-old-funnel",
+            resolved_at=now - timedelta(days=2),  # resolved 2 days ago (33 days after creation)
+            result=QualificationResult.QUALIFIED,
+        )
+        result = build_event(outcome, lead, ad_id="ad-001")
+        assert result.is_valid is False
+        assert any("28" in e.message for e in result.validation_errors)
+

@@ -31,9 +31,15 @@ from domain.models import FeedbackEvent, Lead, QualificationOutcome
 
 logger = structlog.get_logger(__name__)
 
-# Meta CAPI required fields per v21.0 specification
-CAPI_EVENT_NAME = "Lead"  # Standard Meta event name for lead qualification
-CAPI_ACTION_SOURCE = "crm"  # Events originate from CRM, not website pixel
+# Meta CAPI specification constants (Verified against developers.facebook.com on 2026-10-22)
+# Reference: https://developers.facebook.com/docs/marketing-api/conversions-api/guides/conversion-leads-integration
+CAPI_API_VERSION = "v26.0"  # VERIFIED: Current active Graph API version as of 2026-10-22
+CAPI_EVENT_NAME = "Lead"  # VERIFIED: Standard Meta event name for conversion leads
+CAPI_ACTION_SOURCE = "crm"  # VERIFIED: Required action_source for server-side CRM events
+
+# Event timing constraints
+CAPI_MAX_UPLOAD_AGE_DAYS = 7.0  # VERIFIED: Meta CAPI hard rejection limit (now - event_time <= 7 days)
+CAPI_MAX_CONVERSION_WINDOW_DAYS = 28.0  # VERIFIED: Conversion Leads optimization attribution window
 
 
 @dataclass
@@ -109,15 +115,31 @@ def build_event(
             )
         )
 
-    # Validate event_time is not too old (Meta rejects events older than 7 days)
-    age_days = (now_ts - event_time_unix) / 86400
-    if age_days > 7.0:
+    # Validate event_time upload age (Meta CAPI hard limit: event_time within 7 days of upload)
+    age_days = (now_ts - event_time_unix) / 86400.0
+    if age_days > CAPI_MAX_UPLOAD_AGE_DAYS:
         errors.append(
             ValidationError(
                 field="qualification_outcome.resolved_at",
                 message=(
-                    f"Event is {age_days:.1f} days old. "
-                    f"Meta CAPI rejects events older than 7 days."
+                    f"Event upload age is {age_days:.1f} days. "
+                    f"Meta CAPI rejects events with event_time older than {CAPI_MAX_UPLOAD_AGE_DAYS:.0f} days."
+                ),
+            )
+        )
+
+    # Validate conversion attribution window (Meta Conversion Leads limit: resolved within 28 days of lead creation)
+    lead_created_ts = lead.created_at
+    if lead_created_ts.tzinfo is None:
+        lead_created_ts = lead_created_ts.replace(tzinfo=timezone.utc)
+    conversion_days = (resolved_ts.timestamp() - lead_created_ts.timestamp()) / 86400.0
+    if conversion_days > CAPI_MAX_CONVERSION_WINDOW_DAYS:
+        errors.append(
+            ValidationError(
+                field="lead.created_at",
+                message=(
+                    f"Qualification occurred {conversion_days:.1f} days after lead creation, "
+                    f"exceeding Meta's {CAPI_MAX_CONVERSION_WINDOW_DAYS:.0f}-day conversion optimization window."
                 ),
             )
         )
@@ -212,8 +234,21 @@ def validate_payload(event: FeedbackEvent) -> list[ValidationError]:
 
     if not event.user_data:
         errors.append(
-            ValidationError("user_data", "user_data must contain at least one hashed field")
+            ValidationError("user_data", "user_data must contain customer matching parameters")
         )
+    else:
+        has_identifier = bool(
+            event.user_data.get("lead_id")
+            or event.user_data.get("em")
+            or event.user_data.get("ph")
+        )
+        if not has_identifier:
+            errors.append(
+                ValidationError(
+                    "user_data",
+                    "user_data must contain at least one valid identifier (lead_id, em, or ph)",
+                )
+            )
 
     if not event.idempotency_key:
         errors.append(
@@ -241,24 +276,23 @@ def _make_idempotency_key(outcome_id: str, lead_id: str) -> str:
     return _sha256_hex(combined)[:32]  # 32-char prefix is sufficient for dedup
 
 
-def _build_user_data_synthetic(lead_id: str) -> dict[str, str]:
+def _build_user_data_synthetic(lead_id: str) -> dict[str, Any]:
     """
-    Build synthetic user_data for simulation mode.
+    Build user_data object matching Meta CAPI requirements (Verified on 2026-10-22).
 
-    In production, this would be replaced with:
-        {"em": sha256(normalize(email)), "ph": sha256(normalize(phone)), ...}
+    VERIFIED:
+    - `lead_id` MUST be nested inside user_data as an UNHASHED string/integer.
+    - Customer identifiers like `em` and `ph` must be SHA-256 hashed lowercase strings.
 
-    In simulation, we derive synthetic hashes from the lead_id so that:
-    - Each lead has a unique but stable synthetic hash
-    - No real PII is ever processed
-    - The payload structure matches Meta CAPI v21.0 format
+    UNVERIFIED:
+    - Exact custom event naming configuration for advertiser-specific CRM stages
+      in Meta Events Manager (requires advertiser-specific account setup).
     """
     synthetic_email_hash = _sha256_hex(f"synthetic_email_{lead_id}")
     synthetic_phone_hash = _sha256_hex(f"synthetic_phone_{lead_id}")
 
     return {
-        "em": synthetic_email_hash,  # hashed email
-        "ph": synthetic_phone_hash,  # hashed phone
-        # Note: In production, also include fn (first_name), ln (last_name),
-        # ct (city), st (state), zp (zip), country where available
+        "lead_id": str(lead_id),  # VERIFIED: Unhashed plain text Meta Lead ID inside user_data
+        "em": synthetic_email_hash,  # VERIFIED: SHA-256 hashed
+        "ph": synthetic_phone_hash,  # VERIFIED: SHA-256 hashed
     }
