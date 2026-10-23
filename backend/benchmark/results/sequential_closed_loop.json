@@ -13,7 +13,7 @@
     "n_ads": 350,
     "n_good": 280,
     "n_poor": 70,
-    "executed_at": "2026-10-23T02:43:45.262494+00:00",
+    "executed_at": "2026-10-23T03:31:00.155978+00:00",
     "closed_loop_definition": "A paused ad permanently stops accruing spend and leads from that checkpoint day forward. Final spend = full_spend * (pause_day / horizon). Leads created prior to pause complete qualification.",
     "oracle_definition": "Omniscient benchmark agent that pauses all truly poor ads at Day 0 (t = 0), spending $0.00 on poor ads, while running all truly good ads to completion."
   },

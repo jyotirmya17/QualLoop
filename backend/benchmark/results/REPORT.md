@@ -1,6 +1,6 @@
 # QualLoop vs. Naive Baseline Benchmark Report
 
-**Executed At:** 2026-10-23T02:33:48.327136+00:00  
+**Executed At:** 2026-10-23T03:30:37.207908+00:00  
 **Simulations:** 100  
 **Total Ads Evaluated:** 175 (140 good, 35 poor)  
 **QualLoop Policy:** v0.2.0  
@@ -14,6 +14,7 @@
 | **False Positive Pause Rate (FPPR)** | **0.0%** [0.0%, 2.7%] | 2.9% [1.1%, 7.1%] | **-2.9%** |
 | **False Negative Detection Rate (FNDR)** | **42.9%** [28.0%, 59.1%] | 2.9% [0.5%, 14.5%] | 40.0% |
 | **Insufficient Evidence Rate (IER)** | 13.7% | 0.0% | +13.7% |
+| **Incorrect Early Stop Rate (IESR)** | 0.0% | 2.3% | -2.3% |
 | **Preserved Qualified Leads** | **2237** | 2625 | +-388 |
 
 > [!NOTE]

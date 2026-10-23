@@ -7,7 +7,7 @@
     "n_ads": 350,
     "n_good": 280,
     "n_poor": 70,
-    "executed_at": "2026-10-23T02:33:28.418497+00:00",
+    "executed_at": "2026-10-23T03:30:05.430047+00:00",
     "description": "Paired ablation isolating empirical-Bayes shrinkage (fixed priors vs pooled priors on identical seeds and thresholds)"
   },
   "fixed_priors": {

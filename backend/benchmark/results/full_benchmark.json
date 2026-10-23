@@ -13,7 +13,7 @@
     "seed_file": "seeds.json",
     "qualloop_policy_version": "v0.2.0",
     "baseline_description": "Naive 10% threshold on un-matured contact/qualification ratios",
-    "executed_at": "2026-10-23T02:33:06.290288+00:00"
+    "executed_at": "2026-10-23T03:29:27.845716+00:00"
   },
   "aggregate_metrics": {
     "qualloop": {
@@ -28,6 +28,7 @@
         0.5730171802501052
       ],
       "ier_mean": 0.1314,
+      "iesr_mean": 0.0,
       "qlus": 0.00267,
       "total_spend": 1652500.0,
       "total_qualified_leads_preserved": 4417
@@ -44,6 +45,7 @@
         0.15655389990095808
       ],
       "ier_mean": 0.0,
+      "iesr_mean": 0.0171,
       "qlus": 0.00313,
       "total_spend": 1652500.0,
       "total_qualified_leads_preserved": 5170
