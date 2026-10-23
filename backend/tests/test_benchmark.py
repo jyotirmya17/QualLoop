@@ -213,5 +213,37 @@ def test_continuous_robustness_benchmark():
         assert "strata_analysis" in data
 
 
+def test_paired_test_sign_convention():
+    """Verify that paired test difference is explicitly defined as QualLoop minus Opponent."""
+    import numpy as np
+    from scipy import stats
+
+    ql = np.array([0.004, 0.005, 0.006])
+    opp = np.array([0.003, 0.003, 0.003])
+    diff = ql - opp  # QualLoop minus Opponent
+    assert np.all(diff > 0)
+    t_res = stats.ttest_rel(ql, opp)
+    assert t_res.statistic > 0, "Positive statistic indicates QualLoop is superior"
+
+    # Verify holdout results schema and sign convention
+    holdout_file = Path(__file__).resolve().parent.parent / "benchmark" / "results" / "holdout_sequential.json"
+    if holdout_file.exists():
+        with open(holdout_file, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        if "qualloop_vs_baseline_a" in data.get("paired_tests", {}):
+            pt = data["paired_tests"]["qualloop_vs_baseline_a"]
+            assert "sign_convention" in pt
+            assert "qualloop_minus_baseline_a" in pt["sign_convention"]
+            ql_m = pt["ql_per_rupee"]
+            assert "qualloop_pooled_ratio" in ql_m
+            assert "opponent_pooled_ratio" in ql_m
+            assert "qualloop_mean_per_run_ratio" in ql_m
+            assert "opponent_mean_per_run_ratio" in ql_m
+            # Mean diff should equal QualLoop mean minus Opponent mean
+            expected_diff = round(ql_m["qualloop_mean_per_run_ratio"] - ql_m["opponent_mean_per_run_ratio"], 6)
+            assert abs(ql_m["mean_diff"] - expected_diff) < 1e-5
+
+
+
 
 
