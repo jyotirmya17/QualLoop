@@ -1,0 +1,138 @@
+{
+  "run_metadata": {
+    "experiment": "sequential_closed_loop_simulation_fixed_redistributed",
+    "budget_mode": "fixed_redistributed",
+    "checkpoints": [
+      3,
+      7,
+      14,
+      21
+    ],
+    "n_simulations": 200,
+    "n_scenarios": 9,
+    "seeds_file_used": "seeds.json",
+    "n_ads": 350,
+    "n_good": 280,
+    "n_poor": 70,
+    "executed_at": "2026-10-23T13:41:59.426114+00:00",
+    "closed_loop_definition": "A paused ad permanently stops accruing spend and leads from that checkpoint day forward. In fixed_redistributed mode, freed budget is redistributed equally across remaining active ads in the campaign.",
+    "oracle_definition": "Omniscient benchmark agent that pauses all truly poor ads at Day 0 (t = 0), spending $0.00 on poor ads, while running all truly good ads to completion."
+  },
+  "policies": {
+    "oracle": {
+      "policy_name": "oracle",
+      "budget_mode": "fixed_redistributed",
+      "total_budget": 1652500.0,
+      "cumulative_spend": 1639998.8,
+      "qualified_leads": 10634.75,
+      "ql_per_rupee": 0.006485,
+      "cpql": 155.39,
+      "efficiency_vs_oracle": 1.0,
+      "spend_on_poor_ads": 0.0,
+      "qualified_leads_forgone_from_good_ads": 0.0,
+      "poor_ads_paused_by_checkpoint": {
+        "day_3": 0,
+        "day_7": 0,
+        "day_14": 0,
+        "day_21": 0,
+        "day_0": 70
+      },
+      "poor_ads_missed": 0,
+      "poor_ads_mean_days_to_pause": 0.0,
+      "good_ads_false_paused": 0,
+      "good_ads_false_pause_rate": 0.0
+    },
+    "qualloop": {
+      "policy_name": "qualloop",
+      "budget_mode": "fixed_redistributed",
+      "total_budget": 1652500.0,
+      "cumulative_spend": 1652498.1,
+      "qualified_leads": 8917.28,
+      "ql_per_rupee": 0.005396,
+      "cpql": 185.31,
+      "efficiency_vs_oracle": 0.8322,
+      "spend_on_poor_ads": 157083.1,
+      "qualified_leads_forgone_from_good_ads": 0.0,
+      "poor_ads_paused_by_checkpoint": {
+        "day_3": 0,
+        "day_7": 0,
+        "day_14": 14,
+        "day_21": 13,
+        "day_0": 0
+      },
+      "poor_ads_missed": 43,
+      "poor_ads_mean_days_to_pause": 17.37037037037037,
+      "good_ads_false_paused": 0,
+      "good_ads_false_pause_rate": 0.0
+    },
+    "baseline_b": {
+      "policy_name": "baseline_b",
+      "budget_mode": "fixed_redistributed",
+      "total_budget": 1652500.0,
+      "cumulative_spend": 669863.2,
+      "qualified_leads": 4432.04,
+      "ql_per_rupee": 0.006616,
+      "cpql": 372.85,
+      "efficiency_vs_oracle": 1.0203,
+      "spend_on_poor_ads": 27392.63,
+      "qualified_leads_forgone_from_good_ads": 2920.49,
+      "poor_ads_paused_by_checkpoint": {
+        "day_3": 66,
+        "day_7": 1,
+        "day_14": 2,
+        "day_21": 0,
+        "day_0": 0
+      },
+      "poor_ads_missed": 1,
+      "poor_ads_mean_days_to_pause": 3.3768115942028984,
+      "good_ads_false_paused": 206,
+      "good_ads_false_pause_rate": 0.7357
+    },
+    "baseline_a": {
+      "policy_name": "baseline_a",
+      "budget_mode": "fixed_redistributed",
+      "total_budget": 1652500.0,
+      "cumulative_spend": 1387498.04,
+      "qualified_leads": 8416.65,
+      "ql_per_rupee": 0.006066,
+      "cpql": 196.34,
+      "efficiency_vs_oracle": 0.9355,
+      "spend_on_poor_ads": 204166.4,
+      "qualified_leads_forgone_from_good_ads": 85.0,
+      "poor_ads_paused_by_checkpoint": {
+        "day_3": 0,
+        "day_7": 0,
+        "day_14": 0,
+        "day_21": 0,
+        "day_0": 0
+      },
+      "poor_ads_missed": 70,
+      "poor_ads_mean_days_to_pause": null,
+      "good_ads_false_paused": 15,
+      "good_ads_false_pause_rate": 0.0536
+    },
+    "baseline_c": {
+      "policy_name": "baseline_c",
+      "budget_mode": "fixed_redistributed",
+      "total_budget": 1652500.0,
+      "cumulative_spend": 1616248.64,
+      "qualified_leads": 8981.7,
+      "ql_per_rupee": 0.005557,
+      "cpql": 183.99,
+      "efficiency_vs_oracle": 0.857,
+      "spend_on_poor_ads": 111166.53,
+      "qualified_leads_forgone_from_good_ads": 182.29,
+      "poor_ads_paused_by_checkpoint": {
+        "day_3": 0,
+        "day_7": 0,
+        "day_14": 44,
+        "day_21": 5,
+        "day_0": 0
+      },
+      "poor_ads_missed": 21,
+      "poor_ads_mean_days_to_pause": 14.714285714285714,
+      "good_ads_false_paused": 48,
+      "good_ads_false_pause_rate": 0.1714
+    }
+  }
+}

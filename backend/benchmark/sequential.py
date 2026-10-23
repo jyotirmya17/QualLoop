@@ -37,7 +37,7 @@ backend_root = str(Path(__file__).resolve().parent.parent)
 if backend_root not in sys.path:
     sys.path.insert(0, backend_root)
 
-from benchmark.baseline import BaselineDecision, BaselinePolicy
+from benchmark.baseline import BaselineDecision, BaselinePolicy, BaselineCPolicy
 from decision_engine.engine import DecisionPolicy, evaluate_campaign, evaluate
 from domain.enums import DecisionAction, QualificationResult
 from domain.models import Advertisement, CallAttempt, Lead, QualificationOutcome
@@ -65,19 +65,22 @@ class AdSequentialResult:
     # Outcomes under each policy
     paused_day: dict[str, Optional[int]] = field(default_factory=dict)
     spend_incurred: dict[str, float] = field(default_factory=dict)
-    qualified_leads_realized: dict[str, int] = field(default_factory=dict)
-    qualified_leads_forgone: dict[str, int] = field(default_factory=dict)
+    qualified_leads_realized: dict[str, float] = field(default_factory=dict)
+    qualified_leads_forgone: dict[str, float] = field(default_factory=dict)
 
 
 @dataclass
 class PolicySummary:
     policy_name: str
+    budget_mode: str
+    total_budget: float
     cumulative_spend: float
-    qualified_leads: int
+    qualified_leads: float
     ql_per_rupee: float
+    cpql: float
     efficiency_vs_oracle: float
     spend_on_poor_ads: float
-    qualified_leads_forgone_from_good_ads: int
+    qualified_leads_forgone_from_good_ads: float
     poor_ads_paused_by_checkpoint: dict[str, int]
     poor_ads_missed: int
     poor_ads_mean_days_to_pause: Optional[float]
@@ -103,6 +106,11 @@ class SequentialClosedLoopRunner:
         self.decision_policy = decision_policy or DecisionPolicy()
         self.estimator_config = estimator_config or EstimatorConfig()
         self.baseline_b_policy = BaselinePolicy(pause_threshold=0.10)
+        self.baseline_c_policy = BaselineCPolicy(
+            pause_threshold=0.15,
+            min_contacts=12,
+            qualification_maturity_days=7.0,
+        )
 
     def load_seeds(self) -> dict[str, list[int]]:
         with open(self.seeds_path, "r", encoding="utf-8") as f:
@@ -136,11 +144,12 @@ class SequentialClosedLoopRunner:
         self,
         seeds: Optional[dict[str, list[int]]] = None,
         max_runs_per_scenario: Optional[int] = None,
+        budget_mode: str = "variable",
     ) -> list[AdSequentialResult]:
         scenario_seeds = seeds if seeds is not None else self.load_seeds()
         ad_results: list[AdSequentialResult] = []
 
-        policies = ["oracle", "qualloop", "baseline_b", "baseline_a"]
+        policies = ["oracle", "qualloop", "baseline_b", "baseline_a", "baseline_c"]
 
         for scenario_name, seed_list in scenario_seeds.items():
             if max_runs_per_scenario is not None:
@@ -154,6 +163,11 @@ class SequentialClosedLoopRunner:
 
                 # Map ground truth
                 gt_by_ad = {g.advertisement_id: g for g in sim.ground_truth}
+                ad_set_map = {aset.id: aset for aset in sim.ad_sets}
+                ad_to_camp = {ad.id: ad_set_map[ad.ad_set_id].campaign_id for ad in sim.advertisements}
+                camp_to_ads: dict[str, list[Advertisement]] = {}
+                for ad in sim.advertisements:
+                    camp_to_ads.setdefault(ad_to_camp[ad.id], []).append(ad)
 
                 # Pre-calculate lead creation times and qualification outcomes
                 leads_by_ad = {ad.id: [] for ad in sim.advertisements}
@@ -211,7 +225,6 @@ class SequentialClosedLoopRunner:
                     }
 
                     # Evaluate QualLoop
-                    # Compute estimates for active ads
                     active_ads_ql = [ad for ad in sim.advertisements if paused_day["qualloop"][ad.id] is None]
                     if active_ads_ql:
                         ads_data_ql = [
@@ -262,7 +275,21 @@ class SequentialClosedLoopRunner:
                             if should_pause:
                                 paused_day["baseline_a"][ad.id] = cp_day
 
+                    # Evaluate Baseline C
+                    for ad in sim.advertisements:
+                        if paused_day["baseline_c"][ad.id] is None:
+                            c_dec = self.baseline_c_policy.evaluate(
+                                advertisement=ad,
+                                leads=visible_leads_by_ad[ad.id],
+                                call_attempts=visible_calls_by_ad[ad.id],
+                                qualification_outcomes=visible_quals_by_ad[ad.id],
+                                observation_time=t_cp,
+                            )
+                            if is_pause(c_dec.action):
+                                paused_day["baseline_c"][ad.id] = cp_day
+
                 # 3. Compute final closed-loop accounting for each ad under each policy
+                run_ad_results = []
                 for ad in sim.advertisements:
                     gt = gt_by_ad[ad.id]
                     is_good = gt.label == "good"
@@ -280,31 +307,88 @@ class SequentialClosedLoopRunner:
                         full_spend=ad.spend,
                         full_qualified_leads=full_ql_count,
                     )
-
                     for p in policies:
-                        p_day = paused_day[p][ad.id]
-                        res.paused_day[p] = p_day
+                        res.paused_day[p] = paused_day[p][ad.id]
+                    run_ad_results.append(res)
 
-                        if p_day is not None:
-                            # Closed loop: spend stops accruing from pause day
-                            spend = round(ad.spend * (p_day / horizon), 2)
-                            t_p = epoch + timedelta(days=p_day)
-                            # Leads created before t_p that qualified
-                            pre_pause_quals = sum(
-                                1 for l in leads_by_ad[ad.id]
-                                if l.created_at < t_p and l.id in all_ad_quals
-                            )
-                            post_pause_quals = full_ql_count - pre_pause_quals
-                            res.spend_incurred[p] = spend
-                            res.qualified_leads_realized[p] = pre_pause_quals
-                            res.qualified_leads_forgone[p] = post_pause_quals if is_good else 0
-                        else:
-                            # Ran to completion
-                            res.spend_incurred[p] = ad.spend
-                            res.qualified_leads_realized[p] = full_ql_count
-                            res.qualified_leads_forgone[p] = 0
+                if budget_mode == "fixed_redistributed":
+                    # Fixed-total-budget variant: budget freed by paused ads is redistributed
+                    # equally across remaining active ads in the same campaign.
+                    intervals = [
+                        (0, 3),
+                        (3, 7),
+                        (7, 14),
+                        (14, 21),
+                        (21, horizon),
+                    ]
+                    for p in policies:
+                        for camp_id, camp_ads in camp_to_ads.items():
+                            camp_tot_spend = sum(a.spend for a in camp_ads)
+                            camp_daily = camp_tot_spend / horizon
 
-                    ad_results.append(res)
+                            for t_start, t_end in intervals:
+                                dt = t_end - t_start
+                                int_budget = camp_daily * dt
+                                active_in_int = [
+                                    a for a in camp_ads
+                                    if paused_day[p][a.id] is None or paused_day[p][a.id] > t_start
+                                ]
+                                n_act = len(active_in_int)
+
+                                for a in camp_ads:
+                                    ad_res = next(r for r in run_ad_results if r.ad_id == a.id)
+                                    base_int_spend = a.spend * (dt / horizon)
+
+                                    int_leads = [
+                                        l for l in leads_by_ad[a.id]
+                                        if t_start <= (l.created_at - epoch).total_seconds() / 86400.0 < t_end
+                                    ]
+                                    int_base_quals = sum(1 for l in int_leads if l.id in qual_lead_ids_by_ad[a.id])
+
+                                    if a in active_in_int:
+                                        int_spend = int_budget / n_act
+                                        mult = int_spend / base_int_spend if base_int_spend > 0 else 1.0
+                                        int_quals = int_base_quals * mult
+                                    else:
+                                        int_spend = 0.0
+                                        int_quals = 0.0
+
+                                    ad_res.spend_incurred[p] = round(ad_res.spend_incurred.get(p, 0.0) + int_spend, 2)
+                                    ad_res.qualified_leads_realized[p] = round(ad_res.qualified_leads_realized.get(p, 0.0) + int_quals, 4)
+
+                        for ad_res in run_ad_results:
+                            if ad_res.is_good and ad_res.paused_day[p] is not None:
+                                ad_res.qualified_leads_forgone[p] = round(
+                                    max(0.0, ad_res.full_qualified_leads - ad_res.qualified_leads_realized[p]), 4
+                                )
+                            else:
+                                ad_res.qualified_leads_forgone[p] = 0.0
+                else:
+                    # Standard variable-spend closed loop
+                    for p in policies:
+                        for ad_res in run_ad_results:
+                            ad = next(a for a in sim.advertisements if a.id == ad_res.ad_id)
+                            p_day = ad_res.paused_day[p]
+                            all_ad_quals = qual_lead_ids_by_ad[ad.id]
+                            full_ql_count = len(all_ad_quals)
+
+                            if p_day is not None:
+                                spend = round(ad.spend * (p_day / horizon), 2)
+                                t_p = epoch + timedelta(days=p_day)
+                                pre_pause_quals = sum(
+                                    1 for l in leads_by_ad[ad.id]
+                                    if l.created_at < t_p and l.id in all_ad_quals
+                                )
+                                post_pause_quals = full_ql_count - pre_pause_quals
+                                ad_res.spend_incurred[p] = spend
+                                ad_res.qualified_leads_realized[p] = float(pre_pause_quals)
+                                ad_res.qualified_leads_forgone[p] = float(post_pause_quals if ad_res.is_good else 0)
+                            else:
+                                ad_res.spend_incurred[p] = ad.spend
+                                ad_res.qualified_leads_realized[p] = float(full_ql_count)
+                                ad_res.qualified_leads_forgone[p] = 0.0
+
+                ad_results.extend(run_ad_results)
 
         return ad_results
 
@@ -313,10 +397,17 @@ class SequentialClosedLoopRunner:
         policy_name: str,
         results: list[AdSequentialResult],
         oracle_ql_per_rupee: float,
+        budget_mode: str = "variable",
     ) -> PolicySummary:
+        total_budget = sum(r.full_spend for r in results)
         total_spend = sum(r.spend_incurred[policy_name] for r in results)
         total_ql = sum(r.qualified_leads_realized[policy_name] for r in results)
         ql_per_rupee = total_ql / total_spend if total_spend > 0 else 0.0
+
+        if budget_mode == "fixed_redistributed":
+            cpql = total_budget / total_ql if total_ql > 0 else float("inf")
+        else:
+            cpql = total_spend / total_ql if total_ql > 0 else float("inf")
 
         poor_ads = [r for r in results if r.is_poor]
         good_ads = [r for r in results if r.is_good]
@@ -345,12 +436,15 @@ class SequentialClosedLoopRunner:
 
         return PolicySummary(
             policy_name=policy_name,
+            budget_mode=budget_mode,
+            total_budget=round(total_budget, 2),
             cumulative_spend=round(total_spend, 2),
-            qualified_leads=total_ql,
+            qualified_leads=round(total_ql, 2),
             ql_per_rupee=round(ql_per_rupee, 6),
+            cpql=round(cpql, 2),
             efficiency_vs_oracle=round(ql_per_rupee / oracle_ql_per_rupee, 4) if oracle_ql_per_rupee > 0 else 0.0,
             spend_on_poor_ads=round(spend_poor, 2),
-            qualified_leads_forgone_from_good_ads=lost_good_ql,
+            qualified_leads_forgone_from_good_ads=round(lost_good_ql, 2),
             poor_ads_paused_by_checkpoint=p_dist,
             poor_ads_missed=missed_count,
             poor_ads_mean_days_to_pause=float(np.mean(days_list)) if days_list else None,
@@ -364,10 +458,12 @@ class SequentialClosedLoopRunner:
         seed_file_name: Optional[str] = None,
         max_runs_per_scenario: Optional[int] = None,
         save_filename: str = "sequential_closed_loop.json",
+        budget_mode: str = "variable",
     ) -> dict[str, Any]:
         results = self.run_simulation_closed_loop(
             seeds=seeds,
             max_runs_per_scenario=max_runs_per_scenario,
+            budget_mode=budget_mode,
         )
 
         n_ads = len(results)
@@ -382,12 +478,13 @@ class SequentialClosedLoopRunner:
         oracle_ql_per_rupee = oracle_ql / oracle_spend if oracle_spend > 0 else 0.0
 
         summaries = {}
-        for p in ["oracle", "qualloop", "baseline_b", "baseline_a"]:
-            summaries[p] = asdict(self.summarize_policy(p, results, oracle_ql_per_rupee))
+        for p in ["oracle", "qualloop", "baseline_b", "baseline_a", "baseline_c"]:
+            summaries[p] = asdict(self.summarize_policy(p, results, oracle_ql_per_rupee, budget_mode=budget_mode))
 
         output = {
             "run_metadata": {
-                "experiment": "sequential_closed_loop_simulation",
+                "experiment": "sequential_closed_loop_simulation" if budget_mode == "variable" else f"sequential_closed_loop_simulation_{budget_mode}",
+                "budget_mode": budget_mode,
                 "checkpoints": self.checkpoints,
                 "n_simulations": sims_seen,
                 "n_scenarios": len(scenarios_seen),
@@ -398,7 +495,7 @@ class SequentialClosedLoopRunner:
                 "executed_at": datetime.now(timezone.utc).isoformat(),
                 "closed_loop_definition": (
                     "A paused ad permanently stops accruing spend and leads from that checkpoint day forward. "
-                    "Final spend = full_spend * (pause_day / horizon). Leads created prior to pause complete qualification."
+                    "In fixed_redistributed mode, freed budget is redistributed equally across remaining active ads in the campaign."
                 ),
                 "oracle_definition": (
                     "Omniscient benchmark agent that pauses all truly poor ads at Day 0 (t = 0), spending $0.00 on poor ads, "
@@ -418,6 +515,11 @@ class SequentialClosedLoopRunner:
 
 if __name__ == "__main__":
     runner = SequentialClosedLoopRunner()
-    print("Running Sequential Closed-Loop Benchmark (200 seeds)...")
-    res = runner.run_benchmark(save_filename="sequential_closed_loop.json")
-    print(json.dumps(res["policies"], indent=2))
+    print("Running Sequential Closed-Loop Benchmark (Variable Spend, 200 seeds)...")
+    res_var = runner.run_benchmark(save_filename="sequential_closed_loop.json", budget_mode="variable")
+    print("Running Sequential Fixed-Budget Benchmark (Redistributed Spend, 200 seeds)...")
+    res_fixed = runner.run_benchmark(save_filename="sequential_fixed_budget.json", budget_mode="fixed_redistributed")
+    print("Completed. Fixed Budget Headline Metrics:")
+    for p, s in res_fixed["policies"].items():
+        print(f"  {p:12s}: QL={s['qualified_leads']:8.2f}, CPQL=Rs {s['cpql']:6.2f}, Spend=Rs {s['cumulative_spend']:10.2f}")
+

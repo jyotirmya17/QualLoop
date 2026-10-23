@@ -163,6 +163,7 @@ def test_sequential_closed_loop_runner():
         assert "qualloop" in policies
         assert "baseline_b" in policies
         assert "baseline_a" in policies
+        assert "baseline_c" in policies
 
         oracle = policies["oracle"]
         assert oracle["spend_on_poor_ads"] == 0.0
@@ -290,6 +291,33 @@ def test_baseline_c_policy():
     assert dec_pause.n_contacts == 15
     assert dec_pause.k_qualified == 1
     assert round(dec_pause.observed_qualification, 4) == round(1 / 15, 4)
+
+
+def test_fixed_budget_redistribution():
+    from benchmark.sequential import SequentialClosedLoopRunner
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        runner = SequentialClosedLoopRunner(results_dir=Path(tmpdir))
+        res = runner.run_benchmark(
+            max_runs_per_scenario=1,
+            save_filename="temp_fixed.json",
+            budget_mode="fixed_redistributed",
+        )
+
+        meta = res["run_metadata"]
+        assert meta["budget_mode"] == "fixed_redistributed"
+
+        policies = res["policies"]
+        oracle = policies["oracle"]
+        qualloop = policies["qualloop"]
+        baseline_b = policies["baseline_b"]
+
+        # Oracle allocates 100% of freed budget to good ads from Day 0,
+        # achieving highest qualified leads and lowest CPQL among valid full runs
+        assert oracle["qualified_leads"] >= qualloop["qualified_leads"]
+        assert oracle["cpql"] <= qualloop["cpql"]
+        assert qualloop["qualified_leads"] >= baseline_b["qualified_leads"]
+
 
 
 
