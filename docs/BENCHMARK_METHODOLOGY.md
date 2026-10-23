@@ -53,62 +53,95 @@ The QualLoop system uses:
 
 ## 4. Evaluation Metrics
 
-All metrics are defined precisely before any experiment runs.
+All metrics are defined mathematically and conceptually prior to experiment execution.
 
 ### 4.1 False Positive Pause Rate (FPPR)
 
-**Definition:** Fraction of simulation runs where the system recommended pausing (or considered
-pausing) a genuinely good ad.
-
-A "genuinely good ad" is defined as one where the simulator's hidden true qualification rate
-is above the portfolio median.
+**Definition:** Fraction of truly good advertisements that were incorrectly paused by the policy.
 
 ```
-FPPR = (runs where good ad received consider_pause) / (total runs where good ad existed)
+FPPR = (count of genuinely good ads that were paused) / (total count of genuinely good ads)
 ```
 
-Lower is better. QualLoop target: FPPR < 0.10 (vs baseline expected > 0.25 in small-sample scenarios).
+- **Ground Truth:** An ad is labeled "good" by the simulator when its true intent qualification rate $q \ge 0.15$ (or configured positive target).
+- **Goal:** Minimize FPPR. Prematurely pausing good ads permanently destroys conversion opportunities and campaign profitability. Target: $\text{FPPR} < 5\%$.
 
-### 4.2 False Negative Detection Rate (FNDR)
+### 4.2 False Negative Detection Rate (FNDR) / Missed Bad Ad Rate
 
-**Definition:** Fraction of simulation runs where the system failed to recommend any action for
-a genuinely poor ad after the maturity window elapsed.
-
-A "genuinely poor ad" is defined as one where the simulator's hidden true qualification rate
-is below 0.05 (5%).
+**Definition:** Fraction of truly poor advertisements that the policy failed to pause by the end of the evaluation window.
 
 ```
-FNDR = (runs where poor ad received no action after maturity) / (total runs with poor ad)
+FNDR = (count of genuinely poor ads that were NOT paused) / (total count of genuinely poor ads)
 ```
 
-Lower is better. High FNDR means the system is too conservative. High FPPR means it acts too fast.
+- **Ground Truth:** An ad is labeled "bad" by the simulator when its true intent qualification rate $q \le 0.05$ (e.g. 3%–4%).
+- **Goal:** Catch poor ads once sufficient evidence accumulates without guessing prematurely on noisy early data.
 
-### 4.3 Decision Timing
+### 4.3 Insufficient Evidence Rate (IER)
 
-**Definition:** For correctly identified poor ads, the simulated days elapsed before
-the first `consider_pause` or stronger recommendation.
+**Definition:** The proportion of total evaluation decisions where the engine explicitly withholds a conclusive optimization action due to high statistical uncertainty or immature lead age (`collect_more_data` or `flag_insufficient_evidence`).
 
-**Reported as:** Median and IQR of simulated days across qualifying simulation runs.
+```
+IER = (decisions with action in {collect_more_data, flag_insufficient_evidence}) / (total decisions evaluated)
+```
 
-### 4.4 Qualified Leads per Unit Spend (QLUS)
+- **Crucial Distinction:** **IER must NOT be confused with or equated to the missed-bad-ad count (FNDR).**
+  - FNDR specifically evaluates poor ads that were never paused.
+  - IER measures the epistemic humility of the system across the entire portfolio (good ads, bad ads, new ads). It reflects how often the system autonomously recognizes that sample size is too small or lead maturity is insufficient to justify taking an action.
+  - Baselines that lack uncertainty awareness always have $\text{IER} = 0\%$, forcing premature guesses.
 
-**Definition:** Across the full benchmark, the total estimated qualified leads divided by
-total simulated spend, for each policy.
+### 4.4 Incorrect Early Stop Rate (IESR)
 
-This captures whether the policy efficiently identifies and preserves good ads while
-flagging poor ones.
+**Definition:** The fraction of total portfolio advertisements that suffered an incorrect early stop (i.e. truly good ads paused prematurely).
 
-### 4.5 Insufficient Evidence Rate (IER)
+```
+IESR = (count of genuinely good ads falsely paused) / (total count of all ads evaluated)
+```
 
-**Definition:** Fraction of decisions that were `flag_insufficient_evidence` or
-`collect_more_data` when the sample was actually mature.
+- Measures portfolio-level collateral damage caused by premature pausing rules.
 
-Measures whether the system is correctly cautious vs needlessly timid.
+### 4.5 Decision Timing / Days to Correct Decision
 
-### 4.6 Cooldown Violations
+**Definition:** For truly poor ads that are correctly paused, the elapsed simulated days from campaign start until the pause action is executed (`days_to_correct_decision`).
 
-Applies to baseline only: how often the baseline fires the same recommendation within
-48 hours of a prior recommendation on the same ad.
+- **Distribution:** Tracked across checkpoints (Days 3, 7, 14, 21).
+- **"Missed" Classification:** Truly poor ads that remain unpaused at the final Day 21 checkpoint are classified as "missed".
+- **"Late" Metric:** For paused ads, the exact checkpoint day at which the pause occurred.
+
+### 4.6 Spend on Truly Poor Ads Before Pause
+
+**Definition:** Cumulative advertising budget expended on truly poor ads up to the moment they were paused (or throughout the full horizon if missed).
+
+```
+Spend_poor = \sum_{a \in \text{PoorAds}} \text{Spend accrued by ad } a \text{ up to pause day}
+```
+
+- Measures financial leakage resulting from detection delay.
+
+### 4.7 Qualified Leads Forgone from Wrongly Paused Good Ads
+
+**Definition:** The volume of genuine, verified qualified leads that were permanently lost because a profitable ad was erroneously killed before or during its conversion cycle.
+
+```
+Lost_QL = \sum_{a \in \text{GoodAds Falsely Paused}} \text{Qualified leads produced by } a \text{ after pause timestamp}
+```
+
+- In closed-loop sequential simulation, when an ad is paused, all future impressions, clicks, leads, and downstream qualified conversions for that ad are permanently forgone.
+
+### 4.8 Qualified Leads Per Rupee (QL/₹) & Oracle Efficiency Ratio
+
+**Definition:** The overall economic yield of the advertising portfolio under the policy, computed as total realized qualified leads divided by total advertising expenditure.
+
+```
+\text{QL/₹} = \frac{\text{Total Preserved Qualified Leads}}{\text{Total Cumulative Ad Spend}}
+```
+
+- **Oracle Comparison:** An omniscient Oracle that pauses all truly poor ads at Day 0 ($t=0$) while allowing all good ads to run unhindered.
+- **Oracle Efficiency:** $\text{Efficiency} = \frac{\text{Policy QL/₹}}{\text{Oracle QL/₹}}$.
+
+### 4.9 Cooldown Violations
+
+**Definition:** For baseline policies without action memory, the frequency with which identical repetitive recommendations are emitted on the same ad within the 48-hour cooldown window.
 
 ---
 

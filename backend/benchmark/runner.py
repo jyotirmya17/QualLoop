@@ -334,6 +334,9 @@ class BenchmarkRunner:
         q_ier_mean = q_ier_count / all_ads_count if all_ads_count > 0 else 0.0
         b_ier_mean = 0.0  # baseline has no insufficient evidence concept
 
+        q_iesr_mean = q_fp_count / all_ads_count if all_ads_count > 0 else 0.0
+        b_iesr_mean = b_fp_count / all_ads_count if all_ads_count > 0 else 0.0
+
         qlus_qualloop = total_qualloop_qual_leads / total_spend if total_spend > 0 else 0.0
         qlus_baseline = total_baseline_qual_leads / total_spend if total_spend > 0 else 0.0
 
@@ -388,6 +391,7 @@ class BenchmarkRunner:
                     "fndr_mean": round(q_fndr_mean, 4),
                     "fndr_ci": _wilson_score_interval(q_fn_count, n_poor),
                     "ier_mean": round(q_ier_mean, 4),
+                    "iesr_mean": round(q_iesr_mean, 4),
                     "qlus": round(qlus_qualloop, 5),
                     "total_spend": round(total_spend, 2),
                     "total_qualified_leads_preserved": total_qualloop_qual_leads,
@@ -398,6 +402,7 @@ class BenchmarkRunner:
                     "fndr_mean": round(b_fndr_mean, 4),
                     "fndr_ci": _wilson_score_interval(b_fn_count, n_poor),
                     "ier_mean": b_ier_mean,
+                    "iesr_mean": round(b_iesr_mean, 4),
                     "qlus": round(qlus_baseline, 5),
                     "total_spend": round(total_spend, 2),
                     "total_qualified_leads_preserved": total_baseline_qual_leads,
@@ -455,6 +460,7 @@ class BenchmarkRunner:
             f"| **False Positive Pause Rate (FPPR)** | **{q['fppr_mean']:.1%}** [{q['fppr_ci'][0]:.1%}, {q['fppr_ci'][1]:.1%}] | {b['fppr_mean']:.1%} [{b['fppr_ci'][0]:.1%}, {b['fppr_ci'][1]:.1%}] | **{(q['fppr_mean'] - b['fppr_mean']):.1%}** |",
             f"| **False Negative Detection Rate (FNDR)** | **{q['fndr_mean']:.1%}** [{q['fndr_ci'][0]:.1%}, {q['fndr_ci'][1]:.1%}] | {b['fndr_mean']:.1%} [{b['fndr_ci'][0]:.1%}, {b['fndr_ci'][1]:.1%}] | {(q['fndr_mean'] - b['fndr_mean']):.1%} |",
             f"| **Insufficient Evidence Rate (IER)** | {q['ier_mean']:.1%} | {b['ier_mean']:.1%} | +{q['ier_mean']:.1%} |",
+            f"| **Incorrect Early Stop Rate (IESR)** | {q.get('iesr_mean', 0.0):.1%} | {b.get('iesr_mean', 0.0):.1%} | {(q.get('iesr_mean', 0.0) - b.get('iesr_mean', 0.0)):.1%} |",
             f"| **Preserved Qualified Leads** | **{q['total_qualified_leads_preserved']}** | {b['total_qualified_leads_preserved']} | +{q['total_qualified_leads_preserved'] - b['total_qualified_leads_preserved']} |",
             "",
             "> [!NOTE]",
