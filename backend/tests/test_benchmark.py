@@ -5,11 +5,11 @@ Tests for benchmark module (baseline policy and benchmark runner).
 import json
 import tempfile
 from pathlib import Path
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from benchmark.baseline import BaselinePolicy
 from benchmark.runner import BenchmarkRunner, _wilson_score_interval
-from domain.enums import CallOutcome, DecisionAction, QualificationResult
+from domain.enums import CallOutcome, DecisionAction, LeadStatus, QualificationResult
 from domain.models import Advertisement, CallAttempt, Lead, QualificationOutcome
 
 
@@ -254,6 +254,43 @@ def test_spend_accounting_audit():
         assert paused_ad["scenario"] == "high_cpql"
         assert paused_ad["full_spend"] == 20000.0
     assert abs(audit["actual_difference"] - audit["total_forgone_explained"]) < 0.01
+
+
+def test_baseline_c_policy():
+    from benchmark.baseline import BaselineCPolicy
+
+    policy = BaselineCPolicy(pause_threshold=0.15, min_contacts=12, qualification_maturity_days=7.0)
+    ad = Advertisement(id="ad-c-1", ad_set_id="as-1", creative_id="cr-c-1", spend=5000.0, impressions=10000, clicks=500)
+
+    now = datetime(2025, 1, 20, 0, 0, tzinfo=timezone.utc)
+
+    # 1. Immature leads created 3 days ago should be excluded
+    immature_leads = [
+        Lead(id=f"lead-imm-{i}", advertisement_id=ad.id, created_at=now - timedelta(days=3), status=LeadStatus.SUBMITTED)
+        for i in range(20)
+    ]
+    dec = policy.evaluate(advertisement=ad, leads=immature_leads, call_attempts=[], qualification_outcomes=[], observation_time=now)
+    assert dec.action == DecisionAction.CONTINUE_MONITORING
+    assert dec.n_leads == 0  # 0 mature leads
+
+    # 2. Mature leads created 10 days ago, 15 contacts, but only 1 qualified (1/15 = 6.7% < 15%) -> PAUSE
+    mature_leads = [
+        Lead(id=f"lead-mat-{i}", advertisement_id=ad.id, created_at=now - timedelta(days=10), status=LeadStatus.SUBMITTED)
+        for i in range(20)
+    ]
+    calls = [
+        CallAttempt(id=f"ca-{i}", lead_id=f"lead-mat-{i}", attempted_at=now - timedelta(days=9), outcome=CallOutcome.ANSWERED)
+        for i in range(15)
+    ]
+    quals = [
+        QualificationOutcome(id="qo-1", lead_id="lead-mat-0", resolved_at=now - timedelta(days=8), result=QualificationResult.QUALIFIED)
+    ]
+    dec_pause = policy.evaluate(advertisement=ad, leads=mature_leads, call_attempts=calls, qualification_outcomes=quals, observation_time=now)
+    assert dec_pause.action == DecisionAction.CONSIDER_PAUSE
+    assert dec_pause.n_contacts == 15
+    assert dec_pause.k_qualified == 1
+    assert round(dec_pause.observed_qualification, 4) == round(1 / 15, 4)
+
 
 
 
