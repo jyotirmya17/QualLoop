@@ -2,6 +2,7 @@
 Tests for benchmark module (baseline policy and benchmark runner).
 """
 
+import json
 import tempfile
 from pathlib import Path
 from datetime import datetime, timezone
@@ -171,5 +172,29 @@ def test_sequential_closed_loop_runner():
         qualloop = policies["qualloop"]
         assert qualloop["cumulative_spend"] > 0.0
         assert qualloop["ql_per_rupee"] > 0.0
+
+
+def test_holdout_sequential_evaluation():
+    from benchmark.evaluate_holdout import wilson_score_interval
+
+    # Test Wilson confidence interval calculation
+    low, high = wilson_score_interval(10, 100, 0.95)
+    assert 0.05 < low < 0.10
+    assert 0.10 < high < 0.18
+
+    # Verify saved holdout benchmark json
+    holdout_file = Path(__file__).resolve().parent.parent / "benchmark" / "results" / "holdout_sequential.json"
+    if holdout_file.exists():
+        with open(holdout_file, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        assert data["metadata"]["split_evaluated"] == "holdout"
+        assert data["metadata"]["n_simulations"] == 100
+        assert data["metadata"]["n_ads"] == 175
+        assert "qualloop" in data["policy_metrics"]
+        assert "baseline_b" in data["policy_metrics"]
+        assert "baseline_a" in data["policy_metrics"]
+        assert "paired_tests" in data
+        assert "scenario_breakdown" in data
+
 
 

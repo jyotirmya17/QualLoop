@@ -1,0 +1,651 @@
+{
+  "metadata": {
+    "experiment": "holdout_sequential_evaluation",
+    "policy": "Config 2 (Frozen)",
+    "policy_parameters": {
+      "low_qualification_upper_bound": 0.15,
+      "min_mature_contacts_for_qualification": 12,
+      "high_cpql_lower_bound": 75.0,
+      "min_maturity_fraction": 0.5,
+      "credible_interval_level": 0.8
+    },
+    "selection_rule": "argmin(FNDR) subject to FPPR == 0.00% on 100 tuning seeds",
+    "seeds_file_used": "seeds_split.json",
+    "split_evaluated": "holdout",
+    "n_simulations": 100,
+    "n_scenarios": 9,
+    "n_ads": 175,
+    "n_good": 140,
+    "n_poor": 35,
+    "executed_at": "2026-10-23T02:59:03.816513+00:00"
+  },
+  "policy_metrics": {
+    "oracle": {
+      "policy_name": "oracle",
+      "cumulative_spend": 681000.0,
+      "qualified_leads": 2643,
+      "ql_per_rupee": 0.003881,
+      "efficiency_vs_oracle": 1.0,
+      "spend_on_poor_ads": 0.0,
+      "qualified_leads_forgone_from_good_ads": 0,
+      "poor_ads_paused_by_checkpoint": {
+        "day_3": 0,
+        "day_7": 0,
+        "day_14": 0,
+        "day_21": 0,
+        "day_0": 35
+      },
+      "poor_ads_missed": 0,
+      "poor_ads_mean_days_to_pause": 0.0,
+      "good_ads_false_paused": 0,
+      "good_ads_false_pause_rate": 0.0,
+      "rates_with_95_ci": {
+        "false_positive_pause_rate": {
+          "count": 0,
+          "total": 140,
+          "rate": 0.0,
+          "ci_95": [
+            0.0,
+            0.0267
+          ]
+        },
+        "missed_bad_ad_rate": {
+          "count": 0,
+          "total": 35,
+          "rate": 0.0,
+          "ci_95": [
+            0.0,
+            0.0989
+          ]
+        }
+      }
+    },
+    "qualloop": {
+      "policy_name": "qualloop",
+      "cumulative_spend": 757750.0,
+      "qualified_leads": 2690,
+      "ql_per_rupee": 0.00355,
+      "efficiency_vs_oracle": 0.9147,
+      "spend_on_poor_ads": 80750.0,
+      "qualified_leads_forgone_from_good_ads": 14,
+      "poor_ads_paused_by_checkpoint": {
+        "day_3": 0,
+        "day_7": 0,
+        "day_14": 17,
+        "day_21": 5,
+        "day_0": 0
+      },
+      "poor_ads_missed": 13,
+      "poor_ads_mean_days_to_pause": 15.590909090909092,
+      "good_ads_false_paused": 2,
+      "good_ads_false_pause_rate": 0.0143,
+      "rates_with_95_ci": {
+        "false_positive_pause_rate": {
+          "count": 2,
+          "total": 140,
+          "rate": 0.0143,
+          "ci_95": [
+            0.0039,
+            0.0506
+          ]
+        },
+        "missed_bad_ad_rate": {
+          "count": 13,
+          "total": 35,
+          "rate": 0.3714,
+          "ci_95": [
+            0.2317,
+            0.5366
+          ]
+        }
+      }
+    },
+    "baseline_b": {
+      "policy_name": "baseline_b",
+      "cumulative_spend": 221453.46,
+      "qualified_leads": 1006,
+      "ql_per_rupee": 0.004543,
+      "efficiency_vs_oracle": 1.1705,
+      "spend_on_poor_ads": 17214.23,
+      "qualified_leads_forgone_from_good_ads": 1649,
+      "poor_ads_paused_by_checkpoint": {
+        "day_3": 33,
+        "day_7": 0,
+        "day_14": 2,
+        "day_21": 0,
+        "day_0": 0
+      },
+      "poor_ads_missed": 0,
+      "poor_ads_mean_days_to_pause": 3.6285714285714286,
+      "good_ads_false_paused": 105,
+      "good_ads_false_pause_rate": 0.75,
+      "rates_with_95_ci": {
+        "false_positive_pause_rate": {
+          "count": 105,
+          "total": 140,
+          "rate": 0.75,
+          "ci_95": [
+            0.6722,
+            0.8144
+          ]
+        },
+        "missed_bad_ad_rate": {
+          "count": 0,
+          "total": 35,
+          "rate": 0.0,
+          "ci_95": [
+            0.0,
+            0.0989
+          ]
+        }
+      }
+    },
+    "baseline_a": {
+      "policy_name": "baseline_a",
+      "cumulative_spend": 698857.16,
+      "qualified_leads": 2684,
+      "ql_per_rupee": 0.003841,
+      "efficiency_vs_oracle": 0.9896,
+      "spend_on_poor_ads": 140000.0,
+      "qualified_leads_forgone_from_good_ads": 41,
+      "poor_ads_paused_by_checkpoint": {
+        "day_3": 0,
+        "day_7": 0,
+        "day_14": 0,
+        "day_21": 0,
+        "day_0": 0
+      },
+      "poor_ads_missed": 35,
+      "poor_ads_mean_days_to_pause": null,
+      "good_ads_false_paused": 7,
+      "good_ads_false_pause_rate": 0.05,
+      "rates_with_95_ci": {
+        "false_positive_pause_rate": {
+          "count": 7,
+          "total": 140,
+          "rate": 0.05,
+          "ci_95": [
+            0.0244,
+            0.0996
+          ]
+        },
+        "missed_bad_ad_rate": {
+          "count": 35,
+          "total": 35,
+          "rate": 1.0,
+          "ci_95": [
+            0.9011,
+            1.0
+          ]
+        }
+      }
+    }
+  },
+  "paired_tests": {
+    "qualloop_vs_baseline_b": {
+      "ql_per_rupee": {
+        "mean_diff": -0.000419,
+        "std_diff": 0.00225,
+        "paired_t_statistic": -1.853,
+        "paired_t_pvalue": 0.06685951251969918,
+        "wilcoxon_statistic": 1559.0,
+        "wilcoxon_pvalue": 0.5100424539165042
+      },
+      "qualified_leads": {
+        "mean_diff": 16.84,
+        "std_diff": 14.63,
+        "paired_t_statistic": 11.4524,
+        "paired_t_pvalue": 7.684088698621825e-20
+      }
+    },
+    "qualloop_vs_baseline_a": {
+      "ql_per_rupee": {
+        "mean_diff": 0.000298,
+        "std_diff": 0.00066,
+        "paired_t_statistic": 4.4935,
+        "paired_t_pvalue": 1.9026480563574026e-05,
+        "wilcoxon_statistic": 19.0,
+        "wilcoxon_pvalue": 7.184519452521543e-06
+      },
+      "qualified_leads": {
+        "mean_diff": 0.06,
+        "std_diff": 2.06,
+        "paired_t_statistic": 0.2894,
+        "paired_t_pvalue": 0.7729063638172213
+      }
+    },
+    "qualloop_vs_oracle": {
+      "ql_per_rupee": {
+        "mean_diff": -0.001297,
+        "std_diff": 0.003408,
+        "paired_t_statistic": -3.7862,
+        "paired_t_pvalue": 0.00026244851421057053,
+        "wilcoxon_statistic": 56.0,
+        "wilcoxon_pvalue": 0.0008119112575296697
+      },
+      "qualified_leads": {
+        "mean_diff": 0.47,
+        "std_diff": 1.57,
+        "paired_t_statistic": 2.9761,
+        "paired_t_pvalue": 0.0036692879057806877
+      }
+    }
+  },
+  "scenario_breakdown": {
+    "bad_ad_high_engagement": {
+      "oracle": {
+        "spend": 26000.0,
+        "qualified_leads": 395,
+        "ql_per_rupee": 0.015192,
+        "spend_on_poor_ads": 0.0,
+        "forgone_good_ql": 0,
+        "good_ads_false_paused": 0,
+        "poor_ads_missed": 0
+      },
+      "qualloop": {
+        "spend": 82000.0,
+        "qualified_leads": 431,
+        "ql_per_rupee": 0.005256,
+        "spend_on_poor_ads": 56000.0,
+        "forgone_good_ql": 0,
+        "good_ads_false_paused": 0,
+        "poor_ads_missed": 0
+      },
+      "baseline_b": {
+        "spend": 19571.43,
+        "qualified_leads": 144,
+        "ql_per_rupee": 0.007358,
+        "spend_on_poor_ads": 11142.82,
+        "forgone_good_ql": 256,
+        "good_ads_false_paused": 10,
+        "poor_ads_missed": 0
+      },
+      "baseline_a": {
+        "spend": 130000.0,
+        "qualified_leads": 447,
+        "ql_per_rupee": 0.003438,
+        "spend_on_poor_ads": 104000.0,
+        "forgone_good_ql": 0,
+        "good_ads_false_paused": 0,
+        "poor_ads_missed": 13
+      },
+      "comparison": {
+        "qualloop_vs_baseline_b_ql_diff": 287,
+        "qualloop_vs_baseline_a_ql_diff": -16,
+        "qualloop_loses": true,
+        "loss_reasons": [
+          "Loses to Baseline B on QL/rupee (0.005256 vs 0.007358)",
+          "Loses to Baseline A on qualified leads (431 vs 447)"
+        ]
+      }
+    },
+    "creative_fatigue": {
+      "oracle": {
+        "spend": 70000.0,
+        "qualified_leads": 196,
+        "ql_per_rupee": 0.0028,
+        "spend_on_poor_ads": 0,
+        "forgone_good_ql": 0,
+        "good_ads_false_paused": 0,
+        "poor_ads_missed": 0
+      },
+      "qualloop": {
+        "spend": 70000.0,
+        "qualified_leads": 196,
+        "ql_per_rupee": 0.0028,
+        "spend_on_poor_ads": 0,
+        "forgone_good_ql": 0,
+        "good_ads_false_paused": 0,
+        "poor_ads_missed": 0
+      },
+      "baseline_b": {
+        "spend": 12400.0,
+        "qualified_leads": 40,
+        "ql_per_rupee": 0.003226,
+        "spend_on_poor_ads": 0,
+        "forgone_good_ql": 156,
+        "good_ads_false_paused": 9,
+        "poor_ads_missed": 0
+      },
+      "baseline_a": {
+        "spend": 70000.0,
+        "qualified_leads": 196,
+        "ql_per_rupee": 0.0028,
+        "spend_on_poor_ads": 0,
+        "forgone_good_ql": 0,
+        "good_ads_false_paused": 0,
+        "poor_ads_missed": 0
+      },
+      "comparison": {
+        "qualloop_vs_baseline_b_ql_diff": 156,
+        "qualloop_vs_baseline_a_ql_diff": 0,
+        "qualloop_loses": true,
+        "loss_reasons": [
+          "Loses to Baseline B on QL/rupee (0.0028 vs 0.003226)"
+        ]
+      }
+    },
+    "delayed_conversion_trap": {
+      "oracle": {
+        "spend": 65000.0,
+        "qualified_leads": 252,
+        "ql_per_rupee": 0.003877,
+        "spend_on_poor_ads": 0,
+        "forgone_good_ql": 0,
+        "good_ads_false_paused": 0,
+        "poor_ads_missed": 0
+      },
+      "qualloop": {
+        "spend": 62500.0,
+        "qualified_leads": 242,
+        "ql_per_rupee": 0.003872,
+        "spend_on_poor_ads": 0,
+        "forgone_good_ql": 10,
+        "good_ads_false_paused": 1,
+        "poor_ads_missed": 0
+      },
+      "baseline_b": {
+        "spend": 21071.39,
+        "qualified_leads": 75,
+        "ql_per_rupee": 0.003559,
+        "spend_on_poor_ads": 0,
+        "forgone_good_ql": 177,
+        "good_ads_false_paused": 10,
+        "poor_ads_missed": 0
+      },
+      "baseline_a": {
+        "spend": 65000.0,
+        "qualified_leads": 252,
+        "ql_per_rupee": 0.003877,
+        "spend_on_poor_ads": 0,
+        "forgone_good_ql": 0,
+        "good_ads_false_paused": 0,
+        "poor_ads_missed": 0
+      },
+      "comparison": {
+        "qualloop_vs_baseline_b_ql_diff": 167,
+        "qualloop_vs_baseline_a_ql_diff": -10,
+        "qualloop_loses": true,
+        "loss_reasons": [
+          "Loses to Baseline A on QL/rupee (0.003872 vs 0.003877)",
+          "Loses to Baseline A on qualified leads (242 vs 252)"
+        ]
+      }
+    },
+    "good_ad_low_reachability": {
+      "oracle": {
+        "spend": 120000.0,
+        "qualified_leads": 318,
+        "ql_per_rupee": 0.00265,
+        "spend_on_poor_ads": 0,
+        "forgone_good_ql": 0,
+        "good_ads_false_paused": 0,
+        "poor_ads_missed": 0
+      },
+      "qualloop": {
+        "spend": 120000.0,
+        "qualified_leads": 318,
+        "ql_per_rupee": 0.00265,
+        "spend_on_poor_ads": 0,
+        "forgone_good_ql": 0,
+        "good_ads_false_paused": 0,
+        "poor_ads_missed": 0
+      },
+      "baseline_b": {
+        "spend": 41357.16,
+        "qualified_leads": 116,
+        "ql_per_rupee": 0.002805,
+        "spend_on_poor_ads": 0,
+        "forgone_good_ql": 202,
+        "good_ads_false_paused": 18,
+        "poor_ads_missed": 0
+      },
+      "baseline_a": {
+        "spend": 120000.0,
+        "qualified_leads": 318,
+        "ql_per_rupee": 0.00265,
+        "spend_on_poor_ads": 0,
+        "forgone_good_ql": 0,
+        "good_ads_false_paused": 0,
+        "poor_ads_missed": 0
+      },
+      "comparison": {
+        "qualloop_vs_baseline_b_ql_diff": 202,
+        "qualloop_vs_baseline_a_ql_diff": 0,
+        "qualloop_loses": true,
+        "loss_reasons": [
+          "Loses to Baseline B on QL/rupee (0.00265 vs 0.002805)"
+        ]
+      }
+    },
+    "healthy_campaign": {
+      "oracle": {
+        "spend": 150000.0,
+        "qualified_leads": 888,
+        "ql_per_rupee": 0.00592,
+        "spend_on_poor_ads": 0,
+        "forgone_good_ql": 0,
+        "good_ads_false_paused": 0,
+        "poor_ads_missed": 0
+      },
+      "qualloop": {
+        "spend": 150000.0,
+        "qualified_leads": 888,
+        "ql_per_rupee": 0.00592,
+        "spend_on_poor_ads": 0,
+        "forgone_good_ql": 0,
+        "good_ads_false_paused": 0,
+        "poor_ads_missed": 0
+      },
+      "baseline_b": {
+        "spend": 60339.2,
+        "qualified_leads": 354,
+        "ql_per_rupee": 0.005867,
+        "spend_on_poor_ads": 0,
+        "forgone_good_ql": 534,
+        "good_ads_false_paused": 31,
+        "poor_ads_missed": 0
+      },
+      "baseline_a": {
+        "spend": 150000.0,
+        "qualified_leads": 888,
+        "ql_per_rupee": 0.00592,
+        "spend_on_poor_ads": 0,
+        "forgone_good_ql": 0,
+        "good_ads_false_paused": 0,
+        "poor_ads_missed": 0
+      },
+      "comparison": {
+        "qualloop_vs_baseline_b_ql_diff": 534,
+        "qualloop_vs_baseline_a_ql_diff": 0,
+        "qualloop_loses": false,
+        "loss_reasons": []
+      }
+    },
+    "high_cpql": {
+      "oracle": {
+        "spend": 140000.0,
+        "qualified_leads": 46,
+        "ql_per_rupee": 0.000329,
+        "spend_on_poor_ads": 0,
+        "forgone_good_ql": 0,
+        "good_ads_false_paused": 0,
+        "poor_ads_missed": 0
+      },
+      "qualloop": {
+        "spend": 140000.0,
+        "qualified_leads": 46,
+        "ql_per_rupee": 0.000329,
+        "spend_on_poor_ads": 0,
+        "forgone_good_ql": 0,
+        "good_ads_false_paused": 0,
+        "poor_ads_missed": 0
+      },
+      "baseline_b": {
+        "spend": 17857.16,
+        "qualified_leads": 7,
+        "ql_per_rupee": 0.000392,
+        "spend_on_poor_ads": 0,
+        "forgone_good_ql": 39,
+        "good_ads_false_paused": 7,
+        "poor_ads_missed": 0
+      },
+      "baseline_a": {
+        "spend": 17857.16,
+        "qualified_leads": 5,
+        "ql_per_rupee": 0.00028,
+        "spend_on_poor_ads": 0,
+        "forgone_good_ql": 41,
+        "good_ads_false_paused": 7,
+        "poor_ads_missed": 0
+      },
+      "comparison": {
+        "qualloop_vs_baseline_b_ql_diff": 39,
+        "qualloop_vs_baseline_a_ql_diff": 41,
+        "qualloop_loses": true,
+        "loss_reasons": [
+          "Loses to Baseline B on QL/rupee (0.000329 vs 0.000392)"
+        ]
+      }
+    },
+    "mixed_portfolio": {
+      "oracle": {
+        "spend": 70000.0,
+        "qualified_leads": 404,
+        "ql_per_rupee": 0.005771,
+        "spend_on_poor_ads": 0.0,
+        "forgone_good_ql": 0,
+        "good_ads_false_paused": 0,
+        "poor_ads_missed": 0
+      },
+      "qualloop": {
+        "spend": 87250.0,
+        "qualified_leads": 421,
+        "ql_per_rupee": 0.004825,
+        "spend_on_poor_ads": 18750.0,
+        "forgone_good_ql": 4,
+        "good_ads_false_paused": 1,
+        "poor_ads_missed": 1
+      },
+      "baseline_b": {
+        "spend": 30035.73,
+        "qualified_leads": 200,
+        "ql_per_rupee": 0.006659,
+        "spend_on_poor_ads": 4392.87,
+        "forgone_good_ql": 209,
+        "good_ads_false_paused": 15,
+        "poor_ads_missed": 0
+      },
+      "baseline_a": {
+        "spend": 100000.0,
+        "qualified_leads": 430,
+        "ql_per_rupee": 0.0043,
+        "spend_on_poor_ads": 30000.0,
+        "forgone_good_ql": 0,
+        "good_ads_false_paused": 0,
+        "poor_ads_missed": 10
+      },
+      "comparison": {
+        "qualloop_vs_baseline_b_ql_diff": 221,
+        "qualloop_vs_baseline_a_ql_diff": -9,
+        "qualloop_loses": true,
+        "loss_reasons": [
+          "Loses to Baseline B on QL/rupee (0.004825 vs 0.006659)",
+          "Loses to Baseline A on qualified leads (421 vs 430)"
+        ]
+      }
+    },
+    "small_sample_trap": {
+      "oracle": {
+        "spend": 0.0,
+        "qualified_leads": 0,
+        "ql_per_rupee": 0.0,
+        "spend_on_poor_ads": 0.0,
+        "forgone_good_ql": 0,
+        "good_ads_false_paused": 0,
+        "poor_ads_missed": 0
+      },
+      "qualloop": {
+        "spend": 6000.0,
+        "qualified_leads": 4,
+        "ql_per_rupee": 0.000667,
+        "spend_on_poor_ads": 6000.0,
+        "forgone_good_ql": 0,
+        "good_ads_false_paused": 0,
+        "poor_ads_missed": 12
+      },
+      "baseline_b": {
+        "spend": 1678.54,
+        "qualified_leads": 2,
+        "ql_per_rupee": 0.001192,
+        "spend_on_poor_ads": 1678.54,
+        "forgone_good_ql": 0,
+        "good_ads_false_paused": 0,
+        "poor_ads_missed": 0
+      },
+      "baseline_a": {
+        "spend": 6000.0,
+        "qualified_leads": 4,
+        "ql_per_rupee": 0.000667,
+        "spend_on_poor_ads": 6000.0,
+        "forgone_good_ql": 0,
+        "good_ads_false_paused": 0,
+        "poor_ads_missed": 12
+      },
+      "comparison": {
+        "qualloop_vs_baseline_b_ql_diff": 2,
+        "qualloop_vs_baseline_a_ql_diff": 0,
+        "qualloop_loses": true,
+        "loss_reasons": [
+          "Loses to Baseline B on QL/rupee (0.000667 vs 0.001192)"
+        ]
+      }
+    },
+    "sudden_deterioration": {
+      "oracle": {
+        "spend": 40000.0,
+        "qualified_leads": 144,
+        "ql_per_rupee": 0.0036,
+        "spend_on_poor_ads": 0,
+        "forgone_good_ql": 0,
+        "good_ads_false_paused": 0,
+        "poor_ads_missed": 0
+      },
+      "qualloop": {
+        "spend": 40000.0,
+        "qualified_leads": 144,
+        "ql_per_rupee": 0.0036,
+        "spend_on_poor_ads": 0,
+        "forgone_good_ql": 0,
+        "good_ads_false_paused": 0,
+        "poor_ads_missed": 0
+      },
+      "baseline_b": {
+        "spend": 17142.85,
+        "qualified_leads": 68,
+        "ql_per_rupee": 0.003967,
+        "spend_on_poor_ads": 0,
+        "forgone_good_ql": 76,
+        "good_ads_false_paused": 5,
+        "poor_ads_missed": 0
+      },
+      "baseline_a": {
+        "spend": 40000.0,
+        "qualified_leads": 144,
+        "ql_per_rupee": 0.0036,
+        "spend_on_poor_ads": 0,
+        "forgone_good_ql": 0,
+        "good_ads_false_paused": 0,
+        "poor_ads_missed": 0
+      },
+      "comparison": {
+        "qualloop_vs_baseline_b_ql_diff": 76,
+        "qualloop_vs_baseline_a_ql_diff": 0,
+        "qualloop_loses": true,
+        "loss_reasons": [
+          "Loses to Baseline B on QL/rupee (0.0036 vs 0.003967)"
+        ]
+      }
+    }
+  }
+}

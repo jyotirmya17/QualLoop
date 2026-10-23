@@ -23,13 +23,29 @@
 
 ---
 
-## 2. Selected Optimal Configuration: `Config 2 (80% CI Level & Narrow Bounds)`
+## 2. Selection Rule for Frozen Configuration
 
-- **Low Qualification Bound:** `0.15`
-- **Minimum Contacts for Qualification:** `12`
-- **Credible Interval Confidence Level:** `80%`
-- **High CPQL Lower Bound:** `$75.0`
-- **Minimum Maturity Fraction:** `50%`
+### Formal Objective
+The final policy configuration is selected according to the following constrained optimization rule applied strictly to the 100 tuning seeds:
+
+$$\arg\min_{c \in \mathcal{C}} \text{FNDR}(c) \quad \text{subject to} \quad \text{FPPR}(c) = 0.00\% \text{ on Tuning Seeds}$$
+
+### Business Rationale
+- **Asymmetric Cost of Errors:** In growth marketing, pausing a truly good ad is far more costly than delaying the pause of a poor ad. A false pause permanently forfeits qualified lead pipeline, resets Meta ad auction learning, and depresses revenue. Conversely, letting a poor ad run until statistical certainty is reached incurs bounded, recoverable spend.
+- **Tuning Set Evaluation:**
+  - Config 0: $\text{FPPR} = 0.00\%$, $\text{FNDR} = 48.57\%$
+  - Config 1: $\text{FPPR} = 0.00\%$, $\text{FNDR} = 40.00\%$
+  - **Config 2:** $\text{FPPR} = 0.00\%$, $\text{FNDR} = 37.14\%$ (minimum FNDR satisfying constraint)
+  - Config 3: $\text{FPPR} = 0.00\%$, $\text{FNDR} = 45.71\%$
+  - Config 4: $\text{FPPR} = 2.14\%$ (violates the zero-FPPR constraint)
+- **Outcome:** **Config 2** is uniquely selected as the single frozen policy.
+
+### Frozen Configuration Parameters (Config 2)
+- **Low Qualification Bound (`low_qualification_upper_bound`):** `0.15`
+- **Minimum Mature Contacts (`min_contacts_for_qualification`):** `12`
+- **Credible Interval Confidence Level (`credible_interval_level`):** `0.80` (80% CI)
+- **High CPQL Bound (`high_cpql_lower_bound`):** `$75.0`
+- **Minimum Maturity Fraction (`min_maturity_fraction`):** `0.50` (50%)
 
 ---
 
