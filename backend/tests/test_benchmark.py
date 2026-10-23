@@ -244,6 +244,19 @@ def test_paired_test_sign_convention():
             assert abs(ql_m["mean_diff"] - expected_diff) < 1e-5
 
 
+def test_spend_accounting_audit():
+    """Verify that the ₹122,142.84 difference in Baseline A good ad spend is accounted for exactly."""
+    from benchmark.diagnose_spend import audit_good_ad_spend_gap
+
+    audit = audit_good_ad_spend_gap()
+    assert audit["n_paused_good_ads"] == 7
+    for paused_ad in audit["paused_ads_breakdown"]:
+        assert paused_ad["scenario"] == "high_cpql"
+        assert paused_ad["full_spend"] == 20000.0
+    assert abs(audit["actual_difference"] - audit["total_forgone_explained"]) < 0.01
+
+
+
 
 
 
