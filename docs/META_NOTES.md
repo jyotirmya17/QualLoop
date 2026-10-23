@@ -48,3 +48,4 @@
 | **Specific release date of API versions** | **UNVERIFIED** | Not mentioned on either referenced page. |
 | **Exact custom event names** | **UNVERIFIED** | Event names are chosen by the advertiser's CRM schema and mapped in Events Manager. |
 | **Direct HTTP live transmission endpoint URL** | **UNVERIFIED** | Specific Graph API POST URI (`https://graph.facebook.com/...`) is detailed on general CAPI parameter pages, not within these two CRM setup pages. |
+| **`custom_data` fields beyond `lead_event_source` and `event_source`** (e.g. `ad_id`, `campaign_name`, `stage`, `call_outcome`, `qualification_outcome_id`) | **UNVERIFIED** | The official CRM integration guide specifies only `lead_event_source` and `event_source: "crm"` inside `custom_data`. Any additional metadata fields passed for internal routing or attribution are unverified by these two official reference pages. |

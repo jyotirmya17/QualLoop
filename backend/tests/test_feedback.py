@@ -33,7 +33,7 @@ from feedback.builder import (
 )
 
 
-def _make_lead(lead_id: str = "lead-001", days_ago: float = 5.0) -> Lead:
+def _make_lead(lead_id: str = "1000000000000001", days_ago: float = 5.0) -> Lead:
     return Lead(
         id=lead_id,
         advertisement_id="ad-001",
@@ -42,7 +42,7 @@ def _make_lead(lead_id: str = "lead-001", days_ago: float = 5.0) -> Lead:
     )
 
 
-def _make_qualified_outcome(lead_id: str = "lead-001", days_ago: float = 1.0) -> QualificationOutcome:
+def _make_qualified_outcome(lead_id: str = "1000000000000001", days_ago: float = 1.0) -> QualificationOutcome:
     return QualificationOutcome(
         id=f"outcome-{lead_id}",
         lead_id=lead_id,
@@ -51,7 +51,7 @@ def _make_qualified_outcome(lead_id: str = "lead-001", days_ago: float = 1.0) ->
     )
 
 
-def _make_disqualified_outcome(lead_id: str = "lead-001") -> QualificationOutcome:
+def _make_disqualified_outcome(lead_id: str = "1000000000000001") -> QualificationOutcome:
     return QualificationOutcome(
         id=f"outcome-dis-{lead_id}",
         lead_id=lead_id,
@@ -83,7 +83,7 @@ class TestBuildEvent:
         lead = _make_lead()
         outcome = QualificationOutcome(
             id="outcome-future",
-            lead_id="lead-001",
+            lead_id="1000000000000001",
             resolved_at=datetime.now(timezone.utc) + timedelta(days=1),
             result=QualificationResult.QUALIFIED,
         )
@@ -95,7 +95,7 @@ class TestBuildEvent:
         lead = _make_lead(days_ago=10.0)
         outcome = QualificationOutcome(
             id="outcome-old",
-            lead_id="lead-001",
+            lead_id="1000000000000001",
             resolved_at=datetime.now(timezone.utc) - timedelta(days=8),
             result=QualificationResult.QUALIFIED,
         )
@@ -106,14 +106,14 @@ class TestBuildEvent:
     def test_event_before_lead_creation_is_rejected(self):
         now = datetime.now(timezone.utc)
         lead = Lead(
-            id="lead-order-test",
+            id="1000000000000002",
             advertisement_id="ad-001",
             created_at=now - timedelta(days=2),
             status=LeadStatus.QUALIFIED,
         )
         outcome = QualificationOutcome(
             id="outcome-inverted",
-            lead_id="lead-order-test",
+            lead_id="1000000000000002",
             resolved_at=now - timedelta(days=3),  # Before lead was created!
             result=QualificationResult.QUALIFIED,
         )
@@ -128,21 +128,21 @@ class TestBuildEvent:
         assert result.event.action_source == "system_generated"
 
     def test_custom_data_contains_lead_event_source_and_event_source(self):
-        lead = _make_lead("lead-007")
-        outcome = _make_qualified_outcome("lead-007")
+        lead = _make_lead("1000000000000007")
+        outcome = _make_qualified_outcome("1000000000000007")
         result = build_event(outcome, lead, ad_id="ad-777", crm_name="Salesforce")
         custom = result.event.custom_data
         assert custom["lead_event_source"] == "Salesforce"
         assert custom["event_source"] == "crm"
-        assert custom["lead_id"] == "lead-007"
+        assert custom["lead_id"] == "1000000000000007"
         assert custom["ad_id"] == "ad-777"
 
     def test_user_data_unhashed_lead_id_and_hashed_pii(self):
-        lead = _make_lead("meta-lead-987654321")
-        outcome = _make_qualified_outcome("meta-lead-987654321")
+        lead = _make_lead("9876543210987654")
+        outcome = _make_qualified_outcome("9876543210987654")
         result = build_event(outcome, lead, ad_id="ad-001")
         user_data = result.event.user_data
-        assert user_data["lead_id"] == "meta-lead-987654321"
+        assert user_data["lead_id"] == "9876543210987654"
         assert len(user_data["lead_id"]) != 64  # not hashed
         assert len(user_data["em"]) == 64  # hashed SHA-256
         assert len(user_data["ph"]) == 64  # hashed SHA-256
@@ -150,14 +150,14 @@ class TestBuildEvent:
     def test_conversion_exceeding_28_day_window_is_rejected(self):
         now = datetime.now(timezone.utc)
         lead = Lead(
-            id="lead-old-funnel",
+            id="1000000000000003",
             advertisement_id="ad-001",
             created_at=now - timedelta(days=35),
             status=LeadStatus.QUALIFIED,
         )
         outcome = QualificationOutcome(
             id="outcome-late",
-            lead_id="lead-old-funnel",
+            lead_id="1000000000000003",
             resolved_at=now - timedelta(days=2),
             result=QualificationResult.QUALIFIED,
         )
@@ -170,7 +170,7 @@ class TestFullLifecycleHistoryEvents:
     def test_emits_raw_lead_event_and_status_changes_with_distinct_stage_names(self):
         now = datetime.now(timezone.utc)
         lead = Lead(
-            id="lead-lifecycle-1",
+            id="1000000000000004",
             advertisement_id="ad-001",
             created_at=now - timedelta(days=4),
             status=LeadStatus.QUALIFIED,
@@ -209,7 +209,7 @@ class TestFullLifecycleHistoryEvents:
 
         stage_names = [r.event.event_name for r in history_results]
         # Must emit raw lead event, distinct call attempt stages, and qualification stage
-        assert stage_names == ["initial_lead", "call_attempted", "contacted", "Lead"]
+        assert stage_names == ["initial_lead", "call_attempted", "contacted", "qualified"]
 
         # Check action_source and custom_data on all events
         for r in history_results:
@@ -221,7 +221,7 @@ class TestFullLifecycleHistoryEvents:
     def test_rejects_status_change_before_lead_creation(self):
         now = datetime.now(timezone.utc)
         lead = Lead(
-            id="lead-bad-timing",
+            id="1000000000000005",
             advertisement_id="ad-001",
             created_at=now - timedelta(days=2),
             status=LeadStatus.SUBMITTED,
@@ -313,7 +313,7 @@ class TestValidatePayload:
             event_name="",
             event_time=int(datetime.now(timezone.utc).timestamp()) - 100,
             action_source="system_generated",
-            user_data={"lead_id": "12345"},
+            user_data={"lead_id": "1000000000000001"},
             custom_data={"lead_event_source": "Salesforce", "event_source": "crm"},
             validation_status=FeedbackValidationStatus.VALID,
             processing_status=FeedbackProcessingStatus.DRY_RUN,
@@ -326,10 +326,10 @@ class TestValidatePayload:
         event = FeedbackEvent(
             qualification_outcome_id="o1",
             idempotency_key="abc123",
-            event_name="Lead",
+            event_name="qualified",
             event_time=int(datetime.now(timezone.utc).timestamp()) - 100,
             action_source="website",  # Must be system_generated
-            user_data={"lead_id": "12345"},
+            user_data={"lead_id": "1000000000000001"},
             custom_data={"lead_event_source": "Salesforce", "event_source": "crm"},
             validation_status=FeedbackValidationStatus.VALID,
             processing_status=FeedbackProcessingStatus.DRY_RUN,
@@ -342,10 +342,10 @@ class TestValidatePayload:
         event = FeedbackEvent(
             qualification_outcome_id="o1",
             idempotency_key="abc123",
-            event_name="Lead",
+            event_name="qualified",
             event_time=int(datetime.now(timezone.utc).timestamp()) - 100,
             action_source="system_generated",
-            user_data={"lead_id": "12345"},
+            user_data={"lead_id": "1000000000000001"},
             custom_data={"event_source": "crm"},  # missing lead_event_source!
             validation_status=FeedbackValidationStatus.VALID,
             processing_status=FeedbackProcessingStatus.DRY_RUN,
@@ -353,3 +353,58 @@ class TestValidatePayload:
         )
         errors = validate_payload(event)
         assert any("lead_event_source" in e.field for e in errors)
+
+    def test_reject_invalid_lead_id_format(self):
+        """Reject lead_ids that are not 15-17 digit strings."""
+        invalid_ids = [
+            "lead-001",
+            "12345",
+            "12345678901234",  # 14 digits (too short)
+            "123456789012345678",  # 18 digits (too long)
+            "meta_lead_123456",
+            "123456789012345a",  # contains non-digit
+            "",
+        ]
+        for bad_id in invalid_ids:
+            # Rejection in build_event
+            lead = Lead(
+                id=bad_id,
+                advertisement_id="ad-001",
+                created_at=datetime.now(timezone.utc) - timedelta(days=2),
+                status=LeadStatus.QUALIFIED,
+            )
+            outcome = QualificationOutcome(
+                id="out-bad",
+                lead_id=bad_id,
+                resolved_at=datetime.now(timezone.utc) - timedelta(days=1),
+                result=QualificationResult.QUALIFIED,
+            )
+            res = build_event(outcome, lead, ad_id="ad-001")
+            assert res.is_valid is False
+            assert any("15-17 digit" in e.message for e in res.validation_errors)
+
+            # Rejection in validate_payload
+            event = FeedbackEvent(
+                qualification_outcome_id="o1",
+                idempotency_key="idemp_bad",
+                event_name="qualified",
+                event_time=int(datetime.now(timezone.utc).timestamp()) - 100,
+                action_source="system_generated",
+                user_data={"lead_id": bad_id},
+                custom_data={"lead_event_source": "Salesforce", "event_source": "crm"},
+                validation_status=FeedbackValidationStatus.VALID,
+                processing_status=FeedbackProcessingStatus.DRY_RUN,
+                created_at=datetime.now(timezone.utc),
+            )
+            errors = validate_payload(event)
+            assert any("15-17 digit" in e.message or "identifier" in e.message for e in errors)
+
+    def test_qualified_stage_event_name_is_qualified(self):
+        lead = _make_lead("1000000000000009")
+        outcome = _make_qualified_outcome("1000000000000009")
+        res = build_event(outcome, lead, ad_id="ad-001")
+        assert res.is_valid is True
+        assert res.event is not None
+        assert res.event.event_name == "qualified"
+        assert res.event.event_name != "Lead"
+

@@ -15,12 +15,22 @@ ARCHITECTURE BOUNDARY:
 from __future__ import annotations
 
 import hashlib
+import re
 import uuid
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any, Optional
 
 import structlog
+
+LEAD_ID_REGEX = re.compile(r"^\d{15,17}$")
+
+
+def is_valid_lead_id(lead_id: Any) -> bool:
+    """Validate whether lead_id is a 15-17 digit numeric string as assigned by Meta."""
+    if not lead_id:
+        return False
+    return bool(LEAD_ID_REGEX.match(str(lead_id).strip()))
 
 from domain.enums import (
     CallOutcome,
@@ -119,6 +129,18 @@ def build_event(
     """
     idempotency_key = _make_idempotency_key(qualification_outcome.id, lead.id)
     errors: list[ValidationError] = []
+
+    # Validate lead_id format (must be 15-17 digit string from Meta Instant Forms)
+    if not is_valid_lead_id(lead.id):
+        errors.append(
+            ValidationError(
+                field="lead.id",
+                message=(
+                    f"lead_id must be a 15-17 digit numeric string as assigned by Meta. "
+                    f"Got: '{lead.id}'"
+                ),
+            )
+        )
 
     # Validate qualification status
     if qualification_outcome.result != QualificationResult.QUALIFIED:
@@ -228,7 +250,7 @@ def build_event(
     event = FeedbackEvent(
         qualification_outcome_id=qualification_outcome.id,
         idempotency_key=idempotency_key,
-        event_name="Lead",  # Standard standard event or stage name
+        event_name=CAPI_EVENT_NAME_QUALIFIED,
         event_time=event_time_unix,
         action_source=CAPI_ACTION_SOURCE,
         user_data=user_data,
@@ -274,6 +296,22 @@ def build_lead_history_events(
     lead_created_ts = lead.created_at
     if lead_created_ts.tzinfo is None:
         lead_created_ts = lead_created_ts.replace(tzinfo=timezone.utc)
+
+    # Validate lead_id format
+    if not is_valid_lead_id(lead.id):
+        return [
+            BuildResult(
+                event=None,
+                validation_errors=[
+                    ValidationError(
+                        field="lead.id",
+                        message=f"lead_id must be a 15-17 digit numeric string as assigned by Meta. Got: '{lead.id}'",
+                    )
+                ],
+                is_valid=False,
+                idempotency_key=_make_idempotency_key("invalid_lead", str(lead.id)),
+            )
+        ]
 
     # 1. Raw-lead event for initial lead creation
     lead_idemp = _make_idempotency_key("initial_lead", lead.id)
@@ -516,8 +554,16 @@ def validate_payload(
             ValidationError("user_data", "user_data must contain customer matching parameters")
         )
     else:
+        lead_id = event.user_data.get("lead_id")
+        if lead_id is not None and not is_valid_lead_id(lead_id):
+            errors.append(
+                ValidationError(
+                    "user_data.lead_id",
+                    f"lead_id must be a 15-17 digit numeric string as assigned by Meta. Got: '{lead_id}'",
+                )
+            )
         has_identifier = bool(
-            event.user_data.get("lead_id")
+            (lead_id and is_valid_lead_id(lead_id))
             or event.user_data.get("em")
             or event.user_data.get("ph")
         )
