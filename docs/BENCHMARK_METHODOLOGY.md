@@ -49,6 +49,9 @@ The QualLoop system uses:
 - Cooldown period of 48 simulated hours
 - Explicit distinction between low reachability and low qualification
 
+### Threshold Realism (Business Hurdle Inputs)
+Thresholds such as `low_qualification_upper_bound` (e.g. 0.15) and `target_cpql` (e.g. $75.0) are **business inputs**, not learned statistical parameters. They represent the advertiser's economic breakeven requirements (unit economics, customer acquisition cost limits, sales capacity). QualLoop's statistical task is to assess whether empirical posterior evidence proves that an ad fails to meet these exogenous business hurdles, taking maturity delays and sample size into account.
+
 ---
 
 ## 4. Evaluation Metrics

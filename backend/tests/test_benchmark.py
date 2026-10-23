@@ -197,4 +197,21 @@ def test_holdout_sequential_evaluation():
         assert "scenario_breakdown" in data
 
 
+def test_continuous_robustness_benchmark():
+    from benchmark.robustness import generate_continuous_scenario, run_continuous_robustness_benchmark
+
+    sc = generate_continuous_scenario(seed=9999, n_ads=2)
+    assert len(sc.ads_per_campaign[0]) == 2
+    assert 0.02 <= sc.ads_per_campaign[0][0].true_intent <= 0.40
+
+    rob_file = Path(__file__).resolve().parent.parent / "benchmark" / "results" / "robustness_benchmark.json"
+    if rob_file.exists():
+        with open(rob_file, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        assert data["metadata"]["experiment"] == "continuous_intent_robustness_benchmark"
+        assert "qualloop" in data["policy_summaries"]
+        assert "strata_analysis" in data
+
+
+
 

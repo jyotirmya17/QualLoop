@@ -31,6 +31,14 @@ policy version. Every recommendation records the policy version used.
 | `guardrail_action_spend_cap` | 500.0 | Actions on ads with spend under this cap are auto-applied within guardrails |
 | `abnormal_change_threshold` | 0.30 | Relative change in qualification rate triggering anomaly flag |
 
+### Threshold Realism: Business Inputs vs. Learned Parameters
+**Crucial Architectural Distinction:**
+Thresholds such as `low_qualification_upper_bound` (e.g. 0.10 or 0.15), `target_cpql` (e.g. $75.0), and `budget_guardrail_min_spend` are **business inputs**, not learned statistical hyperparameters.
+
+- **Why they are not learned from data:** An ad converting below 15% intent is not inherently "statistically invalid"—it is economically unviable. Its unacceptability is dictated by the advertiser's gross margins, customer lifetime value (LTV), target cost per acquisition (CPA), and sales team capacity.
+- **Role of the Bayesian Estimator:** The estimator does not discover what qualification rate is "good." Rather, given the advertiser's business threshold $q^*$, the Bayesian estimator computes the posterior distribution $P(q \mid \text{data})$ and determines whether there is rigorous statistical evidence that $P(q < q^*) \ge 1 - \alpha / 2$ (i.e. the credible interval's upper bound is strictly below the business threshold).
+- **Client Configuration:** In production, these thresholds are configured during onboarding based on customer unit economics, rather than estimated via gradient descent or empirical-Bayes.
+
 ---
 
 ## 3. Decision Rules (in priority order)
