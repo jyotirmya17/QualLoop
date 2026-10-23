@@ -114,3 +114,31 @@ def test_time_sliced_benchmark_runner():
     assert "missed" in summary.qualloop_distribution
     assert summary.qualloop_missed_count >= 0
     assert 0.0 <= summary.qualloop_missed_rate <= 1.0
+
+
+def test_runner_modes_emit_reconciled_counts():
+    with tempfile.TemporaryDirectory() as tmpdir:
+        results_dir = Path(tmpdir) / "results"
+        runner = BenchmarkRunner(results_dir=results_dir)
+
+        # Test full mode metadata
+        full_rep = runner.run_full(max_runs_per_scenario=1)
+        meta = full_rep.run_metadata
+        for key in ("mode", "n_simulations", "n_scenarios", "seeds_file_used", "n_ads", "n_good", "n_poor"):
+            assert key in meta, f"Missing key in full run_metadata: {key}"
+        assert meta["mode"] == "full"
+        assert meta["n_simulations"] == 9
+
+        # Test holdout mode metadata
+        holdout_rep = runner.run_holdout(max_runs_per_scenario=1)
+        meta_h = holdout_rep.run_metadata
+        assert meta_h["mode"] == "holdout"
+        assert "holdout" in meta_h["seeds_file_used"]
+
+        # Test ablation mode metadata
+        abl = runner.run_ablation(max_runs_per_scenario=1)
+        meta_a = abl["run_metadata"]
+        assert meta_a["mode"] == "ablation"
+        for key in ("n_simulations", "n_scenarios", "seeds_file_used", "n_ads", "n_good", "n_poor"):
+            assert key in meta_a, f"Missing key in ablation run_metadata: {key}"
+

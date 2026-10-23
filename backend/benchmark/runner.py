@@ -127,10 +127,13 @@ class BenchmarkRunner:
 
     def run_benchmark(
         self,
+        mode: str = "full",
         max_runs_per_scenario: Optional[int] = None,
         executed_at: Optional[str] = None,
         enable_shrinkage: bool = True,
         seeds: Optional[dict[str, list[int]]] = None,
+        seed_file_name: Optional[str] = None,
+        save_filename: Optional[str] = None,
     ) -> BenchmarkReport:
         """Run the paired benchmark across all pre-committed seeds."""
         scenario_seeds = seeds if seeds is not None else self.load_seeds()
@@ -362,11 +365,18 @@ class BenchmarkRunner:
 
         report = BenchmarkReport(
             run_metadata={
+                "mode": mode,
                 "n_simulations": simulations_count,
+                "n_scenarios": len(scenarios_seen),
+                "seeds_file_used": seed_file_name or str(self.seeds_path.name),
+                "n_ads": all_ads_count,
+                "n_good": n_good,
+                "n_poor": n_poor,
+                # Compatibility keys
                 "n_ads_evaluated": all_ads_count,
                 "n_good_ads": n_good,
                 "n_poor_ads": n_poor,
-                "seed_file": str(self.seeds_path.name),
+                "seed_file": seed_file_name or str(self.seeds_path.name),
                 "qualloop_policy_version": self.decision_policy.version,
                 "baseline_description": "Naive 10% threshold on un-matured contact/qualification ratios",
                 "executed_at": executed_at or datetime.now(timezone.utc).isoformat(),
@@ -410,6 +420,11 @@ class BenchmarkRunner:
         latest_path = self.results_dir / "latest_benchmark.json"
         with open(latest_path, "w", encoding="utf-8") as f:
             json.dump(asdict(report), f, indent=2)
+
+        if save_filename:
+            custom_path = self.results_dir / save_filename
+            with open(custom_path, "w", encoding="utf-8") as f:
+                json.dump(asdict(report), f, indent=2)
 
         # Generate human-readable Markdown report
         self._write_markdown_report(report)
@@ -484,3 +499,105 @@ class BenchmarkRunner:
 
         with open(md_path, "w", encoding="utf-8") as f:
             f.write("\n".join(lines) + "\n")
+
+    def run_full(
+        self,
+        max_runs_per_scenario: Optional[int] = None,
+        save_filename: str = "full_benchmark.json",
+    ) -> BenchmarkReport:
+        """Run full evaluation across all 200 seeds in seeds.json."""
+        return self.run_benchmark(
+            mode="full",
+            max_runs_per_scenario=max_runs_per_scenario,
+            enable_shrinkage=True,
+            seed_file_name="seeds.json",
+            save_filename=save_filename,
+        )
+
+    def run_holdout(
+        self,
+        max_runs_per_scenario: Optional[int] = None,
+        save_filename: str = "holdout_benchmark.json",
+    ) -> BenchmarkReport:
+        """Run evaluation on the 100 holdout seeds in seeds_split.json."""
+        split_path = self.seeds_path.parent / "seeds_split.json"
+        with open(split_path, "r", encoding="utf-8") as f:
+            split_data = json.load(f)
+        holdout_seeds = split_data.get("holdout", {})
+        return self.run_benchmark(
+            mode="holdout",
+            max_runs_per_scenario=max_runs_per_scenario,
+            seeds=holdout_seeds,
+            seed_file_name="seeds_split.json (holdout)",
+            save_filename=save_filename,
+        )
+
+    def run_ablation(
+        self,
+        max_runs_per_scenario: Optional[int] = None,
+        save_filename: str = "ablation_benchmark.json",
+    ) -> dict[str, Any]:
+        """
+        Run identical seeds twice under identical thresholds: fixed vs pooled priors.
+        Reconciles counts so the 350 ads in seeds.json are not double-counted.
+        """
+        fixed_report = self.run_benchmark(
+            mode="ablation",
+            max_runs_per_scenario=max_runs_per_scenario,
+            enable_shrinkage=False,
+            seed_file_name=str(self.seeds_path.name),
+        )
+        pooled_report = self.run_benchmark(
+            mode="ablation",
+            max_runs_per_scenario=max_runs_per_scenario,
+            enable_shrinkage=True,
+            seed_file_name=str(self.seeds_path.name),
+        )
+
+        n_sim = fixed_report.run_metadata["n_simulations"]
+        n_sc = fixed_report.run_metadata["n_scenarios"]
+        n_ads = fixed_report.run_metadata["n_ads"]
+        n_good = fixed_report.run_metadata["n_good"]
+        n_poor = fixed_report.run_metadata["n_poor"]
+
+        q_fixed = fixed_report.aggregate_metrics["qualloop"]
+        q_pooled = pooled_report.aggregate_metrics["qualloop"]
+
+        ablation_summary = {
+            "run_metadata": {
+                "mode": "ablation",
+                "n_simulations": n_sim,
+                "n_scenarios": n_sc,
+                "seeds_file_used": str(self.seeds_path.name),
+                "n_ads": n_ads,
+                "n_good": n_good,
+                "n_poor": n_poor,
+                "executed_at": datetime.now(timezone.utc).isoformat(),
+                "description": "Paired ablation isolating empirical-Bayes shrinkage (fixed priors vs pooled priors on identical seeds and thresholds)",
+            },
+            "fixed_priors": {
+                "fppr": q_fixed["fppr_mean"],
+                "fppr_ci": q_fixed["fppr_ci"],
+                "fndr": q_fixed["fndr_mean"],
+                "fndr_ci": q_fixed["fndr_ci"],
+                "ier": q_fixed["ier_mean"],
+            },
+            "pooled_empirical_bayes": {
+                "fppr": q_pooled["fppr_mean"],
+                "fppr_ci": q_pooled["fppr_ci"],
+                "fndr": q_pooled["fndr_mean"],
+                "fndr_ci": q_pooled["fndr_ci"],
+                "ier": q_pooled["ier_mean"],
+            },
+            "delta_pooled_minus_fixed": {
+                "delta_fppr": round(q_pooled["fppr_mean"] - q_fixed["fppr_mean"], 4),
+                "delta_fndr": round(q_pooled["fndr_mean"] - q_fixed["fndr_mean"], 4),
+                "delta_ier": round(q_pooled["ier_mean"] - q_fixed["ier_mean"], 4),
+            },
+        }
+
+        save_path = self.results_dir / save_filename
+        with open(save_path, "w", encoding="utf-8") as f:
+            json.dump(ablation_summary, f, indent=2)
+
+        return ablation_summary

@@ -67,22 +67,25 @@ class TimeSlicedBenchmarkSummary:
     n_simulations: int
     n_poor_ads: int
     n_good_ads: int
+    n_scenarios: int = 9
+    seeds_file_used: str = "seeds.json"
+    n_ads: int = 0
 
     # Poor ad trajectory distributions
-    qualloop_distribution: dict[str, int]  # e.g. {"day_3": 5, "day_7": 20, "missed": 10}
-    baseline_distribution: dict[str, int]
+    qualloop_distribution: dict[str, int] = field(default_factory=dict)
+    baseline_distribution: dict[str, int] = field(default_factory=dict)
 
-    qualloop_missed_count: int
-    qualloop_missed_rate: float
-    baseline_missed_count: int
-    baseline_missed_rate: float
+    qualloop_missed_count: int = 0
+    qualloop_missed_rate: float = 0.0
+    baseline_missed_count: int = 0
+    baseline_missed_rate: float = 0.0
 
-    qualloop_mean_days_to_correct: Optional[float]
-    baseline_mean_days_to_correct: Optional[float]
+    qualloop_mean_days_to_correct: Optional[float] = None
+    baseline_mean_days_to_correct: Optional[float] = None
 
     # Good ad false pause counts by checkpoint
-    qualloop_fp_by_day: dict[int, int]
-    baseline_fp_by_day: dict[int, int]
+    qualloop_fp_by_day: dict[int, int] = field(default_factory=dict)
+    baseline_fp_by_day: dict[int, int] = field(default_factory=dict)
 
     # Spend-weighted metrics
     qualloop_poor_ad_spend_before_pause: float = 0.0
@@ -98,6 +101,52 @@ class TimeSlicedBenchmarkSummary:
     baseline_vs_oracle_efficiency: float = 0.0
 
     trajectories: list[AdTimeSliceTrajectory] = field(default_factory=list)
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "run_metadata": {
+                "mode": "time_sliced",
+                "n_simulations": self.n_simulations,
+                "n_scenarios": self.n_scenarios,
+                "seeds_file_used": self.seeds_file_used,
+                "n_ads": self.n_ads or (self.n_poor_ads + self.n_good_ads),
+                "n_good": self.n_good_ads,
+                "n_poor": self.n_poor_ads,
+                "checkpoints": self.checkpoints,
+                "executed_at": datetime.now(timezone.utc).isoformat(),
+            },
+            "metrics": {
+                "qualloop_distribution": self.qualloop_distribution,
+                "baseline_distribution": self.baseline_distribution,
+                "qualloop_missed_count": self.qualloop_missed_count,
+                "qualloop_missed_rate": self.qualloop_missed_rate,
+                "baseline_missed_count": self.baseline_missed_count,
+                "baseline_missed_rate": self.baseline_missed_rate,
+                "qualloop_mean_days_to_correct": self.qualloop_mean_days_to_correct,
+                "baseline_mean_days_to_correct": self.baseline_mean_days_to_correct,
+                "qualloop_fp_by_day": self.qualloop_fp_by_day,
+                "baseline_fp_by_day": self.baseline_fp_by_day,
+                "qualloop_poor_ad_spend_before_pause": self.qualloop_poor_ad_spend_before_pause,
+                "baseline_poor_ad_spend_before_pause": self.baseline_poor_ad_spend_before_pause,
+                "qualloop_qualified_leads_lost_from_good_ads": self.qualloop_qualified_leads_lost_from_good_ads,
+                "baseline_qualified_leads_lost_from_good_ads": self.baseline_qualified_leads_lost_from_good_ads,
+                "oracle_spend": self.oracle_spend,
+                "oracle_qualified_leads": self.oracle_qualified_leads,
+                "oracle_ql_per_rupee": self.oracle_ql_per_rupee,
+                "qualloop_ql_per_rupee": self.qualloop_ql_per_rupee,
+                "baseline_ql_per_rupee": self.baseline_ql_per_rupee,
+                "qualloop_vs_oracle_efficiency": self.qualloop_vs_oracle_efficiency,
+                "baseline_vs_oracle_efficiency": self.baseline_vs_oracle_efficiency,
+            },
+        }
+
+    def save_results(self, output_dir: Optional[Path] = None, filename: str = "time_sliced_benchmark.json") -> Path:
+        base_dir = output_dir or (Path(__file__).resolve().parent / "results")
+        base_dir.mkdir(parents=True, exist_ok=True)
+        out_path = base_dir / filename
+        with open(out_path, "w", encoding="utf-8") as f:
+            json.dump(self.to_dict(), f, indent=2)
+        return out_path
 
 
 def is_pause_action(action: str | DecisionAction) -> bool:
@@ -379,6 +428,9 @@ class TimeSlicedBenchmarkRunner:
             n_simulations=n_simulations,
             n_poor_ads=n_poor,
             n_good_ads=n_good,
+            n_scenarios=len(set(t.scenario_name for t in trajectories)),
+            seeds_file_used=str(self.seeds_path.name),
+            n_ads=len(trajectories),
             qualloop_distribution=ql_dist,
             baseline_distribution=base_dist,
             qualloop_missed_count=ql_missed_cnt,

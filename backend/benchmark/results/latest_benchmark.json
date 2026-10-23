@@ -1,62 +1,68 @@
 {
   "run_metadata": {
-    "n_simulations": 200,
-    "n_ads_evaluated": 350,
-    "n_good_ads": 280,
-    "n_poor_ads": 70,
-    "seed_file": "seeds.json",
+    "mode": "holdout",
+    "n_simulations": 100,
+    "n_scenarios": 9,
+    "seeds_file_used": "seeds_split.json (holdout)",
+    "n_ads": 175,
+    "n_good": 140,
+    "n_poor": 35,
+    "n_ads_evaluated": 175,
+    "n_good_ads": 140,
+    "n_poor_ads": 35,
+    "seed_file": "seeds_split.json (holdout)",
     "qualloop_policy_version": "v0.2.0",
     "baseline_description": "Naive 10% threshold on un-matured contact/qualification ratios",
-    "executed_at": "2026-10-22T15:17:02.979855+00:00"
+    "executed_at": "2026-10-23T02:33:48.327136+00:00"
   },
   "aggregate_metrics": {
     "qualloop": {
       "fppr_mean": 0.0,
       "fppr_ci": [
-        8.673617379884035e-19,
-        0.013533764337829948
+        1.734723475976807e-18,
+        0.02670609468382524
       ],
-      "fndr_mean": 0.4571,
+      "fndr_mean": 0.4286,
       "fndr_ci": [
-        0.3457276364835148,
-        0.5730171802501052
+        0.2798459418687429,
+        0.5914255766984653
       ],
-      "ier_mean": 0.1314,
-      "qlus": 0.00267,
-      "total_spend": 1652500.0,
-      "total_qualified_leads_preserved": 4417
+      "ier_mean": 0.1371,
+      "qlus": 0.00272,
+      "total_spend": 821000.0,
+      "total_qualified_leads_preserved": 2237
     },
     "baseline": {
-      "fppr_mean": 0.0214,
+      "fppr_mean": 0.0286,
       "fppr_ci": [
-        0.009857047336518442,
-        0.045953841386833075
+        0.011165796825951844,
+        0.0711570924473691
       ],
-      "fndr_mean": 0.0714,
+      "fndr_mean": 0.0286,
       "fndr_ci": [
-        0.030894267435241582,
-        0.15655389990095808
+        0.005061506292328946,
+        0.14533051625124566
       ],
       "ier_mean": 0.0,
-      "qlus": 0.00313,
-      "total_spend": 1652500.0,
-      "total_qualified_leads_preserved": 5170
+      "qlus": 0.0032,
+      "total_spend": 821000.0,
+      "total_qualified_leads_preserved": 2625
     }
   },
   "per_scenario_breakdown": [
     {
       "scenario_name": "bad_ad_high_engagement",
-      "n_simulations": 25,
-      "n_ads": 50,
+      "n_simulations": 13,
+      "n_ads": 26,
       "qualloop_fppr": 0.0,
       "baseline_fppr": 0.0,
-      "qualloop_fndr": 0.04,
+      "qualloop_fndr": 0.0,
       "baseline_fndr": 0.0
     },
     {
       "scenario_name": "creative_fatigue",
-      "n_simulations": 20,
-      "n_ads": 20,
+      "n_simulations": 10,
+      "n_ads": 10,
       "qualloop_fppr": 0.0,
       "baseline_fppr": 0.0,
       "qualloop_fndr": 0.0,
@@ -64,8 +70,8 @@
     },
     {
       "scenario_name": "delayed_conversion_trap",
-      "n_simulations": 25,
-      "n_ads": 25,
+      "n_simulations": 13,
+      "n_ads": 13,
       "qualloop_fppr": 0.0,
       "baseline_fppr": 0.0,
       "qualloop_fndr": 0.0,
@@ -73,8 +79,8 @@
     },
     {
       "scenario_name": "good_ad_low_reachability",
-      "n_simulations": 25,
-      "n_ads": 50,
+      "n_simulations": 12,
+      "n_ads": 24,
       "qualloop_fppr": 0.0,
       "baseline_fppr": 0.0,
       "qualloop_fndr": 0.0,
@@ -82,44 +88,44 @@
     },
     {
       "scenario_name": "healthy_campaign",
-      "n_simulations": 30,
-      "n_ads": 90,
+      "n_simulations": 15,
+      "n_ads": 45,
       "qualloop_fppr": 0.0,
-      "baseline_fppr": 0.011,
+      "baseline_fppr": 0.0,
       "qualloop_fndr": 0.0,
       "baseline_fndr": 0.0
     },
     {
       "scenario_name": "high_cpql",
-      "n_simulations": 15,
-      "n_ads": 15,
+      "n_simulations": 7,
+      "n_ads": 7,
       "qualloop_fppr": 0.0,
-      "baseline_fppr": 0.067,
+      "baseline_fppr": 0.143,
       "qualloop_fndr": 0.0,
       "baseline_fndr": 0.0
     },
     {
       "scenario_name": "mixed_portfolio",
-      "n_simulations": 20,
-      "n_ads": 60,
+      "n_simulations": 10,
+      "n_ads": 30,
       "qualloop_fppr": 0.0,
-      "baseline_fppr": 0.1,
+      "baseline_fppr": 0.15,
       "qualloop_fndr": 0.3,
       "baseline_fndr": 0.0
     },
     {
       "scenario_name": "small_sample_trap",
-      "n_simulations": 25,
-      "n_ads": 25,
+      "n_simulations": 12,
+      "n_ads": 12,
       "qualloop_fppr": 0.0,
       "baseline_fppr": 0.0,
       "qualloop_fndr": 1.0,
-      "baseline_fndr": 0.2
+      "baseline_fndr": 0.083
     },
     {
       "scenario_name": "sudden_deterioration",
-      "n_simulations": 15,
-      "n_ads": 15,
+      "n_simulations": 8,
+      "n_ads": 8,
       "qualloop_fppr": 0.0,
       "baseline_fppr": 0.0,
       "qualloop_fndr": 0.0,
@@ -127,136 +133,6 @@
     }
   ],
   "cases_where_qualloop_performed_worse": [
-    {
-      "run_id": "4df5bc53-e75b-fbd9-da42-b54a5825c3fd",
-      "scenario": "bad_ad_high_engagement",
-      "seed": 3004,
-      "creative_id": "creative_bad_hype",
-      "is_good_ad": false,
-      "is_poor_ad": true,
-      "gt_intent_mean": 0.03,
-      "qualloop_action": "shift_spend",
-      "baseline_action": "consider_pause",
-      "qualloop_reason": "Cost-per-qualified-lead interval for ad '98d6de09-b3c3-67e0-6e83-b0aaaac67e2e' [$366.17, $929.30] (mean: $592.45) sits entirely above ad 'd6a89d7b-dd3d-9a1d-5ee2-5a28639a480a' interval [$34.44, $54.27] (mean: $43.33). Recommend guardrailed spend shift of up to 25% from ad '98d6de09-b3c3-67e0-6e83-b0aaaac67e2e' to ad 'd6a89d7b-dd3d-9a1d-5ee2-5a28639a480a'.",
-      "explanation": "QualLoop was too conservative to pause a poor ad"
-    },
-    {
-      "run_id": "bcfc4721-81b6-421a-9c58-2effc8179f33",
-      "scenario": "small_sample_trap",
-      "seed": 4003,
-      "creative_id": "creative_new_bad",
-      "is_good_ad": false,
-      "is_poor_ad": true,
-      "gt_intent_mean": 0.04,
-      "qualloop_action": "collect_more_data",
-      "baseline_action": "consider_pause",
-      "qualloop_reason": "Observed 19 mature leads for ad 'ba467126-b563-77ee-b086-caf7a8a07d75', below required threshold of 30. Reachability rate cannot be evaluated reliably yet.",
-      "explanation": "QualLoop was too conservative to pause a poor ad"
-    },
-    {
-      "run_id": "731385c5-4053-a7cd-a43f-d71caba947b5",
-      "scenario": "small_sample_trap",
-      "seed": 4004,
-      "creative_id": "creative_new_bad",
-      "is_good_ad": false,
-      "is_poor_ad": true,
-      "gt_intent_mean": 0.04,
-      "qualloop_action": "collect_more_data",
-      "baseline_action": "consider_pause",
-      "qualloop_reason": "Observed 21 mature leads for ad 'bf88ae9e-fc1f-0cf3-4f0d-ef82908e5feb', below required threshold of 30. Reachability rate cannot be evaluated reliably yet.",
-      "explanation": "QualLoop was too conservative to pause a poor ad"
-    },
-    {
-      "run_id": "d0df962b-50fa-4d74-8324-8f4270edeead",
-      "scenario": "small_sample_trap",
-      "seed": 4006,
-      "creative_id": "creative_new_bad",
-      "is_good_ad": false,
-      "is_poor_ad": true,
-      "gt_intent_mean": 0.04,
-      "qualloop_action": "collect_more_data",
-      "baseline_action": "consider_pause",
-      "qualloop_reason": "Observed 17 mature leads for ad '00f95f6c-4d3a-8d4c-fef7-db56fb56390a', below required threshold of 30. Reachability rate cannot be evaluated reliably yet.",
-      "explanation": "QualLoop was too conservative to pause a poor ad"
-    },
-    {
-      "run_id": "7ea1a49d-9644-8e53-cd9d-ccd12273e59f",
-      "scenario": "small_sample_trap",
-      "seed": 4008,
-      "creative_id": "creative_new_bad",
-      "is_good_ad": false,
-      "is_poor_ad": true,
-      "gt_intent_mean": 0.04,
-      "qualloop_action": "collect_more_data",
-      "baseline_action": "consider_pause",
-      "qualloop_reason": "Observed 20 mature leads for ad '24bd1f90-71ca-b7e5-7572-1cb6d6a95de6', below required threshold of 30. Reachability rate cannot be evaluated reliably yet.",
-      "explanation": "QualLoop was too conservative to pause a poor ad"
-    },
-    {
-      "run_id": "1dee67c6-8e34-3759-ae2f-722dc81b7864",
-      "scenario": "small_sample_trap",
-      "seed": 4009,
-      "creative_id": "creative_new_bad",
-      "is_good_ad": false,
-      "is_poor_ad": true,
-      "gt_intent_mean": 0.04,
-      "qualloop_action": "collect_more_data",
-      "baseline_action": "consider_pause",
-      "qualloop_reason": "Observed 9 mature leads for ad '0b74f898-c54b-9b3b-beb5-7a3ad693dace', below required threshold of 30. Reachability rate cannot be evaluated reliably yet.",
-      "explanation": "QualLoop was too conservative to pause a poor ad"
-    },
-    {
-      "run_id": "12ec106f-d242-7430-6995-d8c382058a41",
-      "scenario": "small_sample_trap",
-      "seed": 4010,
-      "creative_id": "creative_new_bad",
-      "is_good_ad": false,
-      "is_poor_ad": true,
-      "gt_intent_mean": 0.04,
-      "qualloop_action": "flag_insufficient_evidence",
-      "baseline_action": "consider_pause",
-      "qualloop_reason": "Maturity fraction for ad '91468605-2929-fd4b-79e6-3a9d88dea7f7' is 55.6%, which is below the required 60.0% threshold. Only 10 of 18 leads have aged past contact maturity window (pending leads: 8). Autonomous data collection in progress.",
-      "explanation": "QualLoop was too conservative to pause a poor ad"
-    },
-    {
-      "run_id": "b896a979-e2d9-b504-399f-1045a05febda",
-      "scenario": "small_sample_trap",
-      "seed": 4011,
-      "creative_id": "creative_new_bad",
-      "is_good_ad": false,
-      "is_poor_ad": true,
-      "gt_intent_mean": 0.04,
-      "qualloop_action": "flag_insufficient_evidence",
-      "baseline_action": "consider_pause",
-      "qualloop_reason": "Maturity fraction for ad 'd125e199-f09a-5447-2eed-4b76814c43ea' is 57.1%, which is below the required 60.0% threshold. Only 12 of 21 leads have aged past contact maturity window (pending leads: 9). Autonomous data collection in progress.",
-      "explanation": "QualLoop was too conservative to pause a poor ad"
-    },
-    {
-      "run_id": "c0d092e6-c799-85d6-71c5-984c1420845d",
-      "scenario": "small_sample_trap",
-      "seed": 4012,
-      "creative_id": "creative_new_bad",
-      "is_good_ad": false,
-      "is_poor_ad": true,
-      "gt_intent_mean": 0.04,
-      "qualloop_action": "flag_insufficient_evidence",
-      "baseline_action": "consider_pause",
-      "qualloop_reason": "Maturity fraction for ad '74f458d4-ed47-c9b1-5991-78b41676e1cb' is 53.8%, which is below the required 60.0% threshold. Only 7 of 13 leads have aged past contact maturity window (pending leads: 6). Autonomous data collection in progress.",
-      "explanation": "QualLoop was too conservative to pause a poor ad"
-    },
-    {
-      "run_id": "b060776f-699d-386b-cbc6-e9a170cdb145",
-      "scenario": "small_sample_trap",
-      "seed": 4013,
-      "creative_id": "creative_new_bad",
-      "is_good_ad": false,
-      "is_poor_ad": true,
-      "gt_intent_mean": 0.04,
-      "qualloop_action": "collect_more_data",
-      "baseline_action": "consider_pause",
-      "qualloop_reason": "Observed 15 mature leads for ad 'fbf68f66-fda9-3bc2-b64a-9457b8c99b4a', below required threshold of 30. Reachability rate cannot be evaluated reliably yet.",
-      "explanation": "QualLoop was too conservative to pause a poor ad"
-    },
     {
       "run_id": "04313f0b-a8f4-5959-a2d8-6434b864ccd0",
       "scenario": "small_sample_trap",
@@ -398,45 +274,6 @@
       "qualloop_action": "collect_more_data",
       "baseline_action": "consider_pause",
       "qualloop_reason": "Observed 13 mature leads for ad '2b0859a6-61ef-7c03-7c01-106cab062583', below required threshold of 30. Reachability rate cannot be evaluated reliably yet.",
-      "explanation": "QualLoop was too conservative to pause a poor ad"
-    },
-    {
-      "run_id": "b65012f0-4b42-7cc5-29fc-dea37e9e24bd",
-      "scenario": "mixed_portfolio",
-      "seed": 7001,
-      "creative_id": "creative_poor",
-      "is_good_ad": false,
-      "is_poor_ad": true,
-      "gt_intent_mean": 0.04,
-      "qualloop_action": "shift_spend",
-      "baseline_action": "consider_pause",
-      "qualloop_reason": "Cost-per-qualified-lead interval for ad '727b1be0-336d-f7e1-207b-4f915b14331c' [$337.12, $1664.44] (mean: $800.29) sits entirely above ad 'c65cc061-3ed3-d32b-b64e-f6b1c779ed22' interval [$126.20, $237.59] (mean: $173.47). Recommend guardrailed spend shift of up to 25% from ad '727b1be0-336d-f7e1-207b-4f915b14331c' to ad 'c65cc061-3ed3-d32b-b64e-f6b1c779ed22'.",
-      "explanation": "QualLoop was too conservative to pause a poor ad"
-    },
-    {
-      "run_id": "6c237370-fe05-f656-f606-5a069c45a6b4",
-      "scenario": "mixed_portfolio",
-      "seed": 7006,
-      "creative_id": "creative_poor",
-      "is_good_ad": false,
-      "is_poor_ad": true,
-      "gt_intent_mean": 0.04,
-      "qualloop_action": "shift_spend",
-      "baseline_action": "consider_pause",
-      "qualloop_reason": "Cost-per-qualified-lead interval for ad '1d85d9fd-22e4-7f1a-aa4c-49cf08bf64a6' [$289.96, $1322.96] (mean: $649.70) sits entirely above ad '3c5f92c7-df15-f412-b339-d6e577dda061' interval [$106.85, $192.01] (mean: $143.51). Recommend guardrailed spend shift of up to 25% from ad '1d85d9fd-22e4-7f1a-aa4c-49cf08bf64a6' to ad '3c5f92c7-df15-f412-b339-d6e577dda061'.",
-      "explanation": "QualLoop was too conservative to pause a poor ad"
-    },
-    {
-      "run_id": "fe17a138-e3fc-9077-f327-777811a4626c",
-      "scenario": "mixed_portfolio",
-      "seed": 7009,
-      "creative_id": "creative_poor",
-      "is_good_ad": false,
-      "is_poor_ad": true,
-      "gt_intent_mean": 0.04,
-      "qualloop_action": "shift_spend",
-      "baseline_action": "consider_pause",
-      "qualloop_reason": "Cost-per-qualified-lead interval for ad '85afc1a6-33d4-ced3-ed4c-9fd87bd4ce47' [$227.47, $800.56] (mean: $438.50) sits entirely above ad 'fabc9c9b-3f48-89b7-60a0-1b70239cd5e2' interval [$90.09, $146.11] (mean: $114.97). Recommend guardrailed spend shift of up to 25% from ad '85afc1a6-33d4-ced3-ed4c-9fd87bd4ce47' to ad 'fabc9c9b-3f48-89b7-60a0-1b70239cd5e2'.",
       "explanation": "QualLoop was too conservative to pause a poor ad"
     },
     {

@@ -1,0 +1,43 @@
+{
+  "audit_timestamp": "2026-10-23T02:33:48.327136+00:00",
+  "modes": {
+    "full": {
+      "n_simulations": 200,
+      "n_scenarios": 9,
+      "seeds_file_used": "seeds.json",
+      "n_ads": 350,
+      "n_good": 280,
+      "n_poor": 70
+    },
+    "ablation": {
+      "n_simulations": 200,
+      "n_scenarios": 9,
+      "seeds_file_used": "seeds.json",
+      "n_ads": 350,
+      "n_good": 280,
+      "n_poor": 70
+    },
+    "time_sliced": {
+      "n_simulations": 200,
+      "n_scenarios": 9,
+      "seeds_file_used": "seeds.json",
+      "n_ads": 350,
+      "n_good": 280,
+      "n_poor": 70
+    },
+    "holdout": {
+      "n_simulations": 100,
+      "n_scenarios": 9,
+      "seeds_file_used": "seeds_split.json (holdout)",
+      "n_ads": 175,
+      "n_good": 140,
+      "n_poor": 35
+    }
+  },
+  "explanations_of_past_discrepancies": {
+    "350_ads_for_200_seeds": "The 200 pre-committed seeds in seeds.json span 9 scenarios. While 5 scenarios have single-ad campaigns, 4 scenarios have multi-ad campaigns: healthy_campaign (3 ads x 30 seeds = 90), good_ad_low_reachability (2 ads x 25 seeds = 50), bad_ad_high_engagement (2 ads x 25 seeds = 50), and mixed_portfolio (3 ads x 20 seeds = 60). The total ads across all 200 simulations is exactly 90 + 50 + 50 + 25 + 25 + 20 + 60 + 15 + 15 = 350 ads (280 good, 70 poor). There is no double-counting.",
+    "350_ads_for_100_holdout_seeds": "Earlier holdout scripts invoked runner.run_benchmark() without passing the holdout seed dict, defaulting to self.load_seeds() (all 200 seeds / 350 ads). When properly constrained to the 100 holdout seeds in seeds_split.json (a 50% stratified split), the exact counts are 100 simulations, 175 ads (140 good, 35 poor).",
+    "70_runs": "Earlier text described '70 runs' when evaluating poor ads. This was a terminology error: there are 70 poor ads across the dataset (25 bad_ad_high_engagement + 25 small_sample_trap + 20 mixed_portfolio = 70). The evaluation was executed across 200 simulation runs, not 70 runs.",
+    "4_scenarios_x_50_seeds_700_ads": "Earlier ablation text stated '700 ads'. This occurred because the ablation evaluation runs two passes (fixed priors vs pooled priors) over the 350 ads. The script summed evaluations across both passes (350 + 350 = 700 ad evaluations) instead of reporting the 350 distinct advertisements. The dataset itself contains 350 ads."
+  }
+}

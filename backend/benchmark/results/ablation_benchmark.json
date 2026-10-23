@@ -1,0 +1,44 @@
+{
+  "run_metadata": {
+    "mode": "ablation",
+    "n_simulations": 200,
+    "n_scenarios": 9,
+    "seeds_file_used": "seeds.json",
+    "n_ads": 350,
+    "n_good": 280,
+    "n_poor": 70,
+    "executed_at": "2026-10-23T02:33:28.418497+00:00",
+    "description": "Paired ablation isolating empirical-Bayes shrinkage (fixed priors vs pooled priors on identical seeds and thresholds)"
+  },
+  "fixed_priors": {
+    "fppr": 0.0,
+    "fppr_ci": [
+      8.673617379884035e-19,
+      0.013533764337829948
+    ],
+    "fndr": 0.4429,
+    "fndr_ci": [
+      0.3324954962041773,
+      0.5591642594406493
+    ],
+    "ier": 0.1314
+  },
+  "pooled_empirical_bayes": {
+    "fppr": 0.0,
+    "fppr_ci": [
+      8.673617379884035e-19,
+      0.013533764337829948
+    ],
+    "fndr": 0.4571,
+    "fndr_ci": [
+      0.3457276364835148,
+      0.5730171802501052
+    ],
+    "ier": 0.1314
+  },
+  "delta_pooled_minus_fixed": {
+    "delta_fppr": 0.0,
+    "delta_fndr": 0.0142,
+    "delta_ier": 0.0
+  }
+}

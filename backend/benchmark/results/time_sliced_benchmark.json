@@ -1,0 +1,63 @@
+{
+  "run_metadata": {
+    "mode": "time_sliced",
+    "n_simulations": 200,
+    "n_scenarios": 9,
+    "seeds_file_used": "seeds.json",
+    "n_ads": 350,
+    "n_good": 280,
+    "n_poor": 70,
+    "checkpoints": [
+      3,
+      7,
+      14,
+      21
+    ],
+    "executed_at": "2026-10-23T02:33:42.525769+00:00"
+  },
+  "metrics": {
+    "qualloop_distribution": {
+      "day_3": 0,
+      "day_7": 0,
+      "day_14": 14,
+      "day_21": 13,
+      "missed": 43
+    },
+    "baseline_distribution": {
+      "day_3": 66,
+      "day_7": 1,
+      "day_14": 2,
+      "day_21": 0,
+      "missed": 1
+    },
+    "qualloop_missed_count": 43,
+    "qualloop_missed_rate": 0.6143,
+    "baseline_missed_count": 1,
+    "baseline_missed_rate": 0.0143,
+    "qualloop_mean_days_to_correct": 17.37037037037037,
+    "baseline_mean_days_to_correct": 3.3768115942028984,
+    "qualloop_fp_by_day": {
+      "3": 0,
+      "7": 0,
+      "14": 0,
+      "21": 0
+    },
+    "baseline_fp_by_day": {
+      "3": 191,
+      "7": 14,
+      "14": 1,
+      "21": 0
+    },
+    "qualloop_poor_ad_spend_before_pause": 203000.0,
+    "baseline_poor_ad_spend_before_pause": 33642.75,
+    "qualloop_qualified_leads_lost_from_good_ads": 0,
+    "baseline_qualified_leads_lost_from_good_ads": 3612,
+    "oracle_spend": 1380000.0,
+    "oracle_qualified_leads": 5197,
+    "oracle_ql_per_rupee": 0.003766,
+    "qualloop_ql_per_rupee": 0.003387,
+    "baseline_ql_per_rupee": 0.003739,
+    "qualloop_vs_oracle_efficiency": 0.8993,
+    "baseline_vs_oracle_efficiency": 0.9928
+  }
+}
