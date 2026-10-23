@@ -1,0 +1,102 @@
+{
+  "run_metadata": {
+    "experiment": "sequential_closed_loop_simulation",
+    "checkpoints": [
+      3,
+      7,
+      14,
+      21
+    ],
+    "n_simulations": 200,
+    "n_scenarios": 9,
+    "seeds_file_used": "seeds.json",
+    "n_ads": 350,
+    "n_good": 280,
+    "n_poor": 70,
+    "executed_at": "2026-10-23T02:43:45.262494+00:00",
+    "closed_loop_definition": "A paused ad permanently stops accruing spend and leads from that checkpoint day forward. Final spend = full_spend * (pause_day / horizon). Leads created prior to pause complete qualification.",
+    "oracle_definition": "Omniscient benchmark agent that pauses all truly poor ads at Day 0 (t = 0), spending $0.00 on poor ads, while running all truly good ads to completion."
+  },
+  "policies": {
+    "oracle": {
+      "policy_name": "oracle",
+      "cumulative_spend": 1380000.0,
+      "qualified_leads": 5197,
+      "ql_per_rupee": 0.003766,
+      "efficiency_vs_oracle": 1.0,
+      "spend_on_poor_ads": 0.0,
+      "qualified_leads_forgone_from_good_ads": 0,
+      "poor_ads_paused_by_checkpoint": {
+        "day_3": 0,
+        "day_7": 0,
+        "day_14": 0,
+        "day_21": 0,
+        "day_0": 70
+      },
+      "poor_ads_missed": 0,
+      "poor_ads_mean_days_to_pause": 0.0,
+      "good_ads_false_paused": 0,
+      "good_ads_false_pause_rate": 0.0
+    },
+    "qualloop": {
+      "policy_name": "qualloop",
+      "cumulative_spend": 1583000.0,
+      "qualified_leads": 5336,
+      "ql_per_rupee": 0.003371,
+      "efficiency_vs_oracle": 0.8951,
+      "spend_on_poor_ads": 203000.0,
+      "qualified_leads_forgone_from_good_ads": 0,
+      "poor_ads_paused_by_checkpoint": {
+        "day_3": 0,
+        "day_7": 0,
+        "day_14": 14,
+        "day_21": 13,
+        "day_0": 0
+      },
+      "poor_ads_missed": 43,
+      "poor_ads_mean_days_to_pause": 17.37037037037037,
+      "good_ads_false_paused": 0,
+      "good_ads_false_pause_rate": 0.0
+    },
+    "baseline_b": {
+      "policy_name": "baseline_b",
+      "cumulative_spend": 467810.53,
+      "qualified_leads": 1990,
+      "ql_per_rupee": 0.004254,
+      "efficiency_vs_oracle": 1.1296,
+      "spend_on_poor_ads": 33642.75,
+      "qualified_leads_forgone_from_good_ads": 3231,
+      "poor_ads_paused_by_checkpoint": {
+        "day_3": 66,
+        "day_7": 1,
+        "day_14": 2,
+        "day_21": 0,
+        "day_0": 0
+      },
+      "poor_ads_missed": 1,
+      "poor_ads_mean_days_to_pause": 3.3768115942028984,
+      "good_ads_false_paused": 206,
+      "good_ads_false_pause_rate": 0.7357
+    },
+    "baseline_a": {
+      "policy_name": "baseline_a",
+      "cumulative_spend": 1387500.04,
+      "qualified_leads": 5276,
+      "ql_per_rupee": 0.003803,
+      "efficiency_vs_oracle": 1.0097,
+      "spend_on_poor_ads": 272500.0,
+      "qualified_leads_forgone_from_good_ads": 85,
+      "poor_ads_paused_by_checkpoint": {
+        "day_3": 0,
+        "day_7": 0,
+        "day_14": 0,
+        "day_21": 0,
+        "day_0": 0
+      },
+      "poor_ads_missed": 70,
+      "poor_ads_mean_days_to_pause": null,
+      "good_ads_false_paused": 15,
+      "good_ads_false_pause_rate": 0.0536
+    }
+  }
+}

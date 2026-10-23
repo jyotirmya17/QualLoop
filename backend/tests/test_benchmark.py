@@ -142,3 +142,34 @@ def test_runner_modes_emit_reconciled_counts():
         for key in ("n_simulations", "n_scenarios", "seeds_file_used", "n_ads", "n_good", "n_poor"):
             assert key in meta_a, f"Missing key in ablation run_metadata: {key}"
 
+
+def test_sequential_closed_loop_runner():
+    from benchmark.sequential import SequentialClosedLoopRunner
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        runner = SequentialClosedLoopRunner(results_dir=Path(tmpdir))
+        res = runner.run_benchmark(max_runs_per_scenario=1, save_filename="temp_seq.json")
+
+        meta = res["run_metadata"]
+        assert meta["experiment"] == "sequential_closed_loop_simulation"
+        assert meta["n_simulations"] == 9
+        assert meta["n_scenarios"] == 9
+        assert meta["n_ads"] > 0
+        assert meta["n_poor"] > 0
+
+        policies = res["policies"]
+        assert "oracle" in policies
+        assert "qualloop" in policies
+        assert "baseline_b" in policies
+        assert "baseline_a" in policies
+
+        oracle = policies["oracle"]
+        assert oracle["spend_on_poor_ads"] == 0.0
+        assert oracle["qualified_leads_forgone_from_good_ads"] == 0
+        assert oracle["efficiency_vs_oracle"] == 1.0
+
+        qualloop = policies["qualloop"]
+        assert qualloop["cumulative_spend"] > 0.0
+        assert qualloop["ql_per_rupee"] > 0.0
+
+
