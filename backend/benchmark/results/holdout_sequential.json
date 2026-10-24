@@ -17,7 +17,7 @@
     "n_ads": 175,
     "n_good": 140,
     "n_poor": 35,
-    "executed_at": "2026-10-24T13:40:32.090946+00:00"
+    "executed_at": "2026-10-24T13:51:13.661043+00:00"
   },
   "policy_metrics": {
     "oracle": {
@@ -63,7 +63,20 @@
         }
       },
       "pooled_ql_per_rupee": 0.003881,
+      "pooled_ql_per_rupee_bootstrap_ci_95": [
+        0.003749,
+        0.004019
+      ],
       "mean_of_per_run_ratios": 0.004853,
+      "mean_of_per_run_ratios_bootstrap_ci_95": [
+        0.004668,
+        0.005037
+      ],
+      "mean_qualified_leads_per_run": 26.43,
+      "mean_qualified_leads_per_run_bootstrap_ci_95": [
+        25.53,
+        27.37
+      ],
       "mean_per_run_cpql": 527.43
     },
     "qualloop": {
@@ -109,7 +122,20 @@
         }
       },
       "pooled_ql_per_rupee": 0.00355,
+      "pooled_ql_per_rupee_bootstrap_ci_95": [
+        0.003427,
+        0.003677
+      ],
       "mean_of_per_run_ratios": 0.003556,
+      "mean_of_per_run_ratios_bootstrap_ci_95": [
+        0.003416,
+        0.003703
+      ],
+      "mean_qualified_leads_per_run": 26.9,
+      "mean_qualified_leads_per_run_bootstrap_ci_95": [
+        25.97,
+        27.84
+      ],
       "mean_per_run_cpql": 547.53
     },
     "baseline_b": {
@@ -155,7 +181,20 @@
         }
       },
       "pooled_ql_per_rupee": 0.004543,
+      "pooled_ql_per_rupee_bootstrap_ci_95": [
+        0.004092,
+        0.005049
+      ],
       "mean_of_per_run_ratios": 0.003975,
+      "mean_of_per_run_ratios_bootstrap_ci_95": [
+        0.003534,
+        0.004437
+      ],
+      "mean_qualified_leads_per_run": 10.06,
+      "mean_qualified_leads_per_run_bootstrap_ci_95": [
+        7.94,
+        12.32
+      ],
       "mean_per_run_cpql": 346.89
     },
     "baseline_a": {
@@ -201,7 +240,20 @@
         }
       },
       "pooled_ql_per_rupee": 0.003841,
+      "pooled_ql_per_rupee_bootstrap_ci_95": [
+        0.003706,
+        0.003976
+      ],
       "mean_of_per_run_ratios": 0.003258,
+      "mean_of_per_run_ratios_bootstrap_ci_95": [
+        0.003128,
+        0.003392
+      ],
+      "mean_qualified_leads_per_run": 26.84,
+      "mean_qualified_leads_per_run_bootstrap_ci_95": [
+        25.9,
+        27.79
+      ],
       "mean_per_run_cpql": 365.07
     },
     "baseline_c": {
@@ -247,102 +299,378 @@
         }
       },
       "pooled_ql_per_rupee": 0.003598,
+      "pooled_ql_per_rupee_bootstrap_ci_95": [
+        0.003464,
+        0.003737
+      ],
       "mean_of_per_run_ratios": 0.003596,
+      "mean_of_per_run_ratios_bootstrap_ci_95": [
+        0.003455,
+        0.003741
+      ],
+      "mean_qualified_leads_per_run": 26.04,
+      "mean_qualified_leads_per_run_bootstrap_ci_95": [
+        24.98,
+        27.14
+      ],
       "mean_per_run_cpql": 603.4
     }
   },
   "paired_tests": {
+    "headline_policy": "No single headline p-value is reported across heterogeneous scenarios. Across scenarios with vastly differing budgets (\u20b91,000 to \u20b920,000 per ad) and distinct failure modes, pooling violates exchangeability and introduces Simpson's paradox. Headline inference is reported via scenario-stratified bootstrap 95% confidence intervals and per-scenario paired difference distributions.",
+    "comparisons": {
+      "qualloop_vs_baseline_b": {
+        "sign_convention": "qualloop_minus_baseline_b (positive indicates QualLoop is higher)",
+        "ql_per_rupee": {
+          "qualloop_pooled_ratio": 0.00355,
+          "qualloop_pooled_ratio_bootstrap_ci_95": [
+            0.003427,
+            0.003677
+          ],
+          "opponent_pooled_ratio": 0.004543,
+          "opponent_pooled_ratio_bootstrap_ci_95": [
+            0.004092,
+            0.005049
+          ],
+          "qualloop_mean_per_run_ratio": 0.003556,
+          "qualloop_mean_per_run_ratio_bootstrap_ci_95": [
+            0.003416,
+            0.003703
+          ],
+          "opponent_mean_per_run_ratio": 0.003975,
+          "opponent_mean_per_run_ratio_bootstrap_ci_95": [
+            0.003534,
+            0.004437
+          ],
+          "mean_diff": -0.000419,
+          "std_diff": 0.00225
+        },
+        "qualified_leads": {
+          "qualloop_total_leads": 2690.0,
+          "opponent_total_leads": 1006.0,
+          "qualloop_mean_per_run_leads": 26.9,
+          "qualloop_mean_per_run_leads_bootstrap_ci_95": [
+            25.97,
+            27.84
+          ],
+          "opponent_mean_per_run_leads": 10.06,
+          "opponent_mean_per_run_leads_bootstrap_ci_95": [
+            7.94,
+            12.32
+          ],
+          "mean_diff": 16.84,
+          "std_diff": 14.63
+        },
+        "note": "Per-scenario paired tests are reported in scenario_breakdown[sc]['paired_differences']."
+      },
+      "qualloop_vs_baseline_a": {
+        "sign_convention": "qualloop_minus_baseline_a (positive indicates QualLoop is higher)",
+        "ql_per_rupee": {
+          "qualloop_pooled_ratio": 0.00355,
+          "qualloop_pooled_ratio_bootstrap_ci_95": [
+            0.003427,
+            0.003677
+          ],
+          "opponent_pooled_ratio": 0.003841,
+          "opponent_pooled_ratio_bootstrap_ci_95": [
+            0.003706,
+            0.003976
+          ],
+          "qualloop_mean_per_run_ratio": 0.003556,
+          "qualloop_mean_per_run_ratio_bootstrap_ci_95": [
+            0.003416,
+            0.003703
+          ],
+          "opponent_mean_per_run_ratio": 0.003258,
+          "opponent_mean_per_run_ratio_bootstrap_ci_95": [
+            0.003128,
+            0.003392
+          ],
+          "mean_diff": 0.000298,
+          "std_diff": 0.00066
+        },
+        "qualified_leads": {
+          "qualloop_total_leads": 2690.0,
+          "opponent_total_leads": 2684.0,
+          "qualloop_mean_per_run_leads": 26.9,
+          "qualloop_mean_per_run_leads_bootstrap_ci_95": [
+            25.97,
+            27.84
+          ],
+          "opponent_mean_per_run_leads": 26.84,
+          "opponent_mean_per_run_leads_bootstrap_ci_95": [
+            25.9,
+            27.79
+          ],
+          "mean_diff": 0.06,
+          "std_diff": 2.06
+        },
+        "note": "Per-scenario paired tests are reported in scenario_breakdown[sc]['paired_differences']."
+      },
+      "qualloop_vs_baseline_c": {
+        "sign_convention": "qualloop_minus_baseline_c (positive indicates QualLoop is higher)",
+        "ql_per_rupee": {
+          "qualloop_pooled_ratio": 0.00355,
+          "qualloop_pooled_ratio_bootstrap_ci_95": [
+            0.003427,
+            0.003677
+          ],
+          "opponent_pooled_ratio": 0.003598,
+          "opponent_pooled_ratio_bootstrap_ci_95": [
+            0.003464,
+            0.003737
+          ],
+          "qualloop_mean_per_run_ratio": 0.003556,
+          "qualloop_mean_per_run_ratio_bootstrap_ci_95": [
+            0.003416,
+            0.003703
+          ],
+          "opponent_mean_per_run_ratio": 0.003596,
+          "opponent_mean_per_run_ratio_bootstrap_ci_95": [
+            0.003455,
+            0.003741
+          ],
+          "mean_diff": -4e-05,
+          "std_diff": 0.000307
+        },
+        "qualified_leads": {
+          "qualloop_total_leads": 2690.0,
+          "opponent_total_leads": 2604.0,
+          "qualloop_mean_per_run_leads": 26.9,
+          "qualloop_mean_per_run_leads_bootstrap_ci_95": [
+            25.97,
+            27.84
+          ],
+          "opponent_mean_per_run_leads": 26.04,
+          "opponent_mean_per_run_leads_bootstrap_ci_95": [
+            24.98,
+            27.14
+          ],
+          "mean_diff": 0.86,
+          "std_diff": 2.13
+        },
+        "note": "Per-scenario paired tests are reported in scenario_breakdown[sc]['paired_differences']."
+      },
+      "qualloop_vs_oracle": {
+        "sign_convention": "qualloop_minus_oracle (positive indicates QualLoop is higher)",
+        "ql_per_rupee": {
+          "qualloop_pooled_ratio": 0.00355,
+          "qualloop_pooled_ratio_bootstrap_ci_95": [
+            0.003427,
+            0.003677
+          ],
+          "opponent_pooled_ratio": 0.003881,
+          "opponent_pooled_ratio_bootstrap_ci_95": [
+            0.003749,
+            0.004019
+          ],
+          "qualloop_mean_per_run_ratio": 0.003556,
+          "qualloop_mean_per_run_ratio_bootstrap_ci_95": [
+            0.003416,
+            0.003703
+          ],
+          "opponent_mean_per_run_ratio": 0.004853,
+          "opponent_mean_per_run_ratio_bootstrap_ci_95": [
+            0.004668,
+            0.005037
+          ],
+          "mean_diff": -0.001297,
+          "std_diff": 0.003408
+        },
+        "qualified_leads": {
+          "qualloop_total_leads": 2690.0,
+          "opponent_total_leads": 2643.0,
+          "qualloop_mean_per_run_leads": 26.9,
+          "qualloop_mean_per_run_leads_bootstrap_ci_95": [
+            25.97,
+            27.84
+          ],
+          "opponent_mean_per_run_leads": 26.43,
+          "opponent_mean_per_run_leads_bootstrap_ci_95": [
+            25.53,
+            27.37
+          ],
+          "mean_diff": 0.47,
+          "std_diff": 1.57
+        },
+        "note": "Per-scenario paired tests are reported in scenario_breakdown[sc]['paired_differences']."
+      }
+    },
     "qualloop_vs_baseline_b": {
       "sign_convention": "qualloop_minus_baseline_b (positive indicates QualLoop is higher)",
       "ql_per_rupee": {
         "qualloop_pooled_ratio": 0.00355,
+        "qualloop_pooled_ratio_bootstrap_ci_95": [
+          0.003427,
+          0.003677
+        ],
         "opponent_pooled_ratio": 0.004543,
+        "opponent_pooled_ratio_bootstrap_ci_95": [
+          0.004092,
+          0.005049
+        ],
         "qualloop_mean_per_run_ratio": 0.003556,
+        "qualloop_mean_per_run_ratio_bootstrap_ci_95": [
+          0.003416,
+          0.003703
+        ],
         "opponent_mean_per_run_ratio": 0.003975,
+        "opponent_mean_per_run_ratio_bootstrap_ci_95": [
+          0.003534,
+          0.004437
+        ],
         "mean_diff": -0.000419,
-        "std_diff": 0.00225,
-        "paired_t_statistic": -1.853,
-        "paired_t_pvalue": 0.06685951251969918,
-        "wilcoxon_statistic": 1559.0,
-        "wilcoxon_pvalue": 0.5100424539165042
+        "std_diff": 0.00225
       },
       "qualified_leads": {
         "qualloop_total_leads": 2690.0,
         "opponent_total_leads": 1006.0,
+        "qualloop_mean_per_run_leads": 26.9,
+        "qualloop_mean_per_run_leads_bootstrap_ci_95": [
+          25.97,
+          27.84
+        ],
+        "opponent_mean_per_run_leads": 10.06,
+        "opponent_mean_per_run_leads_bootstrap_ci_95": [
+          7.94,
+          12.32
+        ],
         "mean_diff": 16.84,
-        "std_diff": 14.63,
-        "paired_t_statistic": 11.4524,
-        "paired_t_pvalue": 7.684088698621825e-20
-      }
+        "std_diff": 14.63
+      },
+      "note": "Per-scenario paired tests are reported in scenario_breakdown[sc]['paired_differences']."
     },
     "qualloop_vs_baseline_a": {
       "sign_convention": "qualloop_minus_baseline_a (positive indicates QualLoop is higher)",
       "ql_per_rupee": {
         "qualloop_pooled_ratio": 0.00355,
+        "qualloop_pooled_ratio_bootstrap_ci_95": [
+          0.003427,
+          0.003677
+        ],
         "opponent_pooled_ratio": 0.003841,
+        "opponent_pooled_ratio_bootstrap_ci_95": [
+          0.003706,
+          0.003976
+        ],
         "qualloop_mean_per_run_ratio": 0.003556,
+        "qualloop_mean_per_run_ratio_bootstrap_ci_95": [
+          0.003416,
+          0.003703
+        ],
         "opponent_mean_per_run_ratio": 0.003258,
+        "opponent_mean_per_run_ratio_bootstrap_ci_95": [
+          0.003128,
+          0.003392
+        ],
         "mean_diff": 0.000298,
-        "std_diff": 0.00066,
-        "paired_t_statistic": 4.4935,
-        "paired_t_pvalue": 1.9026480563574026e-05,
-        "wilcoxon_statistic": 19.0,
-        "wilcoxon_pvalue": 7.184519452521543e-06
+        "std_diff": 0.00066
       },
       "qualified_leads": {
         "qualloop_total_leads": 2690.0,
         "opponent_total_leads": 2684.0,
+        "qualloop_mean_per_run_leads": 26.9,
+        "qualloop_mean_per_run_leads_bootstrap_ci_95": [
+          25.97,
+          27.84
+        ],
+        "opponent_mean_per_run_leads": 26.84,
+        "opponent_mean_per_run_leads_bootstrap_ci_95": [
+          25.9,
+          27.79
+        ],
         "mean_diff": 0.06,
-        "std_diff": 2.06,
-        "paired_t_statistic": 0.2894,
-        "paired_t_pvalue": 0.7729063638172213
-      }
+        "std_diff": 2.06
+      },
+      "note": "Per-scenario paired tests are reported in scenario_breakdown[sc]['paired_differences']."
     },
     "qualloop_vs_baseline_c": {
       "sign_convention": "qualloop_minus_baseline_c (positive indicates QualLoop is higher)",
       "ql_per_rupee": {
         "qualloop_pooled_ratio": 0.00355,
+        "qualloop_pooled_ratio_bootstrap_ci_95": [
+          0.003427,
+          0.003677
+        ],
         "opponent_pooled_ratio": 0.003598,
+        "opponent_pooled_ratio_bootstrap_ci_95": [
+          0.003464,
+          0.003737
+        ],
         "qualloop_mean_per_run_ratio": 0.003556,
+        "qualloop_mean_per_run_ratio_bootstrap_ci_95": [
+          0.003416,
+          0.003703
+        ],
         "opponent_mean_per_run_ratio": 0.003596,
+        "opponent_mean_per_run_ratio_bootstrap_ci_95": [
+          0.003455,
+          0.003741
+        ],
         "mean_diff": -4e-05,
-        "std_diff": 0.000307,
-        "paired_t_statistic": -1.286,
-        "paired_t_pvalue": 0.20144682197269792,
-        "wilcoxon_statistic": 93.5,
-        "wilcoxon_pvalue": 0.2839729646873709
+        "std_diff": 0.000307
       },
       "qualified_leads": {
         "qualloop_total_leads": 2690.0,
         "opponent_total_leads": 2604.0,
+        "qualloop_mean_per_run_leads": 26.9,
+        "qualloop_mean_per_run_leads_bootstrap_ci_95": [
+          25.97,
+          27.84
+        ],
+        "opponent_mean_per_run_leads": 26.04,
+        "opponent_mean_per_run_leads_bootstrap_ci_95": [
+          24.98,
+          27.14
+        ],
         "mean_diff": 0.86,
-        "std_diff": 2.13,
-        "paired_t_statistic": 4.0246,
-        "paired_t_pvalue": 0.00011175761595933182
-      }
+        "std_diff": 2.13
+      },
+      "note": "Per-scenario paired tests are reported in scenario_breakdown[sc]['paired_differences']."
     },
     "qualloop_vs_oracle": {
       "sign_convention": "qualloop_minus_oracle (positive indicates QualLoop is higher)",
       "ql_per_rupee": {
         "qualloop_pooled_ratio": 0.00355,
+        "qualloop_pooled_ratio_bootstrap_ci_95": [
+          0.003427,
+          0.003677
+        ],
         "opponent_pooled_ratio": 0.003881,
+        "opponent_pooled_ratio_bootstrap_ci_95": [
+          0.003749,
+          0.004019
+        ],
         "qualloop_mean_per_run_ratio": 0.003556,
+        "qualloop_mean_per_run_ratio_bootstrap_ci_95": [
+          0.003416,
+          0.003703
+        ],
         "opponent_mean_per_run_ratio": 0.004853,
+        "opponent_mean_per_run_ratio_bootstrap_ci_95": [
+          0.004668,
+          0.005037
+        ],
         "mean_diff": -0.001297,
-        "std_diff": 0.003408,
-        "paired_t_statistic": -3.7862,
-        "paired_t_pvalue": 0.00026244851421057053,
-        "wilcoxon_statistic": 56.0,
-        "wilcoxon_pvalue": 0.0008119112575296697
+        "std_diff": 0.003408
       },
       "qualified_leads": {
         "qualloop_total_leads": 2690.0,
         "opponent_total_leads": 2643.0,
+        "qualloop_mean_per_run_leads": 26.9,
+        "qualloop_mean_per_run_leads_bootstrap_ci_95": [
+          25.97,
+          27.84
+        ],
+        "opponent_mean_per_run_leads": 26.43,
+        "opponent_mean_per_run_leads_bootstrap_ci_95": [
+          25.53,
+          27.37
+        ],
         "mean_diff": 0.47,
-        "std_diff": 1.57,
-        "paired_t_statistic": 2.9761,
-        "paired_t_pvalue": 0.0036692879057806877
-      }
+        "std_diff": 1.57
+      },
+      "note": "Per-scenario paired tests are reported in scenario_breakdown[sc]['paired_differences']."
     }
   },
   "scenario_breakdown": {
@@ -416,6 +744,40 @@
         "days_to_pause": 14.0,
         "spend_on_poor_ads": 52000.0,
         "forgone_good_ql": 0.0
+      },
+      "paired_differences": {
+        "qualloop_minus_baseline_b": {
+          "mean_ql_diff": 22.08,
+          "std_ql_diff": 11.55,
+          "mean_ql_per_rupee_diff": -0.000705,
+          "std_ql_per_rupee_diff": 0.00296,
+          "within_scenario_paired_t_statistic": 6.62,
+          "within_scenario_paired_t_pvalue": 2.46500712138026e-05
+        },
+        "qualloop_minus_baseline_a": {
+          "mean_ql_diff": -1.23,
+          "std_ql_diff": 1.12,
+          "mean_ql_per_rupee_diff": 0.001856,
+          "std_ql_per_rupee_diff": 0.000545,
+          "within_scenario_paired_t_statistic": -3.8066,
+          "within_scenario_paired_t_pvalue": 0.002499412227576992
+        },
+        "qualloop_minus_baseline_c": {
+          "mean_ql_diff": 0.08,
+          "std_ql_diff": 0.27,
+          "mean_ql_per_rupee_diff": -0.000218,
+          "std_ql_per_rupee_diff": 0.000524,
+          "within_scenario_paired_t_statistic": 1.0,
+          "within_scenario_paired_t_pvalue": 0.33704905795358453
+        },
+        "qualloop_minus_oracle": {
+          "mean_ql_diff": 2.77,
+          "std_ql_diff": 1.25,
+          "mean_ql_per_rupee_diff": -0.009897,
+          "std_ql_per_rupee_diff": 0.001528,
+          "within_scenario_paired_t_statistic": 7.6752,
+          "within_scenario_paired_t_pvalue": 5.732105570329456e-06
+        }
       }
     },
     "creative_fatigue": {
@@ -488,6 +850,40 @@
         "days_to_pause": null,
         "spend_on_poor_ads": 0,
         "forgone_good_ql": 5.0
+      },
+      "paired_differences": {
+        "qualloop_minus_baseline_b": {
+          "mean_ql_diff": 15.6,
+          "std_ql_diff": 6.84,
+          "mean_ql_per_rupee_diff": -0.000971,
+          "std_ql_per_rupee_diff": 0.002218,
+          "within_scenario_paired_t_statistic": 6.8381,
+          "within_scenario_paired_t_pvalue": 7.57352311943391e-05
+        },
+        "qualloop_minus_baseline_a": {
+          "mean_ql_diff": 0.0,
+          "std_ql_diff": 0.0,
+          "mean_ql_per_rupee_diff": 0.0,
+          "std_ql_per_rupee_diff": 0.0,
+          "within_scenario_paired_t_statistic": null,
+          "within_scenario_paired_t_pvalue": null
+        },
+        "qualloop_minus_baseline_c": {
+          "mean_ql_diff": 0.5,
+          "std_ql_diff": 1.5,
+          "mean_ql_per_rupee_diff": -5.2e-05,
+          "std_ql_per_rupee_diff": 0.000157,
+          "within_scenario_paired_t_statistic": 1.0,
+          "within_scenario_paired_t_pvalue": 0.3434363961379136
+        },
+        "qualloop_minus_oracle": {
+          "mean_ql_diff": 0.0,
+          "std_ql_diff": 0.0,
+          "mean_ql_per_rupee_diff": 0.0,
+          "std_ql_per_rupee_diff": 0.0,
+          "within_scenario_paired_t_statistic": null,
+          "within_scenario_paired_t_pvalue": null
+        }
       }
     },
     "delayed_conversion_trap": {
@@ -560,6 +956,40 @@
         "days_to_pause": null,
         "spend_on_poor_ads": 0,
         "forgone_good_ql": 15.0
+      },
+      "paired_differences": {
+        "qualloop_minus_baseline_b": {
+          "mean_ql_diff": 12.85,
+          "std_ql_diff": 7.86,
+          "mean_ql_per_rupee_diff": 0.000179,
+          "std_ql_per_rupee_diff": 0.001715,
+          "within_scenario_paired_t_statistic": 5.6597,
+          "within_scenario_paired_t_pvalue": 0.00010565156527650319
+        },
+        "qualloop_minus_baseline_a": {
+          "mean_ql_diff": -0.77,
+          "std_ql_diff": 2.66,
+          "mean_ql_per_rupee_diff": 3.1e-05,
+          "std_ql_per_rupee_diff": 0.000107,
+          "within_scenario_paired_t_statistic": -1.0,
+          "within_scenario_paired_t_pvalue": 0.33704905795358436
+        },
+        "qualloop_minus_baseline_c": {
+          "mean_ql_diff": 0.38,
+          "std_ql_diff": 1.33,
+          "mean_ql_per_rupee_diff": -6.2e-05,
+          "std_ql_per_rupee_diff": 0.000213,
+          "within_scenario_paired_t_statistic": 1.0,
+          "within_scenario_paired_t_pvalue": 0.33704905795358436
+        },
+        "qualloop_minus_oracle": {
+          "mean_ql_diff": -0.77,
+          "std_ql_diff": 2.66,
+          "mean_ql_per_rupee_diff": 3.1e-05,
+          "std_ql_per_rupee_diff": 0.000107,
+          "within_scenario_paired_t_statistic": -1.0,
+          "within_scenario_paired_t_pvalue": 0.33704905795358436
+        }
       }
     },
     "good_ad_low_reachability": {
@@ -632,6 +1062,40 @@
         "days_to_pause": null,
         "spend_on_poor_ads": 0,
         "forgone_good_ql": 33.0
+      },
+      "paired_differences": {
+        "qualloop_minus_baseline_b": {
+          "mean_ql_diff": 16.83,
+          "std_ql_diff": 6.47,
+          "mean_ql_per_rupee_diff": 3.7e-05,
+          "std_ql_per_rupee_diff": 0.001053,
+          "within_scenario_paired_t_statistic": 8.6347,
+          "within_scenario_paired_t_pvalue": 3.138034721138545e-06
+        },
+        "qualloop_minus_baseline_a": {
+          "mean_ql_diff": 0.0,
+          "std_ql_diff": 0.0,
+          "mean_ql_per_rupee_diff": 0.0,
+          "std_ql_per_rupee_diff": 0.0,
+          "within_scenario_paired_t_statistic": null,
+          "within_scenario_paired_t_pvalue": null
+        },
+        "qualloop_minus_baseline_c": {
+          "mean_ql_diff": 2.75,
+          "std_ql_diff": 3.39,
+          "mean_ql_per_rupee_diff": 7.9e-05,
+          "std_ql_per_rupee_diff": 0.000162,
+          "within_scenario_paired_t_statistic": 2.6871,
+          "within_scenario_paired_t_pvalue": 0.02113761699089616
+        },
+        "qualloop_minus_oracle": {
+          "mean_ql_diff": 0.0,
+          "std_ql_diff": 0.0,
+          "mean_ql_per_rupee_diff": 0.0,
+          "std_ql_per_rupee_diff": 0.0,
+          "within_scenario_paired_t_statistic": null,
+          "within_scenario_paired_t_pvalue": null
+        }
       }
     },
     "healthy_campaign": {
@@ -704,6 +1168,40 @@
         "days_to_pause": null,
         "spend_on_poor_ads": 0,
         "forgone_good_ql": 26.0
+      },
+      "paired_differences": {
+        "qualloop_minus_baseline_b": {
+          "mean_ql_diff": 35.6,
+          "std_ql_diff": 18.68,
+          "mean_ql_per_rupee_diff": -0.000155,
+          "std_ql_per_rupee_diff": 0.002196,
+          "within_scenario_paired_t_statistic": 7.1325,
+          "within_scenario_paired_t_pvalue": 5.07189399735038e-06
+        },
+        "qualloop_minus_baseline_a": {
+          "mean_ql_diff": 0.0,
+          "std_ql_diff": 0.0,
+          "mean_ql_per_rupee_diff": 0.0,
+          "std_ql_per_rupee_diff": 0.0,
+          "within_scenario_paired_t_statistic": null,
+          "within_scenario_paired_t_pvalue": null
+        },
+        "qualloop_minus_baseline_c": {
+          "mean_ql_diff": 1.73,
+          "std_ql_diff": 2.89,
+          "mean_ql_per_rupee_diff": 0.000142,
+          "std_ql_per_rupee_diff": 0.000236,
+          "within_scenario_paired_t_statistic": 2.2473,
+          "within_scenario_paired_t_pvalue": 0.04126682351448184
+        },
+        "qualloop_minus_oracle": {
+          "mean_ql_diff": 0.0,
+          "std_ql_diff": 0.0,
+          "mean_ql_per_rupee_diff": 0.0,
+          "std_ql_per_rupee_diff": 0.0,
+          "within_scenario_paired_t_statistic": null,
+          "within_scenario_paired_t_pvalue": null
+        }
       }
     },
     "high_cpql": {
@@ -776,6 +1274,40 @@
         "days_to_pause": null,
         "spend_on_poor_ads": 0,
         "forgone_good_ql": 1.0
+      },
+      "paired_differences": {
+        "qualloop_minus_baseline_b": {
+          "mean_ql_diff": 5.57,
+          "std_ql_diff": 1.92,
+          "mean_ql_per_rupee_diff": -2.4e-05,
+          "std_ql_per_rupee_diff": 0.000278,
+          "within_scenario_paired_t_statistic": 7.1204,
+          "within_scenario_paired_t_pvalue": 0.00038600270973182906
+        },
+        "qualloop_minus_baseline_a": {
+          "mean_ql_diff": 5.86,
+          "std_ql_diff": 1.96,
+          "mean_ql_per_rupee_diff": -5e-06,
+          "std_ql_per_rupee_diff": 0.000269,
+          "within_scenario_paired_t_statistic": 7.3245,
+          "within_scenario_paired_t_pvalue": 0.00033082605648226417
+        },
+        "qualloop_minus_baseline_c": {
+          "mean_ql_diff": 0.14,
+          "std_ql_diff": 0.35,
+          "mean_ql_per_rupee_diff": 5e-06,
+          "std_ql_per_rupee_diff": 1.2e-05,
+          "within_scenario_paired_t_statistic": 1.0,
+          "within_scenario_paired_t_pvalue": 0.3559176837495822
+        },
+        "qualloop_minus_oracle": {
+          "mean_ql_diff": 0.0,
+          "std_ql_diff": 0.0,
+          "mean_ql_per_rupee_diff": 0.0,
+          "std_ql_per_rupee_diff": 0.0,
+          "within_scenario_paired_t_statistic": null,
+          "within_scenario_paired_t_pvalue": null
+        }
       }
     },
     "mixed_portfolio": {
@@ -848,6 +1380,40 @@
         "days_to_pause": 14.7,
         "spend_on_poor_ads": 15750.0,
         "forgone_good_ql": 18.0
+      },
+      "paired_differences": {
+        "qualloop_minus_baseline_b": {
+          "mean_ql_diff": 22.1,
+          "std_ql_diff": 11.79,
+          "mean_ql_per_rupee_diff": -0.001384,
+          "std_ql_per_rupee_diff": 0.001276,
+          "within_scenario_paired_t_statistic": 5.6217,
+          "within_scenario_paired_t_pvalue": 0.0003251364980129146
+        },
+        "qualloop_minus_baseline_a": {
+          "mean_ql_diff": -0.9,
+          "std_ql_diff": 1.22,
+          "mean_ql_per_rupee_diff": 0.000529,
+          "std_ql_per_rupee_diff": 0.000162,
+          "within_scenario_paired_t_statistic": -2.2119,
+          "within_scenario_paired_t_pvalue": 0.05427441349738841
+        },
+        "qualloop_minus_baseline_c": {
+          "mean_ql_diff": 1.5,
+          "std_ql_diff": 2.29,
+          "mean_ql_per_rupee_diff": -0.000359,
+          "std_ql_per_rupee_diff": 0.000348,
+          "within_scenario_paired_t_statistic": 1.964,
+          "within_scenario_paired_t_pvalue": 0.08112618884584057
+        },
+        "qualloop_minus_oracle": {
+          "mean_ql_diff": 1.7,
+          "std_ql_diff": 1.27,
+          "mean_ql_per_rupee_diff": -0.000942,
+          "std_ql_per_rupee_diff": 0.000306,
+          "within_scenario_paired_t_statistic": 4.0194,
+          "within_scenario_paired_t_pvalue": 0.0030209576742715907
+        }
       }
     },
     "small_sample_trap": {
@@ -920,6 +1486,40 @@
         "days_to_pause": 17.5,
         "spend_on_poor_ads": 6250.0,
         "forgone_good_ql": 0
+      },
+      "paired_differences": {
+        "qualloop_minus_baseline_b": {
+          "mean_ql_diff": 0.17,
+          "std_ql_diff": 0.37,
+          "mean_ql_per_rupee_diff": -0.000278,
+          "std_ql_per_rupee_diff": 0.002252,
+          "within_scenario_paired_t_statistic": 1.4832,
+          "within_scenario_paired_t_pvalue": 0.16608681351829555
+        },
+        "qualloop_minus_baseline_a": {
+          "mean_ql_diff": 0.0,
+          "std_ql_diff": 0.0,
+          "mean_ql_per_rupee_diff": 0.0,
+          "std_ql_per_rupee_diff": 0.0,
+          "within_scenario_paired_t_statistic": null,
+          "within_scenario_paired_t_pvalue": null
+        },
+        "qualloop_minus_baseline_c": {
+          "mean_ql_diff": 0.0,
+          "std_ql_diff": 0.0,
+          "mean_ql_per_rupee_diff": 5.6e-05,
+          "std_ql_per_rupee_diff": 0.000184,
+          "within_scenario_paired_t_statistic": null,
+          "within_scenario_paired_t_pvalue": null
+        },
+        "qualloop_minus_oracle": {
+          "mean_ql_diff": 0.33,
+          "std_ql_diff": 0.47,
+          "mean_ql_per_rupee_diff": 0.000667,
+          "std_ql_per_rupee_diff": 0.000943,
+          "within_scenario_paired_t_statistic": 2.3452,
+          "within_scenario_paired_t_pvalue": 0.03881409182311233
+        }
       }
     },
     "sudden_deterioration": {
@@ -992,6 +1592,40 @@
         "days_to_pause": null,
         "spend_on_poor_ads": 0,
         "forgone_good_ql": 0.0
+      },
+      "paired_differences": {
+        "qualloop_minus_baseline_b": {
+          "mean_ql_diff": 9.5,
+          "std_ql_diff": 7.55,
+          "mean_ql_per_rupee_diff": -0.000767,
+          "std_ql_per_rupee_diff": 0.003833,
+          "within_scenario_paired_t_statistic": 3.3292,
+          "within_scenario_paired_t_pvalue": 0.01260551717036635
+        },
+        "qualloop_minus_baseline_a": {
+          "mean_ql_diff": 0.0,
+          "std_ql_diff": 0.0,
+          "mean_ql_per_rupee_diff": 0.0,
+          "std_ql_per_rupee_diff": 0.0,
+          "within_scenario_paired_t_statistic": null,
+          "within_scenario_paired_t_pvalue": null
+        },
+        "qualloop_minus_baseline_c": {
+          "mean_ql_diff": 0.0,
+          "std_ql_diff": 0.0,
+          "mean_ql_per_rupee_diff": 0.0,
+          "std_ql_per_rupee_diff": 0.0,
+          "within_scenario_paired_t_statistic": null,
+          "within_scenario_paired_t_pvalue": null
+        },
+        "qualloop_minus_oracle": {
+          "mean_ql_diff": 0.0,
+          "std_ql_diff": 0.0,
+          "mean_ql_per_rupee_diff": 0.0,
+          "std_ql_per_rupee_diff": 0.0,
+          "within_scenario_paired_t_statistic": null,
+          "within_scenario_paired_t_pvalue": null
+        }
       }
     }
   },
@@ -1042,7 +1676,20 @@
             }
           },
           "pooled_ql_per_rupee": 0.003881,
+          "pooled_ql_per_rupee_bootstrap_ci_95": [
+            0.003749,
+            0.004019
+          ],
           "mean_of_per_run_ratios": 0.004853,
+          "mean_of_per_run_ratios_bootstrap_ci_95": [
+            0.004668,
+            0.005037
+          ],
+          "mean_qualified_leads_per_run": 26.43,
+          "mean_qualified_leads_per_run_bootstrap_ci_95": [
+            25.53,
+            27.37
+          ],
           "mean_per_run_cpql": 527.43
         },
         "qualloop": {
@@ -1088,7 +1735,20 @@
             }
           },
           "pooled_ql_per_rupee": 0.00355,
+          "pooled_ql_per_rupee_bootstrap_ci_95": [
+            0.003427,
+            0.003677
+          ],
           "mean_of_per_run_ratios": 0.003556,
+          "mean_of_per_run_ratios_bootstrap_ci_95": [
+            0.003416,
+            0.003703
+          ],
+          "mean_qualified_leads_per_run": 26.9,
+          "mean_qualified_leads_per_run_bootstrap_ci_95": [
+            25.97,
+            27.84
+          ],
           "mean_per_run_cpql": 547.53
         },
         "baseline_b": {
@@ -1134,7 +1794,20 @@
             }
           },
           "pooled_ql_per_rupee": 0.004543,
+          "pooled_ql_per_rupee_bootstrap_ci_95": [
+            0.004092,
+            0.005049
+          ],
           "mean_of_per_run_ratios": 0.003975,
+          "mean_of_per_run_ratios_bootstrap_ci_95": [
+            0.003534,
+            0.004437
+          ],
+          "mean_qualified_leads_per_run": 10.06,
+          "mean_qualified_leads_per_run_bootstrap_ci_95": [
+            7.94,
+            12.32
+          ],
           "mean_per_run_cpql": 346.89
         },
         "baseline_a": {
@@ -1180,7 +1853,20 @@
             }
           },
           "pooled_ql_per_rupee": 0.003841,
+          "pooled_ql_per_rupee_bootstrap_ci_95": [
+            0.003706,
+            0.003976
+          ],
           "mean_of_per_run_ratios": 0.003258,
+          "mean_of_per_run_ratios_bootstrap_ci_95": [
+            0.003128,
+            0.003392
+          ],
+          "mean_qualified_leads_per_run": 26.84,
+          "mean_qualified_leads_per_run_bootstrap_ci_95": [
+            25.9,
+            27.79
+          ],
           "mean_per_run_cpql": 365.07
         },
         "baseline_c": {
@@ -1226,102 +1912,378 @@
             }
           },
           "pooled_ql_per_rupee": 0.003598,
+          "pooled_ql_per_rupee_bootstrap_ci_95": [
+            0.003464,
+            0.003737
+          ],
           "mean_of_per_run_ratios": 0.003596,
+          "mean_of_per_run_ratios_bootstrap_ci_95": [
+            0.003455,
+            0.003741
+          ],
+          "mean_qualified_leads_per_run": 26.04,
+          "mean_qualified_leads_per_run_bootstrap_ci_95": [
+            24.98,
+            27.14
+          ],
           "mean_per_run_cpql": 603.4
         }
       },
       "paired_tests": {
+        "headline_policy": "No single headline p-value is reported across heterogeneous scenarios. Across scenarios with vastly differing budgets (\u20b91,000 to \u20b920,000 per ad) and distinct failure modes, pooling violates exchangeability and introduces Simpson's paradox. Headline inference is reported via scenario-stratified bootstrap 95% confidence intervals and per-scenario paired difference distributions.",
+        "comparisons": {
+          "qualloop_vs_baseline_b": {
+            "sign_convention": "qualloop_minus_baseline_b (positive indicates QualLoop is higher)",
+            "ql_per_rupee": {
+              "qualloop_pooled_ratio": 0.00355,
+              "qualloop_pooled_ratio_bootstrap_ci_95": [
+                0.003427,
+                0.003677
+              ],
+              "opponent_pooled_ratio": 0.004543,
+              "opponent_pooled_ratio_bootstrap_ci_95": [
+                0.004092,
+                0.005049
+              ],
+              "qualloop_mean_per_run_ratio": 0.003556,
+              "qualloop_mean_per_run_ratio_bootstrap_ci_95": [
+                0.003416,
+                0.003703
+              ],
+              "opponent_mean_per_run_ratio": 0.003975,
+              "opponent_mean_per_run_ratio_bootstrap_ci_95": [
+                0.003534,
+                0.004437
+              ],
+              "mean_diff": -0.000419,
+              "std_diff": 0.00225
+            },
+            "qualified_leads": {
+              "qualloop_total_leads": 2690.0,
+              "opponent_total_leads": 1006.0,
+              "qualloop_mean_per_run_leads": 26.9,
+              "qualloop_mean_per_run_leads_bootstrap_ci_95": [
+                25.97,
+                27.84
+              ],
+              "opponent_mean_per_run_leads": 10.06,
+              "opponent_mean_per_run_leads_bootstrap_ci_95": [
+                7.94,
+                12.32
+              ],
+              "mean_diff": 16.84,
+              "std_diff": 14.63
+            },
+            "note": "Per-scenario paired tests are reported in scenario_breakdown[sc]['paired_differences']."
+          },
+          "qualloop_vs_baseline_a": {
+            "sign_convention": "qualloop_minus_baseline_a (positive indicates QualLoop is higher)",
+            "ql_per_rupee": {
+              "qualloop_pooled_ratio": 0.00355,
+              "qualloop_pooled_ratio_bootstrap_ci_95": [
+                0.003427,
+                0.003677
+              ],
+              "opponent_pooled_ratio": 0.003841,
+              "opponent_pooled_ratio_bootstrap_ci_95": [
+                0.003706,
+                0.003976
+              ],
+              "qualloop_mean_per_run_ratio": 0.003556,
+              "qualloop_mean_per_run_ratio_bootstrap_ci_95": [
+                0.003416,
+                0.003703
+              ],
+              "opponent_mean_per_run_ratio": 0.003258,
+              "opponent_mean_per_run_ratio_bootstrap_ci_95": [
+                0.003128,
+                0.003392
+              ],
+              "mean_diff": 0.000298,
+              "std_diff": 0.00066
+            },
+            "qualified_leads": {
+              "qualloop_total_leads": 2690.0,
+              "opponent_total_leads": 2684.0,
+              "qualloop_mean_per_run_leads": 26.9,
+              "qualloop_mean_per_run_leads_bootstrap_ci_95": [
+                25.97,
+                27.84
+              ],
+              "opponent_mean_per_run_leads": 26.84,
+              "opponent_mean_per_run_leads_bootstrap_ci_95": [
+                25.9,
+                27.79
+              ],
+              "mean_diff": 0.06,
+              "std_diff": 2.06
+            },
+            "note": "Per-scenario paired tests are reported in scenario_breakdown[sc]['paired_differences']."
+          },
+          "qualloop_vs_baseline_c": {
+            "sign_convention": "qualloop_minus_baseline_c (positive indicates QualLoop is higher)",
+            "ql_per_rupee": {
+              "qualloop_pooled_ratio": 0.00355,
+              "qualloop_pooled_ratio_bootstrap_ci_95": [
+                0.003427,
+                0.003677
+              ],
+              "opponent_pooled_ratio": 0.003598,
+              "opponent_pooled_ratio_bootstrap_ci_95": [
+                0.003464,
+                0.003737
+              ],
+              "qualloop_mean_per_run_ratio": 0.003556,
+              "qualloop_mean_per_run_ratio_bootstrap_ci_95": [
+                0.003416,
+                0.003703
+              ],
+              "opponent_mean_per_run_ratio": 0.003596,
+              "opponent_mean_per_run_ratio_bootstrap_ci_95": [
+                0.003455,
+                0.003741
+              ],
+              "mean_diff": -4e-05,
+              "std_diff": 0.000307
+            },
+            "qualified_leads": {
+              "qualloop_total_leads": 2690.0,
+              "opponent_total_leads": 2604.0,
+              "qualloop_mean_per_run_leads": 26.9,
+              "qualloop_mean_per_run_leads_bootstrap_ci_95": [
+                25.97,
+                27.84
+              ],
+              "opponent_mean_per_run_leads": 26.04,
+              "opponent_mean_per_run_leads_bootstrap_ci_95": [
+                24.98,
+                27.14
+              ],
+              "mean_diff": 0.86,
+              "std_diff": 2.13
+            },
+            "note": "Per-scenario paired tests are reported in scenario_breakdown[sc]['paired_differences']."
+          },
+          "qualloop_vs_oracle": {
+            "sign_convention": "qualloop_minus_oracle (positive indicates QualLoop is higher)",
+            "ql_per_rupee": {
+              "qualloop_pooled_ratio": 0.00355,
+              "qualloop_pooled_ratio_bootstrap_ci_95": [
+                0.003427,
+                0.003677
+              ],
+              "opponent_pooled_ratio": 0.003881,
+              "opponent_pooled_ratio_bootstrap_ci_95": [
+                0.003749,
+                0.004019
+              ],
+              "qualloop_mean_per_run_ratio": 0.003556,
+              "qualloop_mean_per_run_ratio_bootstrap_ci_95": [
+                0.003416,
+                0.003703
+              ],
+              "opponent_mean_per_run_ratio": 0.004853,
+              "opponent_mean_per_run_ratio_bootstrap_ci_95": [
+                0.004668,
+                0.005037
+              ],
+              "mean_diff": -0.001297,
+              "std_diff": 0.003408
+            },
+            "qualified_leads": {
+              "qualloop_total_leads": 2690.0,
+              "opponent_total_leads": 2643.0,
+              "qualloop_mean_per_run_leads": 26.9,
+              "qualloop_mean_per_run_leads_bootstrap_ci_95": [
+                25.97,
+                27.84
+              ],
+              "opponent_mean_per_run_leads": 26.43,
+              "opponent_mean_per_run_leads_bootstrap_ci_95": [
+                25.53,
+                27.37
+              ],
+              "mean_diff": 0.47,
+              "std_diff": 1.57
+            },
+            "note": "Per-scenario paired tests are reported in scenario_breakdown[sc]['paired_differences']."
+          }
+        },
         "qualloop_vs_baseline_b": {
           "sign_convention": "qualloop_minus_baseline_b (positive indicates QualLoop is higher)",
           "ql_per_rupee": {
             "qualloop_pooled_ratio": 0.00355,
+            "qualloop_pooled_ratio_bootstrap_ci_95": [
+              0.003427,
+              0.003677
+            ],
             "opponent_pooled_ratio": 0.004543,
+            "opponent_pooled_ratio_bootstrap_ci_95": [
+              0.004092,
+              0.005049
+            ],
             "qualloop_mean_per_run_ratio": 0.003556,
+            "qualloop_mean_per_run_ratio_bootstrap_ci_95": [
+              0.003416,
+              0.003703
+            ],
             "opponent_mean_per_run_ratio": 0.003975,
+            "opponent_mean_per_run_ratio_bootstrap_ci_95": [
+              0.003534,
+              0.004437
+            ],
             "mean_diff": -0.000419,
-            "std_diff": 0.00225,
-            "paired_t_statistic": -1.853,
-            "paired_t_pvalue": 0.06685951251969918,
-            "wilcoxon_statistic": 1559.0,
-            "wilcoxon_pvalue": 0.5100424539165042
+            "std_diff": 0.00225
           },
           "qualified_leads": {
             "qualloop_total_leads": 2690.0,
             "opponent_total_leads": 1006.0,
+            "qualloop_mean_per_run_leads": 26.9,
+            "qualloop_mean_per_run_leads_bootstrap_ci_95": [
+              25.97,
+              27.84
+            ],
+            "opponent_mean_per_run_leads": 10.06,
+            "opponent_mean_per_run_leads_bootstrap_ci_95": [
+              7.94,
+              12.32
+            ],
             "mean_diff": 16.84,
-            "std_diff": 14.63,
-            "paired_t_statistic": 11.4524,
-            "paired_t_pvalue": 7.684088698621825e-20
-          }
+            "std_diff": 14.63
+          },
+          "note": "Per-scenario paired tests are reported in scenario_breakdown[sc]['paired_differences']."
         },
         "qualloop_vs_baseline_a": {
           "sign_convention": "qualloop_minus_baseline_a (positive indicates QualLoop is higher)",
           "ql_per_rupee": {
             "qualloop_pooled_ratio": 0.00355,
+            "qualloop_pooled_ratio_bootstrap_ci_95": [
+              0.003427,
+              0.003677
+            ],
             "opponent_pooled_ratio": 0.003841,
+            "opponent_pooled_ratio_bootstrap_ci_95": [
+              0.003706,
+              0.003976
+            ],
             "qualloop_mean_per_run_ratio": 0.003556,
+            "qualloop_mean_per_run_ratio_bootstrap_ci_95": [
+              0.003416,
+              0.003703
+            ],
             "opponent_mean_per_run_ratio": 0.003258,
+            "opponent_mean_per_run_ratio_bootstrap_ci_95": [
+              0.003128,
+              0.003392
+            ],
             "mean_diff": 0.000298,
-            "std_diff": 0.00066,
-            "paired_t_statistic": 4.4935,
-            "paired_t_pvalue": 1.9026480563574026e-05,
-            "wilcoxon_statistic": 19.0,
-            "wilcoxon_pvalue": 7.184519452521543e-06
+            "std_diff": 0.00066
           },
           "qualified_leads": {
             "qualloop_total_leads": 2690.0,
             "opponent_total_leads": 2684.0,
+            "qualloop_mean_per_run_leads": 26.9,
+            "qualloop_mean_per_run_leads_bootstrap_ci_95": [
+              25.97,
+              27.84
+            ],
+            "opponent_mean_per_run_leads": 26.84,
+            "opponent_mean_per_run_leads_bootstrap_ci_95": [
+              25.9,
+              27.79
+            ],
             "mean_diff": 0.06,
-            "std_diff": 2.06,
-            "paired_t_statistic": 0.2894,
-            "paired_t_pvalue": 0.7729063638172213
-          }
+            "std_diff": 2.06
+          },
+          "note": "Per-scenario paired tests are reported in scenario_breakdown[sc]['paired_differences']."
         },
         "qualloop_vs_baseline_c": {
           "sign_convention": "qualloop_minus_baseline_c (positive indicates QualLoop is higher)",
           "ql_per_rupee": {
             "qualloop_pooled_ratio": 0.00355,
+            "qualloop_pooled_ratio_bootstrap_ci_95": [
+              0.003427,
+              0.003677
+            ],
             "opponent_pooled_ratio": 0.003598,
+            "opponent_pooled_ratio_bootstrap_ci_95": [
+              0.003464,
+              0.003737
+            ],
             "qualloop_mean_per_run_ratio": 0.003556,
+            "qualloop_mean_per_run_ratio_bootstrap_ci_95": [
+              0.003416,
+              0.003703
+            ],
             "opponent_mean_per_run_ratio": 0.003596,
+            "opponent_mean_per_run_ratio_bootstrap_ci_95": [
+              0.003455,
+              0.003741
+            ],
             "mean_diff": -4e-05,
-            "std_diff": 0.000307,
-            "paired_t_statistic": -1.286,
-            "paired_t_pvalue": 0.20144682197269792,
-            "wilcoxon_statistic": 93.5,
-            "wilcoxon_pvalue": 0.2839729646873709
+            "std_diff": 0.000307
           },
           "qualified_leads": {
             "qualloop_total_leads": 2690.0,
             "opponent_total_leads": 2604.0,
+            "qualloop_mean_per_run_leads": 26.9,
+            "qualloop_mean_per_run_leads_bootstrap_ci_95": [
+              25.97,
+              27.84
+            ],
+            "opponent_mean_per_run_leads": 26.04,
+            "opponent_mean_per_run_leads_bootstrap_ci_95": [
+              24.98,
+              27.14
+            ],
             "mean_diff": 0.86,
-            "std_diff": 2.13,
-            "paired_t_statistic": 4.0246,
-            "paired_t_pvalue": 0.00011175761595933182
-          }
+            "std_diff": 2.13
+          },
+          "note": "Per-scenario paired tests are reported in scenario_breakdown[sc]['paired_differences']."
         },
         "qualloop_vs_oracle": {
           "sign_convention": "qualloop_minus_oracle (positive indicates QualLoop is higher)",
           "ql_per_rupee": {
             "qualloop_pooled_ratio": 0.00355,
+            "qualloop_pooled_ratio_bootstrap_ci_95": [
+              0.003427,
+              0.003677
+            ],
             "opponent_pooled_ratio": 0.003881,
+            "opponent_pooled_ratio_bootstrap_ci_95": [
+              0.003749,
+              0.004019
+            ],
             "qualloop_mean_per_run_ratio": 0.003556,
+            "qualloop_mean_per_run_ratio_bootstrap_ci_95": [
+              0.003416,
+              0.003703
+            ],
             "opponent_mean_per_run_ratio": 0.004853,
+            "opponent_mean_per_run_ratio_bootstrap_ci_95": [
+              0.004668,
+              0.005037
+            ],
             "mean_diff": -0.001297,
-            "std_diff": 0.003408,
-            "paired_t_statistic": -3.7862,
-            "paired_t_pvalue": 0.00026244851421057053,
-            "wilcoxon_statistic": 56.0,
-            "wilcoxon_pvalue": 0.0008119112575296697
+            "std_diff": 0.003408
           },
           "qualified_leads": {
             "qualloop_total_leads": 2690.0,
             "opponent_total_leads": 2643.0,
+            "qualloop_mean_per_run_leads": 26.9,
+            "qualloop_mean_per_run_leads_bootstrap_ci_95": [
+              25.97,
+              27.84
+            ],
+            "opponent_mean_per_run_leads": 26.43,
+            "opponent_mean_per_run_leads_bootstrap_ci_95": [
+              25.53,
+              27.37
+            ],
             "mean_diff": 0.47,
-            "std_diff": 1.57,
-            "paired_t_statistic": 2.9761,
-            "paired_t_pvalue": 0.0036692879057806877
-          }
+            "std_diff": 1.57
+          },
+          "note": "Per-scenario paired tests are reported in scenario_breakdown[sc]['paired_differences']."
         }
       },
       "scenario_breakdown": {
@@ -1395,6 +2357,40 @@
             "days_to_pause": 14.0,
             "spend_on_poor_ads": 52000.0,
             "forgone_good_ql": 0.0
+          },
+          "paired_differences": {
+            "qualloop_minus_baseline_b": {
+              "mean_ql_diff": 22.08,
+              "std_ql_diff": 11.55,
+              "mean_ql_per_rupee_diff": -0.000705,
+              "std_ql_per_rupee_diff": 0.00296,
+              "within_scenario_paired_t_statistic": 6.62,
+              "within_scenario_paired_t_pvalue": 2.46500712138026e-05
+            },
+            "qualloop_minus_baseline_a": {
+              "mean_ql_diff": -1.23,
+              "std_ql_diff": 1.12,
+              "mean_ql_per_rupee_diff": 0.001856,
+              "std_ql_per_rupee_diff": 0.000545,
+              "within_scenario_paired_t_statistic": -3.8066,
+              "within_scenario_paired_t_pvalue": 0.002499412227576992
+            },
+            "qualloop_minus_baseline_c": {
+              "mean_ql_diff": 0.08,
+              "std_ql_diff": 0.27,
+              "mean_ql_per_rupee_diff": -0.000218,
+              "std_ql_per_rupee_diff": 0.000524,
+              "within_scenario_paired_t_statistic": 1.0,
+              "within_scenario_paired_t_pvalue": 0.33704905795358453
+            },
+            "qualloop_minus_oracle": {
+              "mean_ql_diff": 2.77,
+              "std_ql_diff": 1.25,
+              "mean_ql_per_rupee_diff": -0.009897,
+              "std_ql_per_rupee_diff": 0.001528,
+              "within_scenario_paired_t_statistic": 7.6752,
+              "within_scenario_paired_t_pvalue": 5.732105570329456e-06
+            }
           }
         },
         "creative_fatigue": {
@@ -1467,6 +2463,40 @@
             "days_to_pause": null,
             "spend_on_poor_ads": 0,
             "forgone_good_ql": 5.0
+          },
+          "paired_differences": {
+            "qualloop_minus_baseline_b": {
+              "mean_ql_diff": 15.6,
+              "std_ql_diff": 6.84,
+              "mean_ql_per_rupee_diff": -0.000971,
+              "std_ql_per_rupee_diff": 0.002218,
+              "within_scenario_paired_t_statistic": 6.8381,
+              "within_scenario_paired_t_pvalue": 7.57352311943391e-05
+            },
+            "qualloop_minus_baseline_a": {
+              "mean_ql_diff": 0.0,
+              "std_ql_diff": 0.0,
+              "mean_ql_per_rupee_diff": 0.0,
+              "std_ql_per_rupee_diff": 0.0,
+              "within_scenario_paired_t_statistic": null,
+              "within_scenario_paired_t_pvalue": null
+            },
+            "qualloop_minus_baseline_c": {
+              "mean_ql_diff": 0.5,
+              "std_ql_diff": 1.5,
+              "mean_ql_per_rupee_diff": -5.2e-05,
+              "std_ql_per_rupee_diff": 0.000157,
+              "within_scenario_paired_t_statistic": 1.0,
+              "within_scenario_paired_t_pvalue": 0.3434363961379136
+            },
+            "qualloop_minus_oracle": {
+              "mean_ql_diff": 0.0,
+              "std_ql_diff": 0.0,
+              "mean_ql_per_rupee_diff": 0.0,
+              "std_ql_per_rupee_diff": 0.0,
+              "within_scenario_paired_t_statistic": null,
+              "within_scenario_paired_t_pvalue": null
+            }
           }
         },
         "delayed_conversion_trap": {
@@ -1539,6 +2569,40 @@
             "days_to_pause": null,
             "spend_on_poor_ads": 0,
             "forgone_good_ql": 15.0
+          },
+          "paired_differences": {
+            "qualloop_minus_baseline_b": {
+              "mean_ql_diff": 12.85,
+              "std_ql_diff": 7.86,
+              "mean_ql_per_rupee_diff": 0.000179,
+              "std_ql_per_rupee_diff": 0.001715,
+              "within_scenario_paired_t_statistic": 5.6597,
+              "within_scenario_paired_t_pvalue": 0.00010565156527650319
+            },
+            "qualloop_minus_baseline_a": {
+              "mean_ql_diff": -0.77,
+              "std_ql_diff": 2.66,
+              "mean_ql_per_rupee_diff": 3.1e-05,
+              "std_ql_per_rupee_diff": 0.000107,
+              "within_scenario_paired_t_statistic": -1.0,
+              "within_scenario_paired_t_pvalue": 0.33704905795358436
+            },
+            "qualloop_minus_baseline_c": {
+              "mean_ql_diff": 0.38,
+              "std_ql_diff": 1.33,
+              "mean_ql_per_rupee_diff": -6.2e-05,
+              "std_ql_per_rupee_diff": 0.000213,
+              "within_scenario_paired_t_statistic": 1.0,
+              "within_scenario_paired_t_pvalue": 0.33704905795358436
+            },
+            "qualloop_minus_oracle": {
+              "mean_ql_diff": -0.77,
+              "std_ql_diff": 2.66,
+              "mean_ql_per_rupee_diff": 3.1e-05,
+              "std_ql_per_rupee_diff": 0.000107,
+              "within_scenario_paired_t_statistic": -1.0,
+              "within_scenario_paired_t_pvalue": 0.33704905795358436
+            }
           }
         },
         "good_ad_low_reachability": {
@@ -1611,6 +2675,40 @@
             "days_to_pause": null,
             "spend_on_poor_ads": 0,
             "forgone_good_ql": 33.0
+          },
+          "paired_differences": {
+            "qualloop_minus_baseline_b": {
+              "mean_ql_diff": 16.83,
+              "std_ql_diff": 6.47,
+              "mean_ql_per_rupee_diff": 3.7e-05,
+              "std_ql_per_rupee_diff": 0.001053,
+              "within_scenario_paired_t_statistic": 8.6347,
+              "within_scenario_paired_t_pvalue": 3.138034721138545e-06
+            },
+            "qualloop_minus_baseline_a": {
+              "mean_ql_diff": 0.0,
+              "std_ql_diff": 0.0,
+              "mean_ql_per_rupee_diff": 0.0,
+              "std_ql_per_rupee_diff": 0.0,
+              "within_scenario_paired_t_statistic": null,
+              "within_scenario_paired_t_pvalue": null
+            },
+            "qualloop_minus_baseline_c": {
+              "mean_ql_diff": 2.75,
+              "std_ql_diff": 3.39,
+              "mean_ql_per_rupee_diff": 7.9e-05,
+              "std_ql_per_rupee_diff": 0.000162,
+              "within_scenario_paired_t_statistic": 2.6871,
+              "within_scenario_paired_t_pvalue": 0.02113761699089616
+            },
+            "qualloop_minus_oracle": {
+              "mean_ql_diff": 0.0,
+              "std_ql_diff": 0.0,
+              "mean_ql_per_rupee_diff": 0.0,
+              "std_ql_per_rupee_diff": 0.0,
+              "within_scenario_paired_t_statistic": null,
+              "within_scenario_paired_t_pvalue": null
+            }
           }
         },
         "healthy_campaign": {
@@ -1683,6 +2781,40 @@
             "days_to_pause": null,
             "spend_on_poor_ads": 0,
             "forgone_good_ql": 26.0
+          },
+          "paired_differences": {
+            "qualloop_minus_baseline_b": {
+              "mean_ql_diff": 35.6,
+              "std_ql_diff": 18.68,
+              "mean_ql_per_rupee_diff": -0.000155,
+              "std_ql_per_rupee_diff": 0.002196,
+              "within_scenario_paired_t_statistic": 7.1325,
+              "within_scenario_paired_t_pvalue": 5.07189399735038e-06
+            },
+            "qualloop_minus_baseline_a": {
+              "mean_ql_diff": 0.0,
+              "std_ql_diff": 0.0,
+              "mean_ql_per_rupee_diff": 0.0,
+              "std_ql_per_rupee_diff": 0.0,
+              "within_scenario_paired_t_statistic": null,
+              "within_scenario_paired_t_pvalue": null
+            },
+            "qualloop_minus_baseline_c": {
+              "mean_ql_diff": 1.73,
+              "std_ql_diff": 2.89,
+              "mean_ql_per_rupee_diff": 0.000142,
+              "std_ql_per_rupee_diff": 0.000236,
+              "within_scenario_paired_t_statistic": 2.2473,
+              "within_scenario_paired_t_pvalue": 0.04126682351448184
+            },
+            "qualloop_minus_oracle": {
+              "mean_ql_diff": 0.0,
+              "std_ql_diff": 0.0,
+              "mean_ql_per_rupee_diff": 0.0,
+              "std_ql_per_rupee_diff": 0.0,
+              "within_scenario_paired_t_statistic": null,
+              "within_scenario_paired_t_pvalue": null
+            }
           }
         },
         "high_cpql": {
@@ -1755,6 +2887,40 @@
             "days_to_pause": null,
             "spend_on_poor_ads": 0,
             "forgone_good_ql": 1.0
+          },
+          "paired_differences": {
+            "qualloop_minus_baseline_b": {
+              "mean_ql_diff": 5.57,
+              "std_ql_diff": 1.92,
+              "mean_ql_per_rupee_diff": -2.4e-05,
+              "std_ql_per_rupee_diff": 0.000278,
+              "within_scenario_paired_t_statistic": 7.1204,
+              "within_scenario_paired_t_pvalue": 0.00038600270973182906
+            },
+            "qualloop_minus_baseline_a": {
+              "mean_ql_diff": 5.86,
+              "std_ql_diff": 1.96,
+              "mean_ql_per_rupee_diff": -5e-06,
+              "std_ql_per_rupee_diff": 0.000269,
+              "within_scenario_paired_t_statistic": 7.3245,
+              "within_scenario_paired_t_pvalue": 0.00033082605648226417
+            },
+            "qualloop_minus_baseline_c": {
+              "mean_ql_diff": 0.14,
+              "std_ql_diff": 0.35,
+              "mean_ql_per_rupee_diff": 5e-06,
+              "std_ql_per_rupee_diff": 1.2e-05,
+              "within_scenario_paired_t_statistic": 1.0,
+              "within_scenario_paired_t_pvalue": 0.3559176837495822
+            },
+            "qualloop_minus_oracle": {
+              "mean_ql_diff": 0.0,
+              "std_ql_diff": 0.0,
+              "mean_ql_per_rupee_diff": 0.0,
+              "std_ql_per_rupee_diff": 0.0,
+              "within_scenario_paired_t_statistic": null,
+              "within_scenario_paired_t_pvalue": null
+            }
           }
         },
         "mixed_portfolio": {
@@ -1827,6 +2993,40 @@
             "days_to_pause": 14.7,
             "spend_on_poor_ads": 15750.0,
             "forgone_good_ql": 18.0
+          },
+          "paired_differences": {
+            "qualloop_minus_baseline_b": {
+              "mean_ql_diff": 22.1,
+              "std_ql_diff": 11.79,
+              "mean_ql_per_rupee_diff": -0.001384,
+              "std_ql_per_rupee_diff": 0.001276,
+              "within_scenario_paired_t_statistic": 5.6217,
+              "within_scenario_paired_t_pvalue": 0.0003251364980129146
+            },
+            "qualloop_minus_baseline_a": {
+              "mean_ql_diff": -0.9,
+              "std_ql_diff": 1.22,
+              "mean_ql_per_rupee_diff": 0.000529,
+              "std_ql_per_rupee_diff": 0.000162,
+              "within_scenario_paired_t_statistic": -2.2119,
+              "within_scenario_paired_t_pvalue": 0.05427441349738841
+            },
+            "qualloop_minus_baseline_c": {
+              "mean_ql_diff": 1.5,
+              "std_ql_diff": 2.29,
+              "mean_ql_per_rupee_diff": -0.000359,
+              "std_ql_per_rupee_diff": 0.000348,
+              "within_scenario_paired_t_statistic": 1.964,
+              "within_scenario_paired_t_pvalue": 0.08112618884584057
+            },
+            "qualloop_minus_oracle": {
+              "mean_ql_diff": 1.7,
+              "std_ql_diff": 1.27,
+              "mean_ql_per_rupee_diff": -0.000942,
+              "std_ql_per_rupee_diff": 0.000306,
+              "within_scenario_paired_t_statistic": 4.0194,
+              "within_scenario_paired_t_pvalue": 0.0030209576742715907
+            }
           }
         },
         "small_sample_trap": {
@@ -1899,6 +3099,40 @@
             "days_to_pause": 17.5,
             "spend_on_poor_ads": 6250.0,
             "forgone_good_ql": 0
+          },
+          "paired_differences": {
+            "qualloop_minus_baseline_b": {
+              "mean_ql_diff": 0.17,
+              "std_ql_diff": 0.37,
+              "mean_ql_per_rupee_diff": -0.000278,
+              "std_ql_per_rupee_diff": 0.002252,
+              "within_scenario_paired_t_statistic": 1.4832,
+              "within_scenario_paired_t_pvalue": 0.16608681351829555
+            },
+            "qualloop_minus_baseline_a": {
+              "mean_ql_diff": 0.0,
+              "std_ql_diff": 0.0,
+              "mean_ql_per_rupee_diff": 0.0,
+              "std_ql_per_rupee_diff": 0.0,
+              "within_scenario_paired_t_statistic": null,
+              "within_scenario_paired_t_pvalue": null
+            },
+            "qualloop_minus_baseline_c": {
+              "mean_ql_diff": 0.0,
+              "std_ql_diff": 0.0,
+              "mean_ql_per_rupee_diff": 5.6e-05,
+              "std_ql_per_rupee_diff": 0.000184,
+              "within_scenario_paired_t_statistic": null,
+              "within_scenario_paired_t_pvalue": null
+            },
+            "qualloop_minus_oracle": {
+              "mean_ql_diff": 0.33,
+              "std_ql_diff": 0.47,
+              "mean_ql_per_rupee_diff": 0.000667,
+              "std_ql_per_rupee_diff": 0.000943,
+              "within_scenario_paired_t_statistic": 2.3452,
+              "within_scenario_paired_t_pvalue": 0.03881409182311233
+            }
           }
         },
         "sudden_deterioration": {
@@ -1971,6 +3205,40 @@
             "days_to_pause": null,
             "spend_on_poor_ads": 0,
             "forgone_good_ql": 0.0
+          },
+          "paired_differences": {
+            "qualloop_minus_baseline_b": {
+              "mean_ql_diff": 9.5,
+              "std_ql_diff": 7.55,
+              "mean_ql_per_rupee_diff": -0.000767,
+              "std_ql_per_rupee_diff": 0.003833,
+              "within_scenario_paired_t_statistic": 3.3292,
+              "within_scenario_paired_t_pvalue": 0.01260551717036635
+            },
+            "qualloop_minus_baseline_a": {
+              "mean_ql_diff": 0.0,
+              "std_ql_diff": 0.0,
+              "mean_ql_per_rupee_diff": 0.0,
+              "std_ql_per_rupee_diff": 0.0,
+              "within_scenario_paired_t_statistic": null,
+              "within_scenario_paired_t_pvalue": null
+            },
+            "qualloop_minus_baseline_c": {
+              "mean_ql_diff": 0.0,
+              "std_ql_diff": 0.0,
+              "mean_ql_per_rupee_diff": 0.0,
+              "std_ql_per_rupee_diff": 0.0,
+              "within_scenario_paired_t_statistic": null,
+              "within_scenario_paired_t_pvalue": null
+            },
+            "qualloop_minus_oracle": {
+              "mean_ql_diff": 0.0,
+              "std_ql_diff": 0.0,
+              "mean_ql_per_rupee_diff": 0.0,
+              "std_ql_per_rupee_diff": 0.0,
+              "within_scenario_paired_t_statistic": null,
+              "within_scenario_paired_t_pvalue": null
+            }
           }
         }
       },
@@ -2413,7 +3681,20 @@
             }
           },
           "pooled_ql_per_rupee": 0.006771,
+          "pooled_ql_per_rupee_bootstrap_ci_95": [
+            0.006451,
+            0.007121
+          ],
           "mean_of_per_run_ratios": 0.005976,
+          "mean_of_per_run_ratios_bootstrap_ci_95": [
+            0.005704,
+            0.006268
+          ],
+          "mean_qualified_leads_per_run": 55.19,
+          "mean_qualified_leads_per_run_bootstrap_ci_95": [
+            52.58,
+            58.04
+          ],
           "mean_per_run_cpql": 509.38
         },
         "qualloop": {
@@ -2459,7 +3740,20 @@
             }
           },
           "pooled_ql_per_rupee": 0.005872,
+          "pooled_ql_per_rupee_bootstrap_ci_95": [
+            0.005584,
+            0.006186
+          ],
           "mean_of_per_run_ratios": 0.005353,
+          "mean_of_per_run_ratios_bootstrap_ci_95": [
+            0.005095,
+            0.005633
+          ],
+          "mean_qualified_leads_per_run": 48.06,
+          "mean_qualified_leads_per_run_bootstrap_ci_95": [
+            45.71,
+            50.63
+          ],
           "mean_per_run_cpql": 519.6
         },
         "baseline_b": {
@@ -2505,7 +3799,20 @@
             }
           },
           "pooled_ql_per_rupee": 0.007425,
+          "pooled_ql_per_rupee_bootstrap_ci_95": [
+            0.00607,
+            0.008933
+          ],
           "mean_of_per_run_ratios": 0.005578,
+          "mean_of_per_run_ratios_bootstrap_ci_95": [
+            0.004941,
+            0.006262
+          ],
+          "mean_qualified_leads_per_run": 25.15,
+          "mean_qualified_leads_per_run_bootstrap_ci_95": [
+            18.45,
+            32.5
+          ],
           "mean_per_run_cpql": 2122.79
         },
         "baseline_a": {
@@ -2551,7 +3858,20 @@
             }
           },
           "pooled_ql_per_rupee": 0.006256,
+          "pooled_ql_per_rupee_bootstrap_ci_95": [
+            0.005931,
+            0.006623
+          ],
           "mean_of_per_run_ratios": 0.004947,
+          "mean_of_per_run_ratios_bootstrap_ci_95": [
+            0.004705,
+            0.005214
+          ],
+          "mean_qualified_leads_per_run": 43.72,
+          "mean_qualified_leads_per_run_bootstrap_ci_95": [
+            41.5,
+            46.22
+          ],
           "mean_per_run_cpql": 1026.47
         },
         "baseline_c": {
@@ -2597,102 +3917,378 @@
             }
           },
           "pooled_ql_per_rupee": 0.00586,
+          "pooled_ql_per_rupee_bootstrap_ci_95": [
+            0.00549,
+            0.00627
+          ],
           "mean_of_per_run_ratios": 0.005301,
+          "mean_of_per_run_ratios_bootstrap_ci_95": [
+            0.004997,
+            0.005637
+          ],
+          "mean_qualified_leads_per_run": 47.37,
+          "mean_qualified_leads_per_run_bootstrap_ci_95": [
+            44.41,
+            50.56
+          ],
           "mean_per_run_cpql": 634.43
         }
       },
       "paired_tests": {
+        "headline_policy": "No single headline p-value is reported across heterogeneous scenarios. Across scenarios with vastly differing budgets (\u20b91,000 to \u20b920,000 per ad) and distinct failure modes, pooling violates exchangeability and introduces Simpson's paradox. Headline inference is reported via scenario-stratified bootstrap 95% confidence intervals and per-scenario paired difference distributions.",
+        "comparisons": {
+          "qualloop_vs_baseline_b": {
+            "sign_convention": "qualloop_minus_baseline_b (positive indicates QualLoop is higher)",
+            "ql_per_rupee": {
+              "qualloop_pooled_ratio": 0.005872,
+              "qualloop_pooled_ratio_bootstrap_ci_95": [
+                0.005584,
+                0.006186
+              ],
+              "opponent_pooled_ratio": 0.007425,
+              "opponent_pooled_ratio_bootstrap_ci_95": [
+                0.00607,
+                0.008933
+              ],
+              "qualloop_mean_per_run_ratio": 0.005353,
+              "qualloop_mean_per_run_ratio_bootstrap_ci_95": [
+                0.005095,
+                0.005633
+              ],
+              "opponent_mean_per_run_ratio": 0.005578,
+              "opponent_mean_per_run_ratio_bootstrap_ci_95": [
+                0.004941,
+                0.006262
+              ],
+              "mean_diff": -0.000225,
+              "std_diff": 0.003678
+            },
+            "qualified_leads": {
+              "qualloop_total_leads": 4805.88,
+              "opponent_total_leads": 2515.12,
+              "qualloop_mean_per_run_leads": 48.06,
+              "qualloop_mean_per_run_leads_bootstrap_ci_95": [
+                45.71,
+                50.63
+              ],
+              "opponent_mean_per_run_leads": 25.15,
+              "opponent_mean_per_run_leads_bootstrap_ci_95": [
+                18.45,
+                32.5
+              ],
+              "mean_diff": 22.91,
+              "std_diff": 42.39
+            },
+            "note": "Per-scenario paired tests are reported in scenario_breakdown[sc]['paired_differences']."
+          },
+          "qualloop_vs_baseline_a": {
+            "sign_convention": "qualloop_minus_baseline_a (positive indicates QualLoop is higher)",
+            "ql_per_rupee": {
+              "qualloop_pooled_ratio": 0.005872,
+              "qualloop_pooled_ratio_bootstrap_ci_95": [
+                0.005584,
+                0.006186
+              ],
+              "opponent_pooled_ratio": 0.006256,
+              "opponent_pooled_ratio_bootstrap_ci_95": [
+                0.005931,
+                0.006623
+              ],
+              "qualloop_mean_per_run_ratio": 0.005353,
+              "qualloop_mean_per_run_ratio_bootstrap_ci_95": [
+                0.005095,
+                0.005633
+              ],
+              "opponent_mean_per_run_ratio": 0.004947,
+              "opponent_mean_per_run_ratio_bootstrap_ci_95": [
+                0.004705,
+                0.005214
+              ],
+              "mean_diff": 0.000406,
+              "std_diff": 0.00096
+            },
+            "qualified_leads": {
+              "qualloop_total_leads": 4805.88,
+              "opponent_total_leads": 4372.24,
+              "qualloop_mean_per_run_leads": 48.06,
+              "qualloop_mean_per_run_leads_bootstrap_ci_95": [
+                45.71,
+                50.63
+              ],
+              "opponent_mean_per_run_leads": 43.72,
+              "opponent_mean_per_run_leads_bootstrap_ci_95": [
+                41.5,
+                46.22
+              ],
+              "mean_diff": 4.34,
+              "std_diff": 9.64
+            },
+            "note": "Per-scenario paired tests are reported in scenario_breakdown[sc]['paired_differences']."
+          },
+          "qualloop_vs_baseline_c": {
+            "sign_convention": "qualloop_minus_baseline_c (positive indicates QualLoop is higher)",
+            "ql_per_rupee": {
+              "qualloop_pooled_ratio": 0.005872,
+              "qualloop_pooled_ratio_bootstrap_ci_95": [
+                0.005584,
+                0.006186
+              ],
+              "opponent_pooled_ratio": 0.00586,
+              "opponent_pooled_ratio_bootstrap_ci_95": [
+                0.00549,
+                0.00627
+              ],
+              "qualloop_mean_per_run_ratio": 0.005353,
+              "qualloop_mean_per_run_ratio_bootstrap_ci_95": [
+                0.005095,
+                0.005633
+              ],
+              "opponent_mean_per_run_ratio": 0.005301,
+              "opponent_mean_per_run_ratio_bootstrap_ci_95": [
+                0.004997,
+                0.005637
+              ],
+              "mean_diff": 5.1e-05,
+              "std_diff": 0.000918
+            },
+            "qualified_leads": {
+              "qualloop_total_leads": 4805.88,
+              "opponent_total_leads": 4737.22,
+              "qualloop_mean_per_run_leads": 48.06,
+              "qualloop_mean_per_run_leads_bootstrap_ci_95": [
+                45.71,
+                50.63
+              ],
+              "opponent_mean_per_run_leads": 47.37,
+              "opponent_mean_per_run_leads_bootstrap_ci_95": [
+                44.41,
+                50.56
+              ],
+              "mean_diff": 0.69,
+              "std_diff": 9.12
+            },
+            "note": "Per-scenario paired tests are reported in scenario_breakdown[sc]['paired_differences']."
+          },
+          "qualloop_vs_oracle": {
+            "sign_convention": "qualloop_minus_oracle (positive indicates QualLoop is higher)",
+            "ql_per_rupee": {
+              "qualloop_pooled_ratio": 0.005872,
+              "qualloop_pooled_ratio_bootstrap_ci_95": [
+                0.005584,
+                0.006186
+              ],
+              "opponent_pooled_ratio": 0.006771,
+              "opponent_pooled_ratio_bootstrap_ci_95": [
+                0.006451,
+                0.007121
+              ],
+              "qualloop_mean_per_run_ratio": 0.005353,
+              "qualloop_mean_per_run_ratio_bootstrap_ci_95": [
+                0.005095,
+                0.005633
+              ],
+              "opponent_mean_per_run_ratio": 0.005976,
+              "opponent_mean_per_run_ratio_bootstrap_ci_95": [
+                0.005704,
+                0.006268
+              ],
+              "mean_diff": -0.000623,
+              "std_diff": 0.001716
+            },
+            "qualified_leads": {
+              "qualloop_total_leads": 4805.88,
+              "opponent_total_leads": 5518.55,
+              "qualloop_mean_per_run_leads": 48.06,
+              "qualloop_mean_per_run_leads_bootstrap_ci_95": [
+                45.71,
+                50.63
+              ],
+              "opponent_mean_per_run_leads": 55.19,
+              "opponent_mean_per_run_leads_bootstrap_ci_95": [
+                52.58,
+                58.04
+              ],
+              "mean_diff": -7.13,
+              "std_diff": 16.35
+            },
+            "note": "Per-scenario paired tests are reported in scenario_breakdown[sc]['paired_differences']."
+          }
+        },
         "qualloop_vs_baseline_b": {
           "sign_convention": "qualloop_minus_baseline_b (positive indicates QualLoop is higher)",
           "ql_per_rupee": {
             "qualloop_pooled_ratio": 0.005872,
+            "qualloop_pooled_ratio_bootstrap_ci_95": [
+              0.005584,
+              0.006186
+            ],
             "opponent_pooled_ratio": 0.007425,
+            "opponent_pooled_ratio_bootstrap_ci_95": [
+              0.00607,
+              0.008933
+            ],
             "qualloop_mean_per_run_ratio": 0.005353,
+            "qualloop_mean_per_run_ratio_bootstrap_ci_95": [
+              0.005095,
+              0.005633
+            ],
             "opponent_mean_per_run_ratio": 0.005578,
+            "opponent_mean_per_run_ratio_bootstrap_ci_95": [
+              0.004941,
+              0.006262
+            ],
             "mean_diff": -0.000225,
-            "std_diff": 0.003678,
-            "paired_t_statistic": -0.6096,
-            "paired_t_pvalue": 0.5435177288676729,
-            "wilcoxon_statistic": 1521.0,
-            "wilcoxon_pvalue": 0.40403082420875147
+            "std_diff": 0.003678
           },
           "qualified_leads": {
             "qualloop_total_leads": 4805.88,
             "opponent_total_leads": 2515.12,
+            "qualloop_mean_per_run_leads": 48.06,
+            "qualloop_mean_per_run_leads_bootstrap_ci_95": [
+              45.71,
+              50.63
+            ],
+            "opponent_mean_per_run_leads": 25.15,
+            "opponent_mean_per_run_leads_bootstrap_ci_95": [
+              18.45,
+              32.5
+            ],
             "mean_diff": 22.91,
-            "std_diff": 42.39,
-            "paired_t_statistic": 5.3775,
-            "paired_t_pvalue": 5.04933937284236e-07
-          }
+            "std_diff": 42.39
+          },
+          "note": "Per-scenario paired tests are reported in scenario_breakdown[sc]['paired_differences']."
         },
         "qualloop_vs_baseline_a": {
           "sign_convention": "qualloop_minus_baseline_a (positive indicates QualLoop is higher)",
           "ql_per_rupee": {
             "qualloop_pooled_ratio": 0.005872,
+            "qualloop_pooled_ratio_bootstrap_ci_95": [
+              0.005584,
+              0.006186
+            ],
             "opponent_pooled_ratio": 0.006256,
+            "opponent_pooled_ratio_bootstrap_ci_95": [
+              0.005931,
+              0.006623
+            ],
             "qualloop_mean_per_run_ratio": 0.005353,
+            "qualloop_mean_per_run_ratio_bootstrap_ci_95": [
+              0.005095,
+              0.005633
+            ],
             "opponent_mean_per_run_ratio": 0.004947,
+            "opponent_mean_per_run_ratio_bootstrap_ci_95": [
+              0.004705,
+              0.005214
+            ],
             "mean_diff": 0.000406,
-            "std_diff": 0.00096,
-            "paired_t_statistic": 4.2112,
-            "paired_t_pvalue": 5.604275661678939e-05,
-            "wilcoxon_statistic": 21.0,
-            "wilcoxon_pvalue": 8.642002827029493e-06
+            "std_diff": 0.00096
           },
           "qualified_leads": {
             "qualloop_total_leads": 4805.88,
             "opponent_total_leads": 4372.24,
+            "qualloop_mean_per_run_leads": 48.06,
+            "qualloop_mean_per_run_leads_bootstrap_ci_95": [
+              45.71,
+              50.63
+            ],
+            "opponent_mean_per_run_leads": 43.72,
+            "opponent_mean_per_run_leads_bootstrap_ci_95": [
+              41.5,
+              46.22
+            ],
             "mean_diff": 4.34,
-            "std_diff": 9.64,
-            "paired_t_statistic": 4.4773,
-            "paired_t_pvalue": 2.026153379832198e-05
-          }
+            "std_diff": 9.64
+          },
+          "note": "Per-scenario paired tests are reported in scenario_breakdown[sc]['paired_differences']."
         },
         "qualloop_vs_baseline_c": {
           "sign_convention": "qualloop_minus_baseline_c (positive indicates QualLoop is higher)",
           "ql_per_rupee": {
             "qualloop_pooled_ratio": 0.005872,
+            "qualloop_pooled_ratio_bootstrap_ci_95": [
+              0.005584,
+              0.006186
+            ],
             "opponent_pooled_ratio": 0.00586,
+            "opponent_pooled_ratio_bootstrap_ci_95": [
+              0.00549,
+              0.00627
+            ],
             "qualloop_mean_per_run_ratio": 0.005353,
+            "qualloop_mean_per_run_ratio_bootstrap_ci_95": [
+              0.005095,
+              0.005633
+            ],
             "opponent_mean_per_run_ratio": 0.005301,
+            "opponent_mean_per_run_ratio_bootstrap_ci_95": [
+              0.004997,
+              0.005637
+            ],
             "mean_diff": 5.1e-05,
-            "std_diff": 0.000918,
-            "paired_t_statistic": 0.5576,
-            "paired_t_pvalue": 0.5783887634648839,
-            "wilcoxon_statistic": 118.0,
-            "wilcoxon_pvalue": 0.7825803044501396
+            "std_diff": 0.000918
           },
           "qualified_leads": {
             "qualloop_total_leads": 4805.88,
             "opponent_total_leads": 4737.22,
+            "qualloop_mean_per_run_leads": 48.06,
+            "qualloop_mean_per_run_leads_bootstrap_ci_95": [
+              45.71,
+              50.63
+            ],
+            "opponent_mean_per_run_leads": 47.37,
+            "opponent_mean_per_run_leads_bootstrap_ci_95": [
+              44.41,
+              50.56
+            ],
             "mean_diff": 0.69,
-            "std_diff": 9.12,
-            "paired_t_statistic": 0.7492,
-            "paired_t_pvalue": 0.4555162773335571
-          }
+            "std_diff": 9.12
+          },
+          "note": "Per-scenario paired tests are reported in scenario_breakdown[sc]['paired_differences']."
         },
         "qualloop_vs_oracle": {
           "sign_convention": "qualloop_minus_oracle (positive indicates QualLoop is higher)",
           "ql_per_rupee": {
             "qualloop_pooled_ratio": 0.005872,
+            "qualloop_pooled_ratio_bootstrap_ci_95": [
+              0.005584,
+              0.006186
+            ],
             "opponent_pooled_ratio": 0.006771,
+            "opponent_pooled_ratio_bootstrap_ci_95": [
+              0.006451,
+              0.007121
+            ],
             "qualloop_mean_per_run_ratio": 0.005353,
+            "qualloop_mean_per_run_ratio_bootstrap_ci_95": [
+              0.005095,
+              0.005633
+            ],
             "opponent_mean_per_run_ratio": 0.005976,
+            "opponent_mean_per_run_ratio_bootstrap_ci_95": [
+              0.005704,
+              0.006268
+            ],
             "mean_diff": -0.000623,
-            "std_diff": 0.001716,
-            "paired_t_statistic": -3.6111,
-            "paired_t_pvalue": 0.00048079508194737755,
-            "wilcoxon_statistic": 56.0,
-            "wilcoxon_pvalue": 0.0008122295498239016
+            "std_diff": 0.001716
           },
           "qualified_leads": {
             "qualloop_total_leads": 4805.88,
             "opponent_total_leads": 5518.55,
+            "qualloop_mean_per_run_leads": 48.06,
+            "qualloop_mean_per_run_leads_bootstrap_ci_95": [
+              45.71,
+              50.63
+            ],
+            "opponent_mean_per_run_leads": 55.19,
+            "opponent_mean_per_run_leads_bootstrap_ci_95": [
+              52.58,
+              58.04
+            ],
             "mean_diff": -7.13,
-            "std_diff": 16.35,
-            "paired_t_statistic": -4.3378,
-            "paired_t_pvalue": 3.469543704549443e-05
-          }
+            "std_diff": 16.35
+          },
+          "note": "Per-scenario paired tests are reported in scenario_breakdown[sc]['paired_differences']."
         }
       },
       "scenario_breakdown": {
@@ -2766,6 +4362,40 @@
             "days_to_pause": 14.0,
             "spend_on_poor_ads": 32500.0,
             "forgone_good_ql": 0.0
+          },
+          "paired_differences": {
+            "qualloop_minus_baseline_b": {
+              "mean_ql_diff": 61.88,
+              "std_ql_diff": 53.63,
+              "mean_ql_per_rupee_diff": -0.00087,
+              "std_ql_per_rupee_diff": 0.004204,
+              "within_scenario_paired_t_statistic": 3.9964,
+              "within_scenario_paired_t_pvalue": 0.001773013775684682
+            },
+            "qualloop_minus_baseline_a": {
+              "mean_ql_diff": 26.73,
+              "std_ql_diff": 9.39,
+              "mean_ql_per_rupee_diff": 0.002673,
+              "std_ql_per_rupee_diff": 0.000939,
+              "within_scenario_paired_t_statistic": 9.8581,
+              "within_scenario_paired_t_pvalue": 4.1784427656661325e-07
+            },
+            "qualloop_minus_baseline_c": {
+              "mean_ql_diff": -4.76,
+              "std_ql_diff": 11.71,
+              "mean_ql_per_rupee_diff": -0.000476,
+              "std_ql_per_rupee_diff": 0.001171,
+              "within_scenario_paired_t_statistic": -1.4075,
+              "within_scenario_paired_t_pvalue": 0.18466406370576666
+            },
+            "qualloop_minus_oracle": {
+              "mean_ql_diff": -46.73,
+              "std_ql_diff": 13.08,
+              "mean_ql_per_rupee_diff": -0.004673,
+              "std_ql_per_rupee_diff": 0.001308,
+              "within_scenario_paired_t_statistic": -12.3777,
+              "within_scenario_paired_t_pvalue": 3.4212359281718275e-08
+            }
           }
         },
         "creative_fatigue": {
@@ -2838,6 +4468,40 @@
             "days_to_pause": null,
             "spend_on_poor_ads": 0,
             "forgone_good_ql": 5.0
+          },
+          "paired_differences": {
+            "qualloop_minus_baseline_b": {
+              "mean_ql_diff": 15.6,
+              "std_ql_diff": 6.84,
+              "mean_ql_per_rupee_diff": -0.000971,
+              "std_ql_per_rupee_diff": 0.002218,
+              "within_scenario_paired_t_statistic": 6.8381,
+              "within_scenario_paired_t_pvalue": 7.57352311943391e-05
+            },
+            "qualloop_minus_baseline_a": {
+              "mean_ql_diff": 0.0,
+              "std_ql_diff": 0.0,
+              "mean_ql_per_rupee_diff": 0.0,
+              "std_ql_per_rupee_diff": 0.0,
+              "within_scenario_paired_t_statistic": null,
+              "within_scenario_paired_t_pvalue": null
+            },
+            "qualloop_minus_baseline_c": {
+              "mean_ql_diff": 0.5,
+              "std_ql_diff": 1.5,
+              "mean_ql_per_rupee_diff": -5.2e-05,
+              "std_ql_per_rupee_diff": 0.000157,
+              "within_scenario_paired_t_statistic": 1.0,
+              "within_scenario_paired_t_pvalue": 0.3434363961379136
+            },
+            "qualloop_minus_oracle": {
+              "mean_ql_diff": 0.0,
+              "std_ql_diff": 0.0,
+              "mean_ql_per_rupee_diff": 0.0,
+              "std_ql_per_rupee_diff": 0.0,
+              "within_scenario_paired_t_statistic": null,
+              "within_scenario_paired_t_pvalue": null
+            }
           }
         },
         "delayed_conversion_trap": {
@@ -2910,6 +4574,40 @@
             "days_to_pause": null,
             "spend_on_poor_ads": 0,
             "forgone_good_ql": 15.0
+          },
+          "paired_differences": {
+            "qualloop_minus_baseline_b": {
+              "mean_ql_diff": 12.85,
+              "std_ql_diff": 7.86,
+              "mean_ql_per_rupee_diff": 0.000179,
+              "std_ql_per_rupee_diff": 0.001715,
+              "within_scenario_paired_t_statistic": 5.6597,
+              "within_scenario_paired_t_pvalue": 0.00010565156527650319
+            },
+            "qualloop_minus_baseline_a": {
+              "mean_ql_diff": -0.77,
+              "std_ql_diff": 2.66,
+              "mean_ql_per_rupee_diff": 3.1e-05,
+              "std_ql_per_rupee_diff": 0.000107,
+              "within_scenario_paired_t_statistic": -1.0,
+              "within_scenario_paired_t_pvalue": 0.33704905795358436
+            },
+            "qualloop_minus_baseline_c": {
+              "mean_ql_diff": 0.38,
+              "std_ql_diff": 1.33,
+              "mean_ql_per_rupee_diff": -6.2e-05,
+              "std_ql_per_rupee_diff": 0.000213,
+              "within_scenario_paired_t_statistic": 1.0,
+              "within_scenario_paired_t_pvalue": 0.33704905795358436
+            },
+            "qualloop_minus_oracle": {
+              "mean_ql_diff": -0.77,
+              "std_ql_diff": 2.66,
+              "mean_ql_per_rupee_diff": 3.1e-05,
+              "std_ql_per_rupee_diff": 0.000107,
+              "within_scenario_paired_t_statistic": -1.0,
+              "within_scenario_paired_t_pvalue": 0.33704905795358436
+            }
           }
         },
         "good_ad_low_reachability": {
@@ -2982,6 +4680,40 @@
             "days_to_pause": null,
             "spend_on_poor_ads": 0,
             "forgone_good_ql": 24.5
+          },
+          "paired_differences": {
+            "qualloop_minus_baseline_b": {
+              "mean_ql_diff": 10.9,
+              "std_ql_diff": 13.98,
+              "mean_ql_per_rupee_diff": 4.5e-05,
+              "std_ql_per_rupee_diff": 0.001161,
+              "within_scenario_paired_t_statistic": 2.5873,
+              "within_scenario_paired_t_pvalue": 0.025260530155485468
+            },
+            "qualloop_minus_baseline_a": {
+              "mean_ql_diff": 0.0,
+              "std_ql_diff": 0.0,
+              "mean_ql_per_rupee_diff": 0.0,
+              "std_ql_per_rupee_diff": 0.0,
+              "within_scenario_paired_t_statistic": null,
+              "within_scenario_paired_t_pvalue": null
+            },
+            "qualloop_minus_baseline_c": {
+              "mean_ql_diff": 1.63,
+              "std_ql_diff": 2.13,
+              "mean_ql_per_rupee_diff": 0.000163,
+              "std_ql_per_rupee_diff": 0.000213,
+              "within_scenario_paired_t_statistic": 2.5438,
+              "within_scenario_paired_t_pvalue": 0.027292710488999592
+            },
+            "qualloop_minus_oracle": {
+              "mean_ql_diff": 0.0,
+              "std_ql_diff": 0.0,
+              "mean_ql_per_rupee_diff": 0.0,
+              "std_ql_per_rupee_diff": 0.0,
+              "within_scenario_paired_t_statistic": null,
+              "within_scenario_paired_t_pvalue": null
+            }
           }
         },
         "healthy_campaign": {
@@ -3054,6 +4786,40 @@
             "days_to_pause": null,
             "spend_on_poor_ads": 0,
             "forgone_good_ql": 0.0
+          },
+          "paired_differences": {
+            "qualloop_minus_baseline_b": {
+              "mean_ql_diff": 57.66,
+              "std_ql_diff": 70.51,
+              "mean_ql_per_rupee_diff": 0.001405,
+              "std_ql_per_rupee_diff": 0.007052,
+              "within_scenario_paired_t_statistic": 3.0597,
+              "within_scenario_paired_t_pvalue": 0.008485417888237154
+            },
+            "qualloop_minus_baseline_a": {
+              "mean_ql_diff": 0.0,
+              "std_ql_diff": 0.0,
+              "mean_ql_per_rupee_diff": 0.0,
+              "std_ql_per_rupee_diff": 0.0,
+              "within_scenario_paired_t_statistic": null,
+              "within_scenario_paired_t_pvalue": null
+            },
+            "qualloop_minus_baseline_c": {
+              "mean_ql_diff": 10.06,
+              "std_ql_diff": 16.72,
+              "mean_ql_per_rupee_diff": 0.001006,
+              "std_ql_per_rupee_diff": 0.001672,
+              "within_scenario_paired_t_statistic": 2.2515,
+              "within_scenario_paired_t_pvalue": 0.04093580497940562
+            },
+            "qualloop_minus_oracle": {
+              "mean_ql_diff": 0.0,
+              "std_ql_diff": 0.0,
+              "mean_ql_per_rupee_diff": 0.0,
+              "std_ql_per_rupee_diff": 0.0,
+              "within_scenario_paired_t_statistic": null,
+              "within_scenario_paired_t_pvalue": null
+            }
           }
         },
         "high_cpql": {
@@ -3126,6 +4892,40 @@
             "days_to_pause": null,
             "spend_on_poor_ads": 0,
             "forgone_good_ql": 1.0
+          },
+          "paired_differences": {
+            "qualloop_minus_baseline_b": {
+              "mean_ql_diff": 5.57,
+              "std_ql_diff": 1.92,
+              "mean_ql_per_rupee_diff": -2.4e-05,
+              "std_ql_per_rupee_diff": 0.000278,
+              "within_scenario_paired_t_statistic": 7.1204,
+              "within_scenario_paired_t_pvalue": 0.00038600270973182906
+            },
+            "qualloop_minus_baseline_a": {
+              "mean_ql_diff": 5.86,
+              "std_ql_diff": 1.96,
+              "mean_ql_per_rupee_diff": -5e-06,
+              "std_ql_per_rupee_diff": 0.000269,
+              "within_scenario_paired_t_statistic": 7.3245,
+              "within_scenario_paired_t_pvalue": 0.00033082605648226417
+            },
+            "qualloop_minus_baseline_c": {
+              "mean_ql_diff": 0.14,
+              "std_ql_diff": 0.35,
+              "mean_ql_per_rupee_diff": 5e-06,
+              "std_ql_per_rupee_diff": 1.2e-05,
+              "within_scenario_paired_t_statistic": 1.0,
+              "within_scenario_paired_t_pvalue": 0.3559176837495822
+            },
+            "qualloop_minus_oracle": {
+              "mean_ql_diff": 0.0,
+              "std_ql_diff": 0.0,
+              "mean_ql_per_rupee_diff": 0.0,
+              "std_ql_per_rupee_diff": 0.0,
+              "within_scenario_paired_t_statistic": null,
+              "within_scenario_paired_t_pvalue": null
+            }
           }
         },
         "mixed_portfolio": {
@@ -3198,6 +4998,40 @@
             "days_to_pause": 14.7,
             "spend_on_poor_ads": 17916.6,
             "forgone_good_ql": 13.11
+          },
+          "paired_differences": {
+            "qualloop_minus_baseline_b": {
+              "mean_ql_diff": 5.07,
+              "std_ql_diff": 30.38,
+              "mean_ql_per_rupee_diff": -0.001583,
+              "std_ql_per_rupee_diff": 0.001409,
+              "within_scenario_paired_t_statistic": 0.5006,
+              "within_scenario_paired_t_pvalue": 0.6286329081731135
+            },
+            "qualloop_minus_baseline_a": {
+              "mean_ql_diff": 5.51,
+              "std_ql_diff": 2.45,
+              "mean_ql_per_rupee_diff": 0.000551,
+              "std_ql_per_rupee_diff": 0.000245,
+              "within_scenario_paired_t_statistic": 6.7556,
+              "within_scenario_paired_t_pvalue": 8.312090025420135e-05
+            },
+            "qualloop_minus_baseline_c": {
+              "mean_ql_diff": -5.1,
+              "std_ql_diff": 4.18,
+              "mean_ql_per_rupee_diff": -0.00051,
+              "std_ql_per_rupee_diff": 0.000418,
+              "within_scenario_paired_t_statistic": -3.6619,
+              "within_scenario_paired_t_pvalue": 0.0052204159108975605
+            },
+            "qualloop_minus_oracle": {
+              "mean_ql_diff": -9.92,
+              "std_ql_diff": 3.17,
+              "mean_ql_per_rupee_diff": -0.000992,
+              "std_ql_per_rupee_diff": 0.000317,
+              "within_scenario_paired_t_statistic": -9.3732,
+              "within_scenario_paired_t_pvalue": 6.116192967820471e-06
+            }
           }
         },
         "small_sample_trap": {
@@ -3270,6 +5104,40 @@
             "days_to_pause": 17.5,
             "spend_on_poor_ads": 6250.0,
             "forgone_good_ql": 0
+          },
+          "paired_differences": {
+            "qualloop_minus_baseline_b": {
+              "mean_ql_diff": 0.17,
+              "std_ql_diff": 0.37,
+              "mean_ql_per_rupee_diff": -0.000278,
+              "std_ql_per_rupee_diff": 0.002252,
+              "within_scenario_paired_t_statistic": 1.4832,
+              "within_scenario_paired_t_pvalue": 0.16608681351829555
+            },
+            "qualloop_minus_baseline_a": {
+              "mean_ql_diff": 0.0,
+              "std_ql_diff": 0.0,
+              "mean_ql_per_rupee_diff": 0.0,
+              "std_ql_per_rupee_diff": 0.0,
+              "within_scenario_paired_t_statistic": null,
+              "within_scenario_paired_t_pvalue": null
+            },
+            "qualloop_minus_baseline_c": {
+              "mean_ql_diff": 0.0,
+              "std_ql_diff": 0.0,
+              "mean_ql_per_rupee_diff": 5.6e-05,
+              "std_ql_per_rupee_diff": 0.000184,
+              "within_scenario_paired_t_statistic": null,
+              "within_scenario_paired_t_pvalue": null
+            },
+            "qualloop_minus_oracle": {
+              "mean_ql_diff": 0.33,
+              "std_ql_diff": 0.47,
+              "mean_ql_per_rupee_diff": 0.000667,
+              "std_ql_per_rupee_diff": 0.000943,
+              "within_scenario_paired_t_statistic": 2.3452,
+              "within_scenario_paired_t_pvalue": 0.03881409182311233
+            }
           }
         },
         "sudden_deterioration": {
@@ -3342,6 +5210,40 @@
             "days_to_pause": null,
             "spend_on_poor_ads": 0,
             "forgone_good_ql": 0.0
+          },
+          "paired_differences": {
+            "qualloop_minus_baseline_b": {
+              "mean_ql_diff": 9.5,
+              "std_ql_diff": 7.55,
+              "mean_ql_per_rupee_diff": -0.000767,
+              "std_ql_per_rupee_diff": 0.003833,
+              "within_scenario_paired_t_statistic": 3.3292,
+              "within_scenario_paired_t_pvalue": 0.01260551717036635
+            },
+            "qualloop_minus_baseline_a": {
+              "mean_ql_diff": 0.0,
+              "std_ql_diff": 0.0,
+              "mean_ql_per_rupee_diff": 0.0,
+              "std_ql_per_rupee_diff": 0.0,
+              "within_scenario_paired_t_statistic": null,
+              "within_scenario_paired_t_pvalue": null
+            },
+            "qualloop_minus_baseline_c": {
+              "mean_ql_diff": 0.0,
+              "std_ql_diff": 0.0,
+              "mean_ql_per_rupee_diff": 0.0,
+              "std_ql_per_rupee_diff": 0.0,
+              "within_scenario_paired_t_statistic": null,
+              "within_scenario_paired_t_pvalue": null
+            },
+            "qualloop_minus_oracle": {
+              "mean_ql_diff": 0.0,
+              "std_ql_diff": 0.0,
+              "mean_ql_per_rupee_diff": 0.0,
+              "std_ql_per_rupee_diff": 0.0,
+              "within_scenario_paired_t_statistic": null,
+              "within_scenario_paired_t_pvalue": null
+            }
           }
         }
       },

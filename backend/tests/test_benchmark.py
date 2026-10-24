@@ -224,7 +224,7 @@ def test_paired_test_sign_convention():
     diff = ql - opp  # QualLoop minus Opponent
     assert np.all(diff > 0)
     t_res = stats.ttest_rel(ql, opp)
-    assert t_res.statistic > 0, "Positive statistic indicates QualLoop is superior"
+    assert t_res.statistic > 0, "Positive statistic indicates QualLoop is higher"
 
     # Verify holdout results schema and sign convention
     holdout_file = Path(__file__).resolve().parent.parent / "benchmark" / "results" / "holdout_sequential.json"
@@ -369,6 +369,44 @@ def test_per_scenario_counts_sum_to_aggregate():
     # Specifically verify Baseline B per-scenario false pauses sum to exactly 105
     b_fps = [sc["baseline_b"]["good_ads_false_paused"] for sc in scenarios.values()]
     assert sum(b_fps) == 105, f"Baseline B false pauses must sum to 105, got {sum(b_fps)}"
+
+
+def test_scenario_stratified_bootstrap_and_per_scenario_paired_differences():
+    """Verify stratified bootstrap 95% CIs and per-scenario paired difference reporting."""
+    results_file = Path(__file__).resolve().parent.parent / "benchmark" / "results" / "holdout_sequential.json"
+    with open(results_file, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    # 1. Verify headline policy disclaims single pooled p-value across heterogeneous scenarios
+    assert "headline_policy" in data["paired_tests"]
+    assert "heterogeneous" in data["paired_tests"]["headline_policy"]
+
+    # 2. Verify all policies have stratified bootstrap 95% intervals
+    for p in ["oracle", "qualloop", "baseline_b", "baseline_a", "baseline_c"]:
+        pm = data["policy_metrics"][p]
+        assert "pooled_ql_per_rupee_bootstrap_ci_95" in pm
+        assert len(pm["pooled_ql_per_rupee_bootstrap_ci_95"]) == 2
+        assert pm["pooled_ql_per_rupee_bootstrap_ci_95"][0] <= pm["pooled_ql_per_rupee"] <= pm["pooled_ql_per_rupee_bootstrap_ci_95"][1]
+
+        assert "mean_of_per_run_ratios_bootstrap_ci_95" in pm
+        assert len(pm["mean_of_per_run_ratios_bootstrap_ci_95"]) == 2
+        assert pm["mean_of_per_run_ratios_bootstrap_ci_95"][0] <= pm["mean_of_per_run_ratios"] <= pm["mean_of_per_run_ratios_bootstrap_ci_95"][1]
+
+        assert "mean_qualified_leads_per_run" in pm
+        assert "mean_qualified_leads_per_run_bootstrap_ci_95" in pm
+        assert len(pm["mean_qualified_leads_per_run_bootstrap_ci_95"]) == 2
+
+    # 3. Verify each scenario has paired differences
+    scenarios = data["budget_modes"]["variable"]["scenario_breakdown"]
+    for sc_name, sc_data in scenarios.items():
+        assert "paired_differences" in sc_data
+        for opp in ["baseline_b", "baseline_a", "baseline_c"]:
+            key = f"qualloop_minus_{opp}"
+            assert key in sc_data["paired_differences"]
+            diff_entry = sc_data["paired_differences"][key]
+            assert "mean_ql_diff" in diff_entry
+            assert "mean_ql_per_rupee_diff" in diff_entry
+
 
 
 

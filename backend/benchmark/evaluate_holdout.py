@@ -56,6 +56,63 @@ def wilson_score_interval(successes: int, trials: int, confidence: float = 0.95)
     return (round(low, 4), round(high, 4))
 
 
+def compute_stratified_bootstrap(
+    run_keys: list[tuple[str, int]],
+    run_data: dict[str, dict[str, list[float]]],
+    policies: list[str],
+    n_bootstraps: int = 2000,
+    seed: int = 42,
+) -> dict[str, dict[str, list[float]]]:
+    """
+    Scenario-stratified bootstrap resampling across 100 runs.
+    Within each scenario s, resample n_s runs with replacement, combining them
+    into a synthetic 100-run portfolio replicate. Evaluates 2,000 replicates.
+    """
+    rng = np.random.default_rng(seed)
+    sc_indices: dict[str, list[int]] = {}
+    for idx, (sc, _) in enumerate(run_keys):
+        sc_indices.setdefault(sc, []).append(idx)
+
+    boot_samples: dict[str, dict[str, list[float]]] = {
+        p: {"pooled_ratio": [], "per_run_ratio": [], "mean_ql": []} for p in policies
+    }
+
+    for _ in range(n_bootstraps):
+        resample_idxs = []
+        for sc, idxs in sc_indices.items():
+            chosen = rng.choice(idxs, size=len(idxs), replace=True)
+            resample_idxs.extend(chosen)
+
+        for p in policies:
+            sp_arr = np.array([run_data[p]["spend"][i] for i in resample_idxs])
+            ql_arr = np.array([run_data[p]["qualified_leads"][i] for i in resample_idxs])
+            ratio_arr = np.array([run_data[p]["ql_per_rupee"][i] for i in resample_idxs])
+
+            sum_sp = np.sum(sp_arr)
+            sum_ql = np.sum(ql_arr)
+            boot_samples[p]["pooled_ratio"].append(float(sum_ql / sum_sp if sum_sp > 0 else 0.0))
+            boot_samples[p]["per_run_ratio"].append(float(np.mean(ratio_arr)))
+            boot_samples[p]["mean_ql"].append(float(np.mean(ql_arr)))
+
+    intervals: dict[str, dict[str, list[float]]] = {}
+    for p in policies:
+        intervals[p] = {
+            "pooled_ratio_ci_95": [
+                round(float(np.percentile(boot_samples[p]["pooled_ratio"], 2.5)), 6),
+                round(float(np.percentile(boot_samples[p]["pooled_ratio"], 97.5)), 6),
+            ],
+            "per_run_ratio_ci_95": [
+                round(float(np.percentile(boot_samples[p]["per_run_ratio"], 2.5)), 6),
+                round(float(np.percentile(boot_samples[p]["per_run_ratio"], 97.5)), 6),
+            ],
+            "mean_ql_ci_95": [
+                round(float(np.percentile(boot_samples[p]["mean_ql"], 2.5)), 2),
+                round(float(np.percentile(boot_samples[p]["mean_ql"], 97.5)), 2),
+            ],
+        }
+    return intervals
+
+
 def evaluate_budget_mode(
     runner: SequentialClosedLoopRunner,
     holdout_seeds: dict[str, list[int]],
@@ -107,6 +164,7 @@ def evaluate_budget_mode(
         }
         policy_metrics[p] = sum_dict
 
+
     # 3. Paired statistical tests across simulations (N = 100 runs)
     runs: dict[tuple[str, int], list[AdSequentialResult]] = {}
     for r in ad_results:
@@ -130,50 +188,62 @@ def evaluate_budget_mode(
             else:
                 run_data[p]["cpql"].append(sp / ql if ql > 0 else float("inf"))
 
+    # Compute scenario-stratified bootstrap 95% confidence intervals
+    bootstrap_cis = compute_stratified_bootstrap(run_keys, run_data, policies)
+
     for p in policies:
         policy_metrics[p]["pooled_ql_per_rupee"] = policy_metrics[p]["ql_per_rupee"]
+        policy_metrics[p]["pooled_ql_per_rupee_bootstrap_ci_95"] = bootstrap_cis[p]["pooled_ratio_ci_95"]
         policy_metrics[p]["mean_of_per_run_ratios"] = round(float(np.mean(run_data[p]["ql_per_rupee"])), 6)
+        policy_metrics[p]["mean_of_per_run_ratios_bootstrap_ci_95"] = bootstrap_cis[p]["per_run_ratio_ci_95"]
+        policy_metrics[p]["mean_qualified_leads_per_run"] = round(float(np.mean(run_data[p]["qualified_leads"])), 2)
+        policy_metrics[p]["mean_qualified_leads_per_run_bootstrap_ci_95"] = bootstrap_cis[p]["mean_ql_ci_95"]
         valid_cpqls = [c for c in run_data[p]["cpql"] if not np.isinf(c)]
         policy_metrics[p]["mean_per_run_cpql"] = round(float(np.mean(valid_cpqls)), 2) if valid_cpqls else None
 
-    paired_tests = {}
+    # Aggregate comparison: No single headline p-value across heterogeneous scenarios
+    paired_tests = {
+        "headline_policy": (
+            "No single headline p-value is reported across heterogeneous scenarios. Across scenarios with "
+            "vastly differing budgets (₹1,000 to ₹20,000 per ad) and distinct failure modes, pooling violates "
+            "exchangeability and introduces Simpson's paradox. Headline inference is reported via scenario-stratified "
+            "bootstrap 95% confidence intervals and per-scenario paired difference distributions."
+        ),
+        "comparisons": {},
+    }
+
     for opponent in ["baseline_b", "baseline_a", "baseline_c", "oracle"]:
-        # Sign convention explicitly defined: QualLoop minus opponent (positive means QualLoop is higher)
         ql_diff = np.array(run_data["qualloop"]["ql_per_rupee"]) - np.array(run_data[opponent]["ql_per_rupee"])
-        t_stat, p_val = stats.ttest_rel(run_data["qualloop"]["ql_per_rupee"], run_data[opponent]["ql_per_rupee"])
-
-        try:
-            w_res = stats.wilcoxon(run_data["qualloop"]["ql_per_rupee"], run_data[opponent]["ql_per_rupee"])
-            w_stat, w_pval = float(w_res.statistic), float(w_res.pvalue)
-        except Exception:
-            w_stat, w_pval = None, None
-
         leads_diff = np.array(run_data["qualloop"]["qualified_leads"]) - np.array(run_data[opponent]["qualified_leads"])
-        t_stat_l, p_val_l = stats.ttest_rel(run_data["qualloop"]["qualified_leads"], run_data[opponent]["qualified_leads"])
 
-        paired_tests[f"qualloop_vs_{opponent}"] = {
+        comp_dict = {
             "sign_convention": f"qualloop_minus_{opponent} (positive indicates QualLoop is higher)",
             "ql_per_rupee": {
                 "qualloop_pooled_ratio": policy_metrics["qualloop"]["pooled_ql_per_rupee"],
+                "qualloop_pooled_ratio_bootstrap_ci_95": policy_metrics["qualloop"]["pooled_ql_per_rupee_bootstrap_ci_95"],
                 "opponent_pooled_ratio": policy_metrics[opponent]["pooled_ql_per_rupee"],
+                "opponent_pooled_ratio_bootstrap_ci_95": policy_metrics[opponent]["pooled_ql_per_rupee_bootstrap_ci_95"],
                 "qualloop_mean_per_run_ratio": policy_metrics["qualloop"]["mean_of_per_run_ratios"],
+                "qualloop_mean_per_run_ratio_bootstrap_ci_95": policy_metrics["qualloop"]["mean_of_per_run_ratios_bootstrap_ci_95"],
                 "opponent_mean_per_run_ratio": policy_metrics[opponent]["mean_of_per_run_ratios"],
+                "opponent_mean_per_run_ratio_bootstrap_ci_95": policy_metrics[opponent]["mean_of_per_run_ratios_bootstrap_ci_95"],
                 "mean_diff": round(float(np.mean(ql_diff)), 6),
                 "std_diff": round(float(np.std(ql_diff)), 6),
-                "paired_t_statistic": round(float(t_stat), 4) if not np.isnan(t_stat) else None,
-                "paired_t_pvalue": float(p_val) if not np.isnan(p_val) else None,
-                "wilcoxon_statistic": w_stat,
-                "wilcoxon_pvalue": w_pval,
             },
             "qualified_leads": {
                 "qualloop_total_leads": policy_metrics["qualloop"]["qualified_leads"],
                 "opponent_total_leads": policy_metrics[opponent]["qualified_leads"],
+                "qualloop_mean_per_run_leads": policy_metrics["qualloop"]["mean_qualified_leads_per_run"],
+                "qualloop_mean_per_run_leads_bootstrap_ci_95": policy_metrics["qualloop"]["mean_qualified_leads_per_run_bootstrap_ci_95"],
+                "opponent_mean_per_run_leads": policy_metrics[opponent]["mean_qualified_leads_per_run"],
+                "opponent_mean_per_run_leads_bootstrap_ci_95": policy_metrics[opponent]["mean_qualified_leads_per_run_bootstrap_ci_95"],
                 "mean_diff": round(float(np.mean(leads_diff)), 2),
                 "std_diff": round(float(np.std(leads_diff)), 2),
-                "paired_t_statistic": round(float(t_stat_l), 4) if not np.isnan(t_stat_l) else None,
-                "paired_t_pvalue": float(p_val_l) if not np.isnan(p_val_l) else None,
             },
+            "note": "Per-scenario paired tests are reported in scenario_breakdown[sc]['paired_differences'].",
         }
+        paired_tests["comparisons"][f"qualloop_vs_{opponent}"] = comp_dict
+        paired_tests[f"qualloop_vs_{opponent}"] = comp_dict
 
     # 4. Full Per-Scenario Table and Auto-Generated Loss Table
     scenario_breakdown: dict[str, dict[str, Any]] = {}
@@ -314,6 +384,34 @@ def evaluate_budget_mode(
                         "difference": round(ql_data["days_to_pause"] - base_data["days_to_pause"], 2),
                         "reason": f"QualLoop took longer to pause bad ads than {b} ({ql_data['days_to_pause']}d vs {base_data['days_to_pause']}d)",
                     })
+
+        # Compute per-scenario paired differences (QualLoop minus each baseline)
+        sc_run_idxs = [i for i, k in enumerate(run_keys) if k[0] == sc]
+        paired_diffs_sc: dict[str, Any] = {}
+        for opponent in ["baseline_b", "baseline_a", "baseline_c", "oracle"]:
+            ql_ql = np.array([run_data["qualloop"]["qualified_leads"][i] for i in sc_run_idxs])
+            opp_ql = np.array([run_data[opponent]["qualified_leads"][i] for i in sc_run_idxs])
+            diff_ql = ql_ql - opp_ql
+
+            ql_ratio = np.array([run_data["qualloop"]["ql_per_rupee"][i] for i in sc_run_idxs])
+            opp_ratio = np.array([run_data[opponent]["ql_per_rupee"][i] for i in sc_run_idxs])
+            diff_ratio = ql_ratio - opp_ratio
+
+            sc_pval_ql, sc_tstat_ql = None, None
+            if np.std(diff_ql) > 1e-9:
+                t_res = stats.ttest_rel(ql_ql, opp_ql)
+                sc_pval_ql = float(t_res.pvalue) if not np.isnan(t_res.pvalue) else None
+                sc_tstat_ql = float(t_res.statistic) if not np.isnan(t_res.statistic) else None
+
+            paired_diffs_sc[f"qualloop_minus_{opponent}"] = {
+                "mean_ql_diff": round(float(np.mean(diff_ql)), 2),
+                "std_ql_diff": round(float(np.std(diff_ql)), 2),
+                "mean_ql_per_rupee_diff": round(float(np.mean(diff_ratio)), 6),
+                "std_ql_per_rupee_diff": round(float(np.std(diff_ratio)), 6),
+                "within_scenario_paired_t_statistic": round(sc_tstat_ql, 4) if sc_tstat_ql is not None else None,
+                "within_scenario_paired_t_pvalue": sc_pval_ql,
+            }
+        sc_dict["paired_differences"] = paired_diffs_sc
 
         scenario_breakdown[sc] = sc_dict
 
