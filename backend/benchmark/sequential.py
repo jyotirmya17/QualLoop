@@ -78,8 +78,11 @@ class AdSequentialResult:
 class PolicySummary:
     policy_name: str
     budget_mode: str
-    total_budget: float
-    cumulative_spend: float
+    budget: float
+    realized_spend: float
+    unspent_budget: float
+    cumulative_spend: float  # alias for realized_spend
+    total_budget: float      # alias for budget
     qualified_leads: float
     ql_per_rupee: float
     cpql: float
@@ -91,6 +94,7 @@ class PolicySummary:
     poor_ads_mean_days_to_pause: Optional[float]
     good_ads_false_paused: int
     good_ads_false_pause_rate: float
+    return_model: str = "linear"
 
 
 class SequentialClosedLoopRunner:
@@ -151,6 +155,7 @@ class SequentialClosedLoopRunner:
         seeds: Optional[dict[str, list[int]]] = None,
         max_runs_per_scenario: Optional[int] = None,
         budget_mode: str = "variable",
+        return_model: str = "linear",
     ) -> list[AdSequentialResult]:
         scenario_seeds = seeds if seeds is not None else self.load_seeds()
         ad_results: list[AdSequentialResult] = []
@@ -368,10 +373,14 @@ class SequentialClosedLoopRunner:
                                     ]
                                     int_base_quals = sum(1 for l in int_leads if l.id in qual_lead_ids_by_ad[a.id])
 
-                                    if a in active_in_int:
+                                    if a in active_in_int and n_act > 0:
                                         int_spend = int_budget / n_act
                                         mult = int_spend / base_int_spend if base_int_spend > 0 else 1.0
-                                        int_quals = int_base_quals * mult
+                                        if return_model == "diminishing":
+                                            lead_mult = (mult ** 0.7) if mult > 0 else 0.0
+                                        else:
+                                            lead_mult = mult
+                                        int_quals = int_base_quals * lead_mult
                                     else:
                                         int_spend = 0.0
                                         int_quals = 0.0
@@ -421,16 +430,19 @@ class SequentialClosedLoopRunner:
         results: list[AdSequentialResult],
         oracle_ql_per_rupee: float,
         budget_mode: str = "variable",
+        return_model: str = "linear",
     ) -> PolicySummary:
-        total_budget = sum(r.full_spend for r in results)
-        total_spend = sum(r.spend_incurred[policy_name] for r in results)
+        budget = sum(r.full_spend for r in results)
+        realized_spend = sum(r.spend_incurred[policy_name] for r in results)
+        unspent_budget = round(max(0.0, budget - realized_spend), 2)
         total_ql = sum(r.qualified_leads_realized[policy_name] for r in results)
-        ql_per_rupee = total_ql / total_spend if total_spend > 0 else 0.0
+        ql_per_rupee = total_ql / realized_spend if realized_spend > 0 else 0.0
 
         if budget_mode == "fixed_redistributed":
-            cpql = total_budget / total_ql if total_ql > 0 else float("inf")
+            # Headline metric: total qualified leads at fixed budget, with unspent budget counted as wasted
+            cpql = budget / total_ql if total_ql > 0 else float("inf")
         else:
-            cpql = total_spend / total_ql if total_ql > 0 else float("inf")
+            cpql = realized_spend / total_ql if total_ql > 0 else float("inf")
 
         poor_ads = [r for r in results if r.is_poor]
         good_ads = [r for r in results if r.is_good]
@@ -460,8 +472,11 @@ class SequentialClosedLoopRunner:
         return PolicySummary(
             policy_name=policy_name,
             budget_mode=budget_mode,
-            total_budget=round(total_budget, 2),
-            cumulative_spend=round(total_spend, 2),
+            budget=round(budget, 2),
+            realized_spend=round(realized_spend, 2),
+            unspent_budget=unspent_budget,
+            cumulative_spend=round(realized_spend, 2),
+            total_budget=round(budget, 2),
             qualified_leads=round(total_ql, 2),
             ql_per_rupee=round(ql_per_rupee, 6),
             cpql=round(cpql, 2),
@@ -473,6 +488,7 @@ class SequentialClosedLoopRunner:
             poor_ads_mean_days_to_pause=float(np.mean(days_list)) if days_list else None,
             good_ads_false_paused=good_fp_count,
             good_ads_false_pause_rate=round(good_fp_rate, 4),
+            return_model=return_model,
         )
 
     def run_benchmark(
@@ -482,11 +498,13 @@ class SequentialClosedLoopRunner:
         max_runs_per_scenario: Optional[int] = None,
         save_filename: str = "sequential_closed_loop.json",
         budget_mode: str = "variable",
+        return_model: str = "linear",
     ) -> dict[str, Any]:
         results = self.run_simulation_closed_loop(
             seeds=seeds,
             max_runs_per_scenario=max_runs_per_scenario,
             budget_mode=budget_mode,
+            return_model=return_model,
         )
 
         n_ads = len(results)

@@ -73,13 +73,18 @@ qualloop/
 
 ---
 
-## 4. Empirical Benchmark: QualLoop vs. Naive Baseline
+## 4. Empirical Benchmark & Budget Semantics
 
-The benchmark runner executes a paired comparison across pre-committed random seeds (`backend/benchmark/seeds.json`) across 9 scenario presets:
+The benchmark runner executes a closed-loop sequential comparison across pre-committed random seeds (`backend/benchmark/seeds_split.json`) evaluated on 100 holdout simulations (175 advertisements across 9 scenarios):
 
-- **False Positive Pause Rate (FPPR)**: QualLoop reduced premature pausing of good ads from **1.7% to 0.0%** (target: < 10%).
-- **Insufficient Evidence Rate (IER)**: QualLoop explicitly identifies cohorts where data is insufficient (**12.0%**), whereas the naive baseline never admits ignorance.
-- **Scientific Honesty & Transparency**: In small sample traps, naive policies occasionally pause genuinely poor ads early purely by chance; QualLoop prudently flags `collect_more_data` or `flag_insufficient_evidence`, prioritizing evidence over premature guessing.
+### 4.1 Return Models & The Linear-Returns Assumption
+- **Linear-Returns Assumption ($Spend^{1.0}$):** The primary benchmark assumes returns to advertising spend scale linearly per ad. Budget freed by pausing underperforming creatives is reallocated equally across surviving active ads, with incremental leads scaling proportionally ($1.0 \times$).
+- **Diminishing-Returns Model ($Spend^{0.7}$):** To account for audience saturation, frequency fatigue, and diminishing marginal returns in digital ad auctions, the benchmark evaluates a concave return model where incremental leads scale as $\left(\frac{\text{Spend}_{\text{new}}}{\text{Spend}_{\text{base}}}\right)^{0.7}$.
+
+### 4.2 Budget Accounting & Headline Metrics
+- **Headline Metric:** **Total Qualified Leads at Fixed Budget** (₹821,000 holdout budget), with unspent budget counted as wasted.
+- **Deceptive Metrics Excluded:** QL-per-rupee is removed from headline comparisons because premature termination of good ads (such as Baseline B pausing 75% of good ads) slashes spend while harvesting early conversions, producing an illusory high QL/rupee ratio (0.004543 vs Oracle 0.003881) while sacrificing over 61% of total qualified volume.
+- **Tuned Baseline C Reality:** When naive Baseline C is tuned on 100 separate tuning seeds (30 mature contacts, 0.10 hurdle), its holdout false pause rate drops to 2.86% and its total qualified leads (4,840.88) are **statistically indistinguishable from QualLoop** (4,805.88; paired difference $\Delta = -0.35$ leads/run, 95% bootstrap CI $[-1.44, 0.57]$, $p=0.51$). QualLoop's edge lies in rigorous uncertainty quantification, credible interval guarantees, and audit compliance rather than gross lead superiority over an optimally tuned point heuristic.
 
 ---
 

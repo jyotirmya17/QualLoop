@@ -467,6 +467,54 @@ def test_fair_baseline_c_tuning_and_evaluation():
     assert h["error_rates"]["tuned_baseline_c"]["fp_by_intent"]["rate"] <= 0.04
 
 
+def test_budget_semantics_and_return_models():
+    """
+    Verify Item 5: Budget semantics and return models.
+    - Budget, realized spend, and unspent budget reported for every policy.
+    - Unspent budget counted as wasted (headline CPQL = budget / qualified_leads).
+    - Both linear (Spend^1.0) and diminishing (Spend^0.7) return models reported.
+    - Diminishing returns yields strictly fewer leads when budget is concentrated.
+    - README explicitly states linear-returns assumption.
+    """
+    results_file = Path(__file__).resolve().parent.parent / "benchmark" / "results" / "holdout_sequential.json"
+    with open(results_file, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    b_modes = data["budget_modes"]
+    assert "variable" in b_modes
+    assert "fixed_redistributed_linear" in b_modes
+    assert "fixed_redistributed_diminishing" in b_modes
+
+    # 1. Verify budget accounting across all modes and policies
+    for mode_name in ["variable", "fixed_redistributed_linear", "fixed_redistributed_diminishing"]:
+        pm = b_modes[mode_name]["policy_metrics"]
+        for p_name in ["oracle", "qualloop", "baseline_b", "baseline_a", "baseline_c"]:
+            entry = pm[p_name]
+            assert "budget" in entry
+            assert "realized_spend" in entry
+            assert "unspent_budget" in entry
+            assert entry["budget"] == 821000.0
+            expected_unspent = round(max(0.0, entry["budget"] - entry["realized_spend"]), 2)
+            assert abs(entry["unspent_budget"] - expected_unspent) < 0.05
+
+    # 2. Verify diminishing returns math
+    # Under fixed budget redistribution with concentrated spend (mult > 1),
+    # diminishing returns (mult^0.7) must produce strictly fewer leads than linear returns (mult^1.0).
+    linear_ql = b_modes["fixed_redistributed_linear"]["policy_metrics"]["qualloop"]["qualified_leads"]
+    dim_ql = b_modes["fixed_redistributed_diminishing"]["policy_metrics"]["qualloop"]["qualified_leads"]
+    assert dim_ql < linear_ql
+    assert round(linear_ql, 2) == 4805.88
+    assert round(dim_ql, 2) == 3739.50
+
+    # 3. Verify README explicitly states the linear-returns assumption
+    readme_file = Path(__file__).resolve().parent.parent.parent / "README.md"
+    readme_content = readme_file.read_text(encoding="utf-8")
+    assert "Linear-Returns Assumption" in readme_content
+    assert "Spend^1.0" in readme_content or "Spend^{1.0}" in readme_content
+    assert "Diminishing-Returns Model" in readme_content
+
+
+
 
 
 

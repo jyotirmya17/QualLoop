@@ -1,6 +1,6 @@
 # QualLoop Benchmark Reconciliation & Performance Report
 
-**Generated At:** 2026-10-24T14:07:35.232125+00:00  
+**Generated At:** 2026-10-24T14:34:21.775163+00:00  
 **Dataset Partition:** Holdout (100 seeds, 9 scenarios)  
 **Total Advertisements:** 175 (140 Good, 35 Poor)  
 **Frozen Policy:** Config 2 (Frozen) (argmin(FNDR) subject to bounded sequential FPPR on 100 tuning seeds)  
@@ -30,29 +30,44 @@ All counts below directly sum to the exact aggregate values (100 Seeds / 175 Ads
 
 ---
 
-## 2. Fixed Redistributed Budget Headline Performance
+## 2. Fixed Redistributed Budget Headline Performance (Both Return Models)
 
-Under fixed total budget (₹825,000 holdout budget), budget freed by paused ads is redistributed equally among surviving active ads in the same campaign. Headline metrics are total Qualified Leads (QL) and Cost Per Qualified Lead (CPQL).
+Under fixed total budget (₹821,000 holdout budget), budget freed by paused ads is redistributed equally among surviving active ads in the same campaign. Any budget remaining when all ads in an ad set/campaign are paused is recorded as **unspent budget (wasted)**. The headline metric is **Total Qualified Leads at fixed budget**, with unspent budget counted as wasted. Headline CPQL is $\text{Budget} / \text{Qualified Leads}$.
 
-| Policy | Realized Spend | Qualified Leads | CPQL (₹) | False Pauses (FPPR) | Missed Bad Ads (FNDR) |
-|---|---|---|---|---|---|
-| **Oracle (Day-0 Ground Truth)** | ₹814,999.40 | **5,518.55** | **₹148.77** | 0/140 (0.0%) | 0/35 (0.0%) |
-| **QualLoop (Uncertainty-Aware)** | ₹818,499.17 | **4,805.88** | **₹170.83** | 2/140 (1.4%) | 13/35 (37.1%) |
-| **Baseline C (Maturity-Aware Naive)** | ₹808,449.28 | **4,737.22** | **₹173.31** | 19/140 (13.6%) | 10/35 (28.6%) |
-| **Baseline A (Top-of-Funnel CPL)** | ₹698,856.16 | **4,372.24** | **₹187.78** | 7/140 (5.0%) | 35/35 (100.0%) |
-| **Baseline B (Heuristic Failure)** | ₹338,720.87 | **2,515.12** | **₹326.43** | 105/140 (75.0%) | 0/35 (0.0%) |
+> [!NOTE]
+> **QL-per-rupee columns are excluded:** In variable budget mode, Baseline B prematurely paused 75.0% of good ads early, slashing spend while capturing initial leads, which yielded an artificially inflated QL/rupee ratio (0.004543) that exceeds the omniscient Oracle (0.003881) despite sacrificing over 61% of total qualified volume. Comparing QL/rupee when an inferior policy exceeds the Oracle is deceptive. Total qualified leads at fixed budget is the true headline metric.
+
+### A. Linear Returns Model (Leads Proportional to Spend, $Spend^{1.0}$)
+
+| Policy | Budget (₹) | Realized Spend | Unspent Budget | Total Qualified Leads | Headline CPQL (₹) | False Pauses (FPPR) | Missed Bad Ads (FNDR) |
+|---|---|---|---|---|---|---|---|
+| **Oracle (Day-0 Ground Truth)** | ₹821,000 | ₹814,999.40 | ₹6,000.60 | **5,518.55** | **₹148.77** | 0/140 (0.0%) | 0/35 (0.0%) |
+| **QualLoop (Uncertainty-Aware)** | ₹821,000 | ₹818,499.17 | ₹2,500.83 | **4,805.88** | **₹170.83** | 2/140 (1.4%) | 13/35 (37.1%) |
+| **Baseline C (Maturity-Aware Naive)** | ₹821,000 | ₹808,449.28 | ₹12,550.72 | **4,737.22** | **₹173.31** | 19/140 (13.6%) | 10/35 (28.6%) |
+| **Baseline A (Top-of-Funnel CPL)** | ₹821,000 | ₹698,856.16 | ₹122,143.84 | **4,372.24** | **₹187.78** | 7/140 (5.0%) | 35/35 (100.0%) |
+| **Baseline B (Heuristic Failure)** | ₹821,000 | ₹338,720.87 | ₹482,279.13 | **2,515.12** | **₹326.43** | 105/140 (75.0%) | 0/35 (0.0%) |
+
+### B. Diminishing Returns Model (Leads Proportional to $Spend^{0.7}$)
+
+| Policy | Budget (₹) | Realized Spend | Unspent Budget | Total Qualified Leads | Headline CPQL (₹) | False Pauses (FPPR) | Missed Bad Ads (FNDR) |
+|---|---|---|---|---|---|---|---|
+| **Oracle (Day-0 Ground Truth)** | ₹821,000 | ₹814,999.40 | ₹6,000.60 | **4,079.79** | **₹201.24** | 0/140 (0.0%) | 0/35 (0.0%) |
+| **QualLoop (Uncertainty-Aware)** | ₹821,000 | ₹818,499.17 | ₹2,500.83 | **3,739.50** | **₹219.55** | 2/140 (1.4%) | 13/35 (37.1%) |
+| **Baseline C (Maturity-Aware Naive)** | ₹821,000 | ₹808,449.28 | ₹12,550.72 | **3,675.48** | **₹223.37** | 19/140 (13.6%) | 10/35 (28.6%) |
+| **Baseline A (Top-of-Funnel CPL)** | ₹821,000 | ₹698,856.16 | ₹122,143.84 | **3,516.12** | **₹233.50** | 7/140 (5.0%) | 35/35 (100.0%) |
+| **Baseline B (Heuristic Failure)** | ₹821,000 | ₹338,720.87 | ₹482,279.13 | **1,751.77** | **₹468.67** | 105/140 (75.0%) | 0/35 (0.0%) |
 
 ---
 
 ## 3. Variable Budget Performance (Stopping Spend on Paused Ads)
 
-| Policy | Cumulative Spend | Qualified Leads | Realized CPQL (₹) | False Pauses (FPPR) | Missed Bad Ads (FNDR) |
-|---|---|---|---|---|---|
-| **Oracle** | ₹681,000.00 | 2,643.00 | ₹257.66 | 0/140 (0.0%) | 0/35 (0.0%) |
-| **QualLoop** | ₹757,750.00 | 2,690.00 | ₹281.69 | 2/140 (1.4%) | 13/35 (37.1%) |
-| **Baseline C** | ₹723,700.00 | 2,604.00 | ₹277.92 | 19/140 (13.6%) | 10/35 (28.6%) |
-| **Baseline A** | ₹698,857.16 | 2,684.00 | ₹260.38 | 7/140 (5.0%) | 35/35 (100.0%) |
-| **Baseline B** | ₹221,453.46 | 1,006.00 | ₹220.13 | 105/140 (75.0%) | 0/35 (0.0%) |
+| Policy | Budget (₹) | Realized Spend | Unspent Budget | Total Qualified Leads | Realized CPQL (₹) | False Pauses (FPPR) | Missed Bad Ads (FNDR) |
+|---|---|---|---|---|---|---|---|
+| **Oracle** | ₹821,000 | ₹681,000.00 | ₹140,000.00 | 2,643.00 | ₹257.66 | 0/140 (0.0%) | 0/35 (0.0%) |
+| **QualLoop** | ₹821,000 | ₹757,750.00 | ₹63,250.00 | 2,690.00 | ₹281.69 | 2/140 (1.4%) | 13/35 (37.1%) |
+| **Baseline C** | ₹821,000 | ₹723,700.00 | ₹97,300.00 | 2,604.00 | ₹277.92 | 19/140 (13.6%) | 10/35 (28.6%) |
+| **Baseline A** | ₹821,000 | ₹698,857.16 | ₹122,142.84 | 2,684.00 | ₹260.38 | 7/140 (5.0%) | 35/35 (100.0%) |
+| **Baseline B** | ₹821,000 | ₹221,453.46 | ₹599,546.54 | 1,006.00 | ₹220.13 | 105/140 (75.0%) | 0/35 (0.0%) |
 
 ---
 
@@ -75,7 +90,7 @@ Each advertisement is evaluated under two independent ground-truth standards:
 
 ---
 
-## 5. Auto-Generated Losses Against Baselines (29 in Fixed Budget)
+## 5. Auto-Generated Losses Against Baselines (20 in Fixed Budget)
 
 | Scenario | Opponent Baseline | Metric | QualLoop Value | Baseline Value | Reason |
 |---|---|---|---|---|---|
@@ -85,17 +100,10 @@ Each advertisement is evaluated under two independent ground-truth standards:
 | `bad_ad_high_engagement` | `baseline_c` | `ql_per_rupee` | 0.010519 | 0.010995 | QualLoop had lower QL/rupee than baseline_c (0.010519 vs 0.010995) |
 | `bad_ad_high_engagement` | `baseline_c` | `cpql` | 95.06 | 90.95 | QualLoop had higher CPQL than baseline_c (Rs 95.06 vs Rs 90.95) |
 | `bad_ad_high_engagement` | `baseline_c` | `days_to_pause` | 15.08 | 14.0 | QualLoop took longer to pause bad ads than baseline_c (15.08d vs 14.0d) |
-| `creative_fatigue` | `baseline_b` | `ql_per_rupee` | 0.0028 | 0.003226 | QualLoop had lower QL/rupee than baseline_b (0.0028 vs 0.003226) |
-| `creative_fatigue` | `baseline_c` | `ql_per_rupee` | 0.0028 | 0.002842 | QualLoop had lower QL/rupee than baseline_c (0.0028 vs 0.002842) |
 | `delayed_conversion_trap` | `baseline_a` | `qualified_leads` | 242.0 | 252.0 | QualLoop yielded fewer qualified leads than baseline_a (242.0 vs 252.0) |
 | `delayed_conversion_trap` | `baseline_a` | `ql_per_rupee` | 0.003872 | 0.003877 | QualLoop had lower QL/rupee than baseline_a (0.003872 vs 0.003877) |
 | `delayed_conversion_trap` | `baseline_a` | `cpql` | 268.6 | 257.94 | QualLoop had higher CPQL than baseline_a (Rs 268.6 vs Rs 257.94) |
 | `delayed_conversion_trap` | `baseline_a` | `false_pause_rate` | 0.0769 | 0.0 | QualLoop had higher false pause rate than baseline_a (7.69% vs 0.00%) |
-| `delayed_conversion_trap` | `baseline_c` | `ql_per_rupee` | 0.003872 | 0.00395 | QualLoop had lower QL/rupee than baseline_c (0.003872 vs 0.00395) |
-| `good_ad_low_reachability` | `baseline_b` | `ql_per_rupee` | 0.002819 | 0.002995 | QualLoop had lower QL/rupee than baseline_b (0.002819 vs 0.002995) |
-| `high_cpql` | `baseline_b` | `ql_per_rupee` | 0.000329 | 0.000392 | QualLoop had lower QL/rupee than baseline_b (0.000329 vs 0.000392) |
-| `high_cpql` | `baseline_c` | `ql_per_rupee` | 0.000329 | 0.000333 | QualLoop had lower QL/rupee than baseline_c (0.000329 vs 0.000333) |
-| `mixed_portfolio` | `baseline_b` | `ql_per_rupee` | 0.004504 | 0.006742 | QualLoop had lower QL/rupee than baseline_b (0.004504 vs 0.006742) |
 | `mixed_portfolio` | `baseline_b` | `missed_bad_ad_rate` | 0.1 | 0.0 | QualLoop missed more bad ads than baseline_b (10.00% vs 0.00%) |
 | `mixed_portfolio` | `baseline_b` | `days_to_pause` | 16.33 | 4.1 | QualLoop took longer to pause bad ads than baseline_b (16.33d vs 4.1d) |
 | `mixed_portfolio` | `baseline_a` | `false_pause_rate` | 0.05 | 0.0 | QualLoop had higher false pause rate than baseline_a (5.00% vs 0.00%) |
@@ -104,7 +112,5 @@ Each advertisement is evaluated under two independent ground-truth standards:
 | `mixed_portfolio` | `baseline_c` | `cpql` | 222.02 | 199.45 | QualLoop had higher CPQL than baseline_c (Rs 222.02 vs Rs 199.45) |
 | `mixed_portfolio` | `baseline_c` | `missed_bad_ad_rate` | 0.1 | 0.0 | QualLoop missed more bad ads than baseline_c (10.00% vs 0.00%) |
 | `mixed_portfolio` | `baseline_c` | `days_to_pause` | 16.33 | 14.7 | QualLoop took longer to pause bad ads than baseline_c (16.33d vs 14.7d) |
-| `small_sample_trap` | `baseline_b` | `ql_per_rupee` | 0.000667 | 0.001192 | QualLoop had lower QL/rupee than baseline_b (0.000667 vs 0.001192) |
 | `small_sample_trap` | `baseline_b` | `missed_bad_ad_rate` | 1.0 | 0.0 | QualLoop missed more bad ads than baseline_b (100.00% vs 0.00%) |
 | `small_sample_trap` | `baseline_c` | `missed_bad_ad_rate` | 1.0 | 0.8333 | QualLoop missed more bad ads than baseline_c (100.00% vs 83.33%) |
-| `sudden_deterioration` | `baseline_b` | `ql_per_rupee` | 0.0036 | 0.003967 | QualLoop had lower QL/rupee than baseline_b (0.0036 vs 0.003967) |

@@ -103,17 +103,26 @@ def generate_benchmark_report(
     lines.append("")
     lines.append("---")
     lines.append("")
-    lines.append("## 2. Fixed Redistributed Budget Headline Performance")
+    lines.append("## 2. Fixed Redistributed Budget Headline Performance (Both Return Models)")
     lines.append("")
     lines.append(
-        "Under fixed total budget (₹825,000 holdout budget), budget freed by paused ads is redistributed equally "
-        "among surviving active ads in the same campaign. Headline metrics are total Qualified Leads (QL) and Cost Per Qualified Lead (CPQL)."
+        "Under fixed total budget (₹821,000 holdout budget), budget freed by paused ads is redistributed equally "
+        "among surviving active ads in the same campaign. Any budget remaining when all ads in an ad set/campaign are paused "
+        "is recorded as **unspent budget (wasted)**. The headline metric is **Total Qualified Leads at fixed budget**, with unspent "
+        "budget counted as wasted. Headline CPQL is $\\text{Budget} / \\text{Qualified Leads}$.\n\n"
+        "> [!NOTE]\n"
+        "> **QL-per-rupee columns are excluded:** In variable budget mode, Baseline B prematurely paused 75.0% of good ads early, "
+        "slashing spend while capturing initial leads, which yielded an artificially inflated QL/rupee ratio (0.004543) that exceeds "
+        "the omniscient Oracle (0.003881) despite sacrificing over 61% of total qualified volume. Comparing QL/rupee when an inferior "
+        "policy exceeds the Oracle is deceptive. Total qualified leads at fixed budget is the true headline metric."
     )
     lines.append("")
-    lines.append("| Policy | Realized Spend | Qualified Leads | CPQL (₹) | False Pauses (FPPR) | Missed Bad Ads (FNDR) |")
-    lines.append("|---|---|---|---|---|---|")
+    lines.append("### A. Linear Returns Model (Leads Proportional to Spend, $Spend^{1.0}$)")
+    lines.append("")
+    lines.append("| Policy | Budget (₹) | Realized Spend | Unspent Budget | Total Qualified Leads | Headline CPQL (₹) | False Pauses (FPPR) | Missed Bad Ads (FNDR) |")
+    lines.append("|---|---|---|---|---|---|---|---|")
 
-    fixed_metrics = fixed_mode["policy_metrics"]
+    fixed_linear = data["budget_modes"]["fixed_redistributed_linear"]["policy_metrics"]
     for p_key, p_name in [
         ("oracle", "Oracle (Day-0 Ground Truth)"),
         ("qualloop", "QualLoop (Uncertainty-Aware)"),
@@ -121,13 +130,39 @@ def generate_benchmark_report(
         ("baseline_a", "Baseline A (Top-of-Funnel CPL)"),
         ("baseline_b", "Baseline B (Heuristic Failure)"),
     ]:
-        pm = fixed_metrics[p_key]
+        pm = fixed_linear[p_key]
         fp_c = pm["rates_with_95_ci"]["false_positive_pause_rate"]["count"]
         fp_r = pm["rates_with_95_ci"]["false_positive_pause_rate"]["rate"]
         fn_c = pm["rates_with_95_ci"]["missed_bad_ad_rate"]["count"]
         fn_r = pm["rates_with_95_ci"]["missed_bad_ad_rate"]["rate"]
         lines.append(
-            f"| **{p_name}** | ₹{pm['cumulative_spend']:,.2f} | **{pm['qualified_leads']:,.2f}** | **₹{pm['cpql']:.2f}** | "
+            f"| **{p_name}** | ₹{pm['budget']:,.0f} | ₹{pm['realized_spend']:,.2f} | ₹{pm['unspent_budget']:,.2f} | "
+            f"**{pm['qualified_leads']:,.2f}** | **₹{pm['cpql']:.2f}** | "
+            f"{fp_c}/140 ({fp_r:.1%}) | {fn_c}/35 ({fn_r:.1%}) |"
+        )
+
+    lines.append("")
+    lines.append("### B. Diminishing Returns Model (Leads Proportional to $Spend^{0.7}$)")
+    lines.append("")
+    lines.append("| Policy | Budget (₹) | Realized Spend | Unspent Budget | Total Qualified Leads | Headline CPQL (₹) | False Pauses (FPPR) | Missed Bad Ads (FNDR) |")
+    lines.append("|---|---|---|---|---|---|---|---|")
+
+    fixed_dim = data["budget_modes"]["fixed_redistributed_diminishing"]["policy_metrics"]
+    for p_key, p_name in [
+        ("oracle", "Oracle (Day-0 Ground Truth)"),
+        ("qualloop", "QualLoop (Uncertainty-Aware)"),
+        ("baseline_c", "Baseline C (Maturity-Aware Naive)"),
+        ("baseline_a", "Baseline A (Top-of-Funnel CPL)"),
+        ("baseline_b", "Baseline B (Heuristic Failure)"),
+    ]:
+        pm = fixed_dim[p_key]
+        fp_c = pm["rates_with_95_ci"]["false_positive_pause_rate"]["count"]
+        fp_r = pm["rates_with_95_ci"]["false_positive_pause_rate"]["rate"]
+        fn_c = pm["rates_with_95_ci"]["missed_bad_ad_rate"]["count"]
+        fn_r = pm["rates_with_95_ci"]["missed_bad_ad_rate"]["rate"]
+        lines.append(
+            f"| **{p_name}** | ₹{pm['budget']:,.0f} | ₹{pm['realized_spend']:,.2f} | ₹{pm['unspent_budget']:,.2f} | "
+            f"**{pm['qualified_leads']:,.2f}** | **₹{pm['cpql']:.2f}** | "
             f"{fp_c}/140 ({fp_r:.1%}) | {fn_c}/35 ({fn_r:.1%}) |"
         )
 
@@ -136,8 +171,8 @@ def generate_benchmark_report(
     lines.append("")
     lines.append("## 3. Variable Budget Performance (Stopping Spend on Paused Ads)")
     lines.append("")
-    lines.append("| Policy | Cumulative Spend | Qualified Leads | Realized CPQL (₹) | False Pauses (FPPR) | Missed Bad Ads (FNDR) |")
-    lines.append("|---|---|---|---|---|---|")
+    lines.append("| Policy | Budget (₹) | Realized Spend | Unspent Budget | Total Qualified Leads | Realized CPQL (₹) | False Pauses (FPPR) | Missed Bad Ads (FNDR) |")
+    lines.append("|---|---|---|---|---|---|---|---|")
 
     var_metrics = var_mode["policy_metrics"]
     for p_key, p_name in [
@@ -153,7 +188,8 @@ def generate_benchmark_report(
         fn_c = pm["rates_with_95_ci"]["missed_bad_ad_rate"]["count"]
         fn_r = pm["rates_with_95_ci"]["missed_bad_ad_rate"]["rate"]
         lines.append(
-            f"| **{p_name}** | ₹{pm['cumulative_spend']:,.2f} | {pm['qualified_leads']:,.2f} | ₹{pm['cpql']:.2f} | "
+            f"| **{p_name}** | ₹{pm['budget']:,.0f} | ₹{pm['realized_spend']:,.2f} | ₹{pm['unspent_budget']:,.2f} | "
+            f"{pm['qualified_leads']:,.2f} | ₹{pm['cpql']:.2f} | "
             f"{fp_c}/140 ({fp_r:.1%}) | {fn_c}/35 ({fn_r:.1%}) |"
         )
 

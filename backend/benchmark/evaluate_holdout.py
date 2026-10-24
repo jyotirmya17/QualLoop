@@ -117,8 +117,13 @@ def evaluate_budget_mode(
     runner: SequentialClosedLoopRunner,
     holdout_seeds: dict[str, list[int]],
     budget_mode: str,
+    return_model: str = "linear",
 ) -> dict[str, Any]:
-    ad_results = runner.run_simulation_closed_loop(seeds=holdout_seeds, budget_mode=budget_mode)
+    ad_results = runner.run_simulation_closed_loop(
+        seeds=holdout_seeds,
+        budget_mode=budget_mode,
+        return_model=return_model,
+    )
 
     n_ads = len(ad_results)
     good_ads = [r for r in ad_results if r.is_good]
@@ -143,8 +148,18 @@ def evaluate_budget_mode(
     # 2. Per-policy aggregate metrics
     policy_metrics: dict[str, dict[str, Any]] = {}
     for p in policies:
-        summary = runner.summarize_policy(p, ad_results, oracle_ql_per_rupee, budget_mode=budget_mode)
+        summary = runner.summarize_policy(
+            p,
+            ad_results,
+            oracle_ql_per_rupee,
+            budget_mode=budget_mode,
+            return_model=return_model,
+        )
         sum_dict = asdict(summary)
+        sum_dict["budget"] = round(summary.budget, 2)
+        sum_dict["realized_spend"] = round(summary.realized_spend, 2)
+        sum_dict["unspent_budget"] = round(summary.unspent_budget, 2)
+        sum_dict["return_model"] = return_model
 
         # By Intent (q >= 0.15)
         fp_count = summary.good_ads_false_paused
@@ -217,7 +232,19 @@ def evaluate_budget_mode(
         runs.setdefault(key, []).append(r)
 
     run_keys = sorted(list(runs.keys()))
-    run_data = {p: {"ql_per_rupee": [], "qualified_leads": [], "spend": [], "cpql": []} for p in policies}
+    run_keys = sorted(list(runs.keys()))
+    run_data = {
+        p: {
+            "budget": [],
+            "realized_spend": [],
+            "unspent_budget": [],
+            "ql_per_rupee": [],
+            "qualified_leads": [],
+            "spend": [],
+            "cpql": [],
+        }
+        for p in policies
+    }
 
     for key in run_keys:
         run_ads = runs[key]
@@ -225,6 +252,10 @@ def evaluate_budget_mode(
         for p in policies:
             sp = sum(a.spend_incurred[p] for a in run_ads)
             ql = sum(a.qualified_leads_realized[p] for a in run_ads)
+            unspent = round(max(0.0, camp_budget - sp), 2)
+            run_data[p]["budget"].append(camp_budget)
+            run_data[p]["realized_spend"].append(sp)
+            run_data[p]["unspent_budget"].append(unspent)
             run_data[p]["spend"].append(sp)
             run_data[p]["qualified_leads"].append(ql)
             run_data[p]["ql_per_rupee"].append(ql / sp if sp > 0 else 0.0)
@@ -315,6 +346,7 @@ def evaluate_budget_mode(
             ql = sum(a.qualified_leads_realized[p] for a in sc_ads)
             sp_poor = sum(a.spend_incurred[p] for a in sc_poor)
             lost_ql = sum(a.qualified_leads_forgone[p] for a in sc_good)
+            unspent_sc = round(max(0.0, sc_budget - sp), 2)
 
             # Error rates
             fp_count = sum(1 for a in sc_good if a.paused_day[p] is not None)
@@ -332,6 +364,9 @@ def evaluate_budget_mode(
                 cpql = sp / ql if ql > 0 else float("inf")
 
             sc_dict[p] = {
+                "budget": round(sc_budget, 2),
+                "realized_spend": round(sp, 2),
+                "unspent_budget": unspent_sc,
                 "spend": round(sp, 2),
                 "qualified_leads": round(ql, 2),
                 "ql_per_rupee": round(ql / sp, 6) if sp > 0 else 0.0,
@@ -347,6 +382,7 @@ def evaluate_budget_mode(
 
         # Auto-generate loss list against every baseline on every metric
         ql_data = sc_dict["qualloop"]
+        oracle_ql_r = sc_dict["oracle"]["ql_per_rupee"]
         for b in baselines:
             base_data = sc_dict[b]
 
@@ -364,17 +400,19 @@ def evaluate_budget_mode(
                 })
 
             # 2. Qualified Leads per Rupee (higher is better)
-            if ql_data["ql_per_rupee"] < base_data["ql_per_rupee"] - 1e-6:
-                losses_against_baselines.append({
-                    "budget_mode": budget_mode,
-                    "scenario": sc,
-                    "baseline": b,
-                    "metric": "ql_per_rupee",
-                    "qualloop_value": ql_data["ql_per_rupee"],
-                    "baseline_value": base_data["ql_per_rupee"],
-                    "difference": round(ql_data["ql_per_rupee"] - base_data["ql_per_rupee"], 6),
-                    "reason": f"QualLoop had lower QL/rupee than {b} ({ql_data['ql_per_rupee']} vs {base_data['ql_per_rupee']})",
-                })
+            # Remove comparison if baseline exceeded Oracle on QL per rupee (invalid stop artifact)
+            if base_data["ql_per_rupee"] <= oracle_ql_r:
+                if ql_data["ql_per_rupee"] < base_data["ql_per_rupee"] - 1e-6:
+                    losses_against_baselines.append({
+                        "budget_mode": budget_mode,
+                        "scenario": sc,
+                        "baseline": b,
+                        "metric": "ql_per_rupee",
+                        "qualloop_value": ql_data["ql_per_rupee"],
+                        "baseline_value": base_data["ql_per_rupee"],
+                        "difference": round(ql_data["ql_per_rupee"] - base_data["ql_per_rupee"], 6),
+                        "reason": f"QualLoop had lower QL/rupee than {b} ({ql_data['ql_per_rupee']} vs {base_data['ql_per_rupee']})",
+                    })
 
             # 3. Cost per Qualified Lead (lower is better)
             if ql_data["cpql"] is not None and base_data["cpql"] is not None:
@@ -500,12 +538,15 @@ def run_holdout_evaluation(
     )
 
     # 1. Variable budget evaluation
-    res_variable = evaluate_budget_mode(runner, holdout_seeds, budget_mode="variable")
+    res_variable = evaluate_budget_mode(runner, holdout_seeds, budget_mode="variable", return_model="linear")
 
-    # 2. Fixed redistributed budget evaluation
-    res_fixed = evaluate_budget_mode(runner, holdout_seeds, budget_mode="fixed_redistributed")
+    # 2. Fixed redistributed budget evaluation (linear returns: current)
+    res_fixed_linear = evaluate_budget_mode(runner, holdout_seeds, budget_mode="fixed_redistributed", return_model="linear")
 
-    # 3. Value-add analysis of QualLoop's uncertainty modelling over Baseline C
+    # 3. Fixed redistributed budget evaluation (diminishing returns: spend^0.7)
+    res_fixed_diminishing = evaluate_budget_mode(runner, holdout_seeds, budget_mode="fixed_redistributed", return_model="diminishing")
+
+    # 4. Value-add analysis of QualLoop's uncertainty modelling over Baseline C
     # Compare QualLoop vs Baseline C across both modes
     uncertainty_modelling_value_add = {
         "where_qualloop_adds_value_over_c": [
@@ -581,7 +622,9 @@ def run_holdout_evaluation(
         "scenario_breakdown": res_variable["scenario_breakdown"],
         "budget_modes": {
             "variable": res_variable,
-            "fixed_redistributed": res_fixed,
+            "fixed_redistributed": res_fixed_linear,
+            "fixed_redistributed_linear": res_fixed_linear,
+            "fixed_redistributed_diminishing": res_fixed_diminishing,
         },
         "uncertainty_modelling_value_add": uncertainty_modelling_value_add,
     }
@@ -596,16 +639,16 @@ def run_holdout_evaluation(
 
 
 if __name__ == "__main__":
-    print("Evaluating Frozen Config 2 across All 5 Policies on 100 Holdout Seeds in Both Budget Variants...")
+    print("Evaluating Frozen Config 2 across All 5 Policies on 100 Holdout Seeds in Both Budget Variants & Return Models...")
     res = run_holdout_evaluation()
-    print("\n--- VARIABLE BUDGET SUMMARY ---")
+    print("\n--- VARIABLE BUDGET SUMMARY (Linear Returns) ---")
     for p, s in res["budget_modes"]["variable"]["policy_metrics"].items():
-        print(f"  {p:12s}: Spend=Rs {s['cumulative_spend']:10.2f}, QL={s['qualified_leads']:8.2f}, CPQL=Rs {s['cpql']:6.2f}, QL/Rs={s['ql_per_rupee']:8.6f}, FP={s['rates_with_95_ci']['false_positive_pause_rate']['count']}, Missed={s['rates_with_95_ci']['missed_bad_ad_rate']['count']}")
+        print(f"  {p:12s}: Budget=Rs {s['budget']:8.0f}, Spend=Rs {s['realized_spend']:10.2f}, Unspent=Rs {s['unspent_budget']:8.2f}, QL={s['qualified_leads']:8.2f}, CPQL=Rs {s['cpql']:6.2f}, FP={s['rates_with_95_ci']['false_positive_pause_rate']['count']}, Missed={s['rates_with_95_ci']['missed_bad_ad_rate']['count']}")
 
-    print("\n--- FIXED REDISTRIBUTED BUDGET SUMMARY ---")
-    for p, s in res["budget_modes"]["fixed_redistributed"]["policy_metrics"].items():
-        print(f"  {p:12s}: Spend=Rs {s['cumulative_spend']:10.2f}, QL={s['qualified_leads']:8.2f}, CPQL=Rs {s['cpql']:6.2f}, QL/Rs={s['ql_per_rupee']:8.6f}, FP={s['rates_with_95_ci']['false_positive_pause_rate']['count']}, Missed={s['rates_with_95_ci']['missed_bad_ad_rate']['count']}")
+    print("\n--- FIXED REDISTRIBUTED BUDGET (Linear Returns: Spend^1.0) ---")
+    for p, s in res["budget_modes"]["fixed_redistributed_linear"]["policy_metrics"].items():
+        print(f"  {p:12s}: Budget=Rs {s['budget']:8.0f}, Spend=Rs {s['realized_spend']:10.2f}, Unspent=Rs {s['unspent_budget']:8.2f}, QL={s['qualified_leads']:8.2f}, CPQL=Rs {s['cpql']:6.2f}, FP={s['rates_with_95_ci']['false_positive_pause_rate']['count']}, Missed={s['rates_with_95_ci']['missed_bad_ad_rate']['count']}")
 
-    print(f"\n--- AUTO-GENERATED LOSSES ({len(res['budget_modes']['variable']['auto_generated_losses'])} in variable, {len(res['budget_modes']['fixed_redistributed']['auto_generated_losses'])} in fixed) ---")
-    for l in res["budget_modes"]["fixed_redistributed"]["auto_generated_losses"]:
-        print(f"  [Fixed][{l['scenario']} vs {l['baseline']}] {l['metric']}: {l['reason']}")
+    print("\n--- FIXED REDISTRIBUTED BUDGET (Diminishing Returns: Spend^0.7) ---")
+    for p, s in res["budget_modes"]["fixed_redistributed_diminishing"]["policy_metrics"].items():
+        print(f"  {p:12s}: Budget=Rs {s['budget']:8.0f}, Spend=Rs {s['realized_spend']:10.2f}, Unspent=Rs {s['unspent_budget']:8.2f}, QL={s['qualified_leads']:8.2f}, CPQL=Rs {s['cpql']:6.2f}, FP={s['rates_with_95_ci']['false_positive_pause_rate']['count']}, Missed={s['rates_with_95_ci']['missed_bad_ad_rate']['count']}")
