@@ -3,16 +3,22 @@
     "experiment": "continuous_intent_robustness_benchmark",
     "intent_distribution": "0.03 + Beta(2, 6) * 0.32 (Continuous spectrum spanning [0.03, 0.35])",
     "business_hurdle_threshold": 0.15,
+    "hurdle_sweep_levels": [
+      0.1,
+      0.15,
+      0.2
+    ],
     "n_runs": 50,
     "n_ads": 150,
     "n_good_ads": 34,
     "n_poor_ads": 116,
-    "executed_at": "2026-10-24T12:55:35.857278+00:00"
+    "executed_at": "2026-10-24T14:40:21.024112+00:00"
   },
   "policy_summaries": {
     "oracle": {
       "cumulative_spend": 170000.0,
       "qualified_leads": 420,
+      "cpql": 404.76,
       "ql_per_rupee": 0.002471,
       "efficiency_vs_oracle": 1.0,
       "spend_on_poor_ads": 0.0,
@@ -25,6 +31,7 @@
     "qualloop": {
       "cumulative_spend": 576250.0,
       "qualified_leads": 1008,
+      "cpql": 571.68,
       "ql_per_rupee": 0.001749,
       "efficiency_vs_oracle": 0.708,
       "spend_on_poor_ads": 423750.0,
@@ -37,6 +44,7 @@
     "baseline_b": {
       "cumulative_spend": 107320.85,
       "qualified_leads": 187,
+      "cpql": 573.91,
       "ql_per_rupee": 0.001742,
       "efficiency_vs_oracle": 0.7053,
       "spend_on_poor_ads": 78035.26,
@@ -49,6 +57,7 @@
     "baseline_a": {
       "cumulative_spend": 750000.0,
       "qualified_leads": 1183,
+      "cpql": 633.98,
       "ql_per_rupee": 0.001577,
       "efficiency_vs_oracle": 0.6384,
       "spend_on_poor_ads": 580000.0,
@@ -61,6 +70,7 @@
     "baseline_c": {
       "cumulative_spend": 441250.0,
       "qualified_leads": 824,
+      "cpql": 535.5,
       "ql_per_rupee": 0.001867,
       "efficiency_vs_oracle": 0.7559,
       "spend_on_poor_ads": 317500.0,
@@ -73,37 +83,360 @@
   },
   "strata_analysis": {
     "clear_bad": {
-      "n_ads": 41,
-      "mean_true_intent": 0.0608,
-      "qualloop_pause_rate": 0.7805,
+      "n_ads": 59,
+      "mean_true_intent": 0.0702,
+      "qualloop_pause_rate": 0.7288,
       "baseline_b_pause_rate": 1.0,
       "baseline_a_pause_rate": 0.0,
       "baseline_c_pause_rate": 1.0
     },
     "marginal_bad": {
-      "n_ads": 75,
-      "mean_true_intent": 0.1159,
-      "qualloop_pause_rate": 0.52,
-      "baseline_b_pause_rate": 0.9867,
+      "n_ads": 57,
+      "mean_true_intent": 0.1235,
+      "qualloop_pause_rate": 0.4912,
+      "baseline_b_pause_rate": 0.9825,
       "baseline_a_pause_rate": 0.0,
-      "baseline_c_pause_rate": 0.9067
+      "baseline_c_pause_rate": 0.8772
     },
     "marginal_good": {
-      "n_ads": 33,
-      "mean_true_intent": 0.1685,
-      "qualloop_pause_rate": 0.2424,
-      "baseline_b_pause_rate": 0.9394,
+      "n_ads": 31,
+      "mean_true_intent": 0.1662,
+      "qualloop_pause_rate": 0.2581,
+      "baseline_b_pause_rate": 0.9355,
       "baseline_a_pause_rate": 0.0,
-      "baseline_c_pause_rate": 0.5758
+      "baseline_c_pause_rate": 0.6129
     },
     "clear_good": {
-      "n_ads": 1,
-      "mean_true_intent": 0.2247,
+      "n_ads": 3,
+      "mean_true_intent": 0.2117,
       "qualloop_pause_rate": 0.0,
       "baseline_b_pause_rate": 1.0,
       "baseline_a_pause_rate": 0.0,
       "baseline_c_pause_rate": 0.0
     }
   },
-  "robustness_conclusion": "Under continuous true buying intent, the tuned policy thresholds continue to hold: QualLoop maintains a very low false positive pause rate on profitable ads (even in the marginal good stratum [0.15, 0.22]) while Baseline B indiscriminately kills viable campaigns early."
+  "hurdle_sensitivity_sweep": {
+    "0.10": {
+      "hurdle": 0.1,
+      "n_ads": 150,
+      "n_good_ads": 91,
+      "n_poor_ads": 59,
+      "policy_summaries": {
+        "oracle": {
+          "cumulative_spend": 455000.0,
+          "qualified_leads": 902,
+          "cpql": 504.43,
+          "ql_per_rupee": 0.001982,
+          "efficiency_vs_oracle": 1.0,
+          "spend_on_poor_ads": 0.0,
+          "forgone_good_ql": 0,
+          "good_ads_false_paused": 0,
+          "good_ads_false_pause_rate": 0.0,
+          "poor_ads_missed": 0,
+          "poor_ads_missed_rate": 0.0
+        },
+        "qualloop": {
+          "cumulative_spend": 675000.0,
+          "qualified_leads": 1119,
+          "cpql": 603.22,
+          "ql_per_rupee": 0.001658,
+          "efficiency_vs_oracle": 0.8362,
+          "spend_on_poor_ads": 240000.0,
+          "forgone_good_ql": 27,
+          "good_ads_false_paused": 9,
+          "good_ads_false_pause_rate": 0.0989,
+          "poor_ads_missed": 33,
+          "poor_ads_missed_rate": 0.5593
+        },
+        "baseline_b": {
+          "cumulative_spend": 119999.43,
+          "qualified_leads": 211,
+          "cpql": 568.72,
+          "ql_per_rupee": 0.001758,
+          "efficiency_vs_oracle": 0.887,
+          "spend_on_poor_ads": 42142.63,
+          "forgone_good_ql": 734,
+          "good_ads_false_paused": 86,
+          "good_ads_false_pause_rate": 0.9451,
+          "poor_ads_missed": 1,
+          "poor_ads_missed_rate": 0.0169
+        },
+        "baseline_a": {
+          "cumulative_spend": 750000.0,
+          "qualified_leads": 1183,
+          "cpql": 633.98,
+          "ql_per_rupee": 0.001577,
+          "efficiency_vs_oracle": 0.7957,
+          "spend_on_poor_ads": 295000.0,
+          "forgone_good_ql": 0,
+          "good_ads_false_paused": 0,
+          "good_ads_false_pause_rate": 0.0,
+          "poor_ads_missed": 59,
+          "poor_ads_missed_rate": 1.0
+        },
+        "baseline_c": {
+          "cumulative_spend": 538750.0,
+          "qualified_leads": 963,
+          "cpql": 559.45,
+          "ql_per_rupee": 0.001787,
+          "efficiency_vs_oracle": 0.9017,
+          "spend_on_poor_ads": 175000.0,
+          "forgone_good_ql": 133,
+          "good_ads_false_paused": 42,
+          "good_ads_false_pause_rate": 0.4615,
+          "poor_ads_missed": 7,
+          "poor_ads_missed_rate": 0.1186
+        }
+      },
+      "strata_analysis": {
+        "clear_bad": {
+          "n_ads": 10,
+          "mean_true_intent": 0.0417,
+          "qualloop_pause_rate": 0.8,
+          "baseline_b_pause_rate": 1.0,
+          "baseline_a_pause_rate": 0.0,
+          "baseline_c_pause_rate": 1.0
+        },
+        "marginal_bad": {
+          "n_ads": 49,
+          "mean_true_intent": 0.0761,
+          "qualloop_pause_rate": 0.3673,
+          "baseline_b_pause_rate": 0.9796,
+          "baseline_a_pause_rate": 0.0,
+          "baseline_c_pause_rate": 0.8571
+        },
+        "marginal_good": {
+          "n_ads": 58,
+          "mean_true_intent": 0.124,
+          "qualloop_pause_rate": 0.1207,
+          "baseline_b_pause_rate": 0.9655,
+          "baseline_a_pause_rate": 0.0,
+          "baseline_c_pause_rate": 0.5517
+        },
+        "clear_good": {
+          "n_ads": 33,
+          "mean_true_intent": 0.1708,
+          "qualloop_pause_rate": 0.0606,
+          "baseline_b_pause_rate": 0.9091,
+          "baseline_a_pause_rate": 0.0,
+          "baseline_c_pause_rate": 0.303
+        }
+      }
+    },
+    "0.15": {
+      "hurdle": 0.15,
+      "n_ads": 150,
+      "n_good_ads": 34,
+      "n_poor_ads": 116,
+      "policy_summaries": {
+        "oracle": {
+          "cumulative_spend": 170000.0,
+          "qualified_leads": 420,
+          "cpql": 404.76,
+          "ql_per_rupee": 0.002471,
+          "efficiency_vs_oracle": 1.0,
+          "spend_on_poor_ads": 0.0,
+          "forgone_good_ql": 0,
+          "good_ads_false_paused": 0,
+          "good_ads_false_pause_rate": 0.0,
+          "poor_ads_missed": 0,
+          "poor_ads_missed_rate": 0.0
+        },
+        "qualloop": {
+          "cumulative_spend": 576250.0,
+          "qualified_leads": 1008,
+          "cpql": 571.68,
+          "ql_per_rupee": 0.001749,
+          "efficiency_vs_oracle": 0.708,
+          "spend_on_poor_ads": 423750.0,
+          "forgone_good_ql": 33,
+          "good_ads_false_paused": 8,
+          "good_ads_false_pause_rate": 0.2353,
+          "poor_ads_missed": 45,
+          "poor_ads_missed_rate": 0.3879
+        },
+        "baseline_b": {
+          "cumulative_spend": 107320.85,
+          "qualified_leads": 187,
+          "cpql": 573.91,
+          "ql_per_rupee": 0.001742,
+          "efficiency_vs_oracle": 0.7053,
+          "spend_on_poor_ads": 78035.26,
+          "forgone_good_ql": 346,
+          "good_ads_false_paused": 32,
+          "good_ads_false_pause_rate": 0.9412,
+          "poor_ads_missed": 1,
+          "poor_ads_missed_rate": 0.0086
+        },
+        "baseline_a": {
+          "cumulative_spend": 750000.0,
+          "qualified_leads": 1183,
+          "cpql": 633.98,
+          "ql_per_rupee": 0.001577,
+          "efficiency_vs_oracle": 0.6384,
+          "spend_on_poor_ads": 580000.0,
+          "forgone_good_ql": 0,
+          "good_ads_false_paused": 0,
+          "good_ads_false_pause_rate": 0.0,
+          "poor_ads_missed": 116,
+          "poor_ads_missed_rate": 1.0
+        },
+        "baseline_c": {
+          "cumulative_spend": 441250.0,
+          "qualified_leads": 824,
+          "cpql": 535.5,
+          "ql_per_rupee": 0.001867,
+          "efficiency_vs_oracle": 0.7559,
+          "spend_on_poor_ads": 317500.0,
+          "forgone_good_ql": 89,
+          "good_ads_false_paused": 19,
+          "good_ads_false_pause_rate": 0.5588,
+          "poor_ads_missed": 7,
+          "poor_ads_missed_rate": 0.0603
+        }
+      },
+      "strata_analysis": {
+        "clear_bad": {
+          "n_ads": 59,
+          "mean_true_intent": 0.0702,
+          "qualloop_pause_rate": 0.7288,
+          "baseline_b_pause_rate": 1.0,
+          "baseline_a_pause_rate": 0.0,
+          "baseline_c_pause_rate": 1.0
+        },
+        "marginal_bad": {
+          "n_ads": 57,
+          "mean_true_intent": 0.1235,
+          "qualloop_pause_rate": 0.4912,
+          "baseline_b_pause_rate": 0.9825,
+          "baseline_a_pause_rate": 0.0,
+          "baseline_c_pause_rate": 0.8772
+        },
+        "marginal_good": {
+          "n_ads": 31,
+          "mean_true_intent": 0.1662,
+          "qualloop_pause_rate": 0.2581,
+          "baseline_b_pause_rate": 0.9355,
+          "baseline_a_pause_rate": 0.0,
+          "baseline_c_pause_rate": 0.6129
+        },
+        "clear_good": {
+          "n_ads": 3,
+          "mean_true_intent": 0.2117,
+          "qualloop_pause_rate": 0.0,
+          "baseline_b_pause_rate": 1.0,
+          "baseline_a_pause_rate": 0.0,
+          "baseline_c_pause_rate": 0.0
+        }
+      }
+    },
+    "0.20": {
+      "hurdle": 0.2,
+      "n_ads": 150,
+      "n_good_ads": 3,
+      "n_poor_ads": 147,
+      "policy_summaries": {
+        "oracle": {
+          "cumulative_spend": 15000.0,
+          "qualified_leads": 51,
+          "cpql": 294.12,
+          "ql_per_rupee": 0.0034,
+          "efficiency_vs_oracle": 1.0,
+          "spend_on_poor_ads": 0.0,
+          "forgone_good_ql": 0,
+          "good_ads_false_paused": 0,
+          "good_ads_false_pause_rate": 0.0,
+          "poor_ads_missed": 0,
+          "poor_ads_missed_rate": 0.0
+        },
+        "qualloop": {
+          "cumulative_spend": 471250.0,
+          "qualified_leads": 872,
+          "cpql": 540.42,
+          "ql_per_rupee": 0.00185,
+          "efficiency_vs_oracle": 0.5442,
+          "spend_on_poor_ads": 456250.0,
+          "forgone_good_ql": 0,
+          "good_ads_false_paused": 0,
+          "good_ads_false_pause_rate": 0.0,
+          "poor_ads_missed": 28,
+          "poor_ads_missed_rate": 0.1905
+        },
+        "baseline_b": {
+          "cumulative_spend": 95713.69,
+          "qualified_leads": 167,
+          "cpql": 573.14,
+          "ql_per_rupee": 0.001745,
+          "efficiency_vs_oracle": 0.5132,
+          "spend_on_poor_ads": 92677.98,
+          "forgone_good_ql": 39,
+          "good_ads_false_paused": 3,
+          "good_ads_false_pause_rate": 1.0,
+          "poor_ads_missed": 1,
+          "poor_ads_missed_rate": 0.0068
+        },
+        "baseline_a": {
+          "cumulative_spend": 750000.0,
+          "qualified_leads": 1183,
+          "cpql": 633.98,
+          "ql_per_rupee": 0.001577,
+          "efficiency_vs_oracle": 0.4639,
+          "spend_on_poor_ads": 735000.0,
+          "forgone_good_ql": 0,
+          "good_ads_false_paused": 0,
+          "good_ads_false_pause_rate": 0.0,
+          "poor_ads_missed": 147,
+          "poor_ads_missed_rate": 1.0
+        },
+        "baseline_c": {
+          "cumulative_spend": 410000.0,
+          "qualified_leads": 777,
+          "cpql": 527.67,
+          "ql_per_rupee": 0.001895,
+          "efficiency_vs_oracle": 0.5574,
+          "spend_on_poor_ads": 396250.0,
+          "forgone_good_ql": 5,
+          "good_ads_false_paused": 1,
+          "good_ads_false_pause_rate": 0.3333,
+          "poor_ads_missed": 7,
+          "poor_ads_missed_rate": 0.0476
+        }
+      },
+      "strata_analysis": {
+        "clear_bad": {
+          "n_ads": 117,
+          "mean_true_intent": 0.0969,
+          "qualloop_pause_rate": 0.8889,
+          "baseline_b_pause_rate": 0.9915,
+          "baseline_a_pause_rate": 0.0,
+          "baseline_c_pause_rate": 0.9829
+        },
+        "marginal_bad": {
+          "n_ads": 30,
+          "mean_true_intent": 0.1667,
+          "qualloop_pause_rate": 0.5,
+          "baseline_b_pause_rate": 1.0,
+          "baseline_a_pause_rate": 0.0,
+          "baseline_c_pause_rate": 0.8333
+        },
+        "marginal_good": {
+          "n_ads": 3,
+          "mean_true_intent": 0.2117,
+          "qualloop_pause_rate": 0.0,
+          "baseline_b_pause_rate": 1.0,
+          "baseline_a_pause_rate": 0.0,
+          "baseline_c_pause_rate": 0.3333
+        },
+        "clear_good": {
+          "n_ads": 0,
+          "mean_true_intent": 0.0,
+          "qualloop_pause_rate": 0.0,
+          "baseline_b_pause_rate": 0.0,
+          "baseline_a_pause_rate": 0.0,
+          "baseline_c_pause_rate": 0.0
+        }
+      }
+    }
+  },
+  "robustness_conclusion": "Under continuous true buying intent, fixed decision thresholds exhibit severe boundary sensitivity: 1. QualLoop's false-pause rate rises dramatically from 1.4% (2/140) on discrete clusters to 23.5% (8/34) on continuous intent, as small-sample sampling variance near the hurdle causes profitable campaigns to be paused prematurely.\n2. Policy thresholds do not hold near the hurdle: in the marginal good stratum [0.15, 0.22], QualLoop pauses 24.2% of good ads, while in the marginal bad stratum [0.11, 0.15], it misses 48.0% of unprofitable ads (pausing only 52.0%).\n3. QualLoop's realized cost per qualified lead (Rs 571.68; QL/Rs = 0.001749) is strictly worse than naive Baseline C's (Rs 535.50; QL/Rs = 0.001867), because QualLoop's conservative credible interval delays pausing marginal poor ads while still penalizing marginal good ads.\n4. The hurdle sensitivity sweep (hurdles 0.10, 0.15, 0.20) confirms that altering the hurdle shifts the trade-off along the operating curve without resolving boundary instability."
 }

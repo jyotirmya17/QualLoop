@@ -210,8 +210,32 @@ def test_continuous_robustness_benchmark():
         with open(rob_file, "r", encoding="utf-8") as f:
             data = json.load(f)
         assert data["metadata"]["experiment"] == "continuous_intent_robustness_benchmark"
-        assert "qualloop" in data["policy_summaries"]
-        assert "strata_analysis" in data
+        assert data["metadata"]["hurdle_sweep_levels"] == [0.10, 0.15, 0.20]
+        assert "hurdle_sensitivity_sweep" in data
+        assert all(h in data["hurdle_sensitivity_sweep"] for h in ["0.10", "0.15", "0.20"])
+
+        ql = data["policy_summaries"]["qualloop"]
+        c = data["policy_summaries"]["baseline_c"]
+
+        # 1. False pause rate rises from 1.4% to 23.5% on continuous intent
+        assert 0.20 <= ql["good_ads_false_pause_rate"] <= 0.26
+        assert ql["good_ads_false_paused"] == 8
+
+        # 2. QualLoop CPQL is worse than Baseline C's
+        assert ql["cpql"] > c["cpql"]
+        assert ql["cpql"] == 571.68
+        assert c["cpql"] == 535.50
+
+        # 3. Strata failure near hurdle boundary
+        strata = data["strata_analysis"]
+        assert strata["marginal_good"]["qualloop_pause_rate"] > 0.20
+        assert strata["marginal_bad"]["qualloop_pause_rate"] < 0.60
+
+        # 4. Honest conclusion assertions
+        conclusion = data["robustness_conclusion"]
+        assert "23.5%" in conclusion
+        assert "do not hold near the hurdle" in conclusion
+        assert "worse than naive Baseline C" in conclusion
 
 
 def test_paired_test_sign_convention():
