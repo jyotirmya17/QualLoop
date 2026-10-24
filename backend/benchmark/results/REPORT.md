@@ -1,6 +1,6 @@
 # QualLoop Benchmark Reconciliation & Performance Report
 
-**Generated At:** 2026-10-24T13:51:13.661043+00:00  
+**Generated At:** 2026-10-24T14:07:35.232125+00:00  
 **Dataset Partition:** Holdout (100 seeds, 9 scenarios)  
 **Total Advertisements:** 175 (140 Good, 35 Poor)  
 **Frozen Policy:** Config 2 (Frozen) (argmin(FNDR) subject to bounded sequential FPPR on 100 tuning seeds)  
@@ -56,7 +56,26 @@ Under fixed total budget (₹825,000 holdout budget), budget freed by paused ads
 
 ---
 
-## 4. Auto-Generated Losses Against Baselines (29 in Fixed Budget)
+## 4. Economic vs. Intent Labeling: The `high_cpql` Paradox
+
+Each advertisement is evaluated under two independent ground-truth standards:
+1. **Intent Ground Truth ($q \ge 15.0\%$):** Pure conversion probability among contacted leads ($N_{\text{good}} = 140, N_{\text{poor}} = 35$).
+2. **Economic Ground Truth (True $\text{CPQL} \le ₹600.00$):** Unit economic viability against campaign target CPQL ($N_{\text{good}} = 133, N_{\text{poor}} = 42$).
+
+> [!IMPORTANT]
+> **Key Insight:** `high_cpql` is **good by intent** ($q = 20.0\% \ge 15.0\%$) but **poor by economics** (realized CPQL $\approx ₹2,976.19 \gg ₹600.00$ target ceiling). Under intent labeling, Baseline A's early Day-3 pause of all 7 `high_cpql` ads is penalized as a false pause (FPPR = 5.00%). Under economic labeling, cutting ₹122,143 of wasteful spend is economically optimal, dropping Baseline A's false pause rate to **0.00% (0/133)**. QualLoop lets `high_cpql` run to completion, spending ₹140,000 to deliver only 47 qualified leads.
+
+| Policy | FPPR by Intent (q ≥ 15%) | FPPR by Economics (CPQL ≤ ₹600) | FNDR by Intent (Missed Bad) | FNDR by Economics (Missed Bad) |
+|---|---|---|---|---|
+| **Oracle** | 0/140 (0.0%) | 0/133 (0.0%) | 0/35 (0.0%) | 7/42 (16.7%) |
+| **QualLoop** | 2/140 (1.4%) | 2/133 (1.5%) | 13/35 (37.1%) | 20/42 (47.6%) |
+| **Baseline C** | 19/140 (13.6%) | 18/133 (13.5%) | 10/35 (28.6%) | 16/42 (38.1%) |
+| **Baseline A** | 7/140 (5.0%) | 0/133 (0.0%) | 35/35 (100.0%) | 35/42 (83.3%) |
+| **Baseline B** | 105/140 (75.0%) | 98/133 (73.7%) | 0/35 (0.0%) | 0/42 (0.0%) |
+
+---
+
+## 5. Auto-Generated Losses Against Baselines (29 in Fixed Budget)
 
 | Scenario | Opponent Baseline | Metric | QualLoop Value | Baseline Value | Reason |
 |---|---|---|---|---|---|

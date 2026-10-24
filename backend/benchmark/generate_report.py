@@ -160,7 +160,44 @@ def generate_benchmark_report(
     lines.append("")
     lines.append("---")
     lines.append("")
-    lines.append(f"## 4. Auto-Generated Losses Against Baselines ({len(fixed_mode['auto_generated_losses'])} in Fixed Budget)")
+    lines.append("## 4. Economic vs. Intent Labeling: The `high_cpql` Paradox")
+    lines.append("")
+    lines.append(
+        "Each advertisement is evaluated under two independent ground-truth standards:\n"
+        "1. **Intent Ground Truth ($q \\ge 15.0\\%$):** Pure conversion probability among contacted leads ($N_{\\text{good}} = 140, N_{\\text{poor}} = 35$).\n"
+        "2. **Economic Ground Truth (True $\\text{CPQL} \\le ₹600.00$):** Unit economic viability against campaign target CPQL ($N_{\\text{good}} = 133, N_{\\text{poor}} = 42$).\n\n"
+        "> [!IMPORTANT]\n"
+        "> **Key Insight:** `high_cpql` is **good by intent** ($q = 20.0\\% \\ge 15.0\\%$) but **poor by economics** "
+        "(realized CPQL $\\approx ₹2,976.19 \\gg ₹600.00$ target ceiling). Under intent labeling, Baseline A's early Day-3 pause of "
+        "all 7 `high_cpql` ads is penalized as a false pause (FPPR = 5.00%). Under economic labeling, cutting ₹122,143 of wasteful spend "
+        "is economically optimal, dropping Baseline A's false pause rate to **0.00% (0/133)**. QualLoop lets `high_cpql` run to completion, "
+        "spending ₹140,000 to deliver only 47 qualified leads."
+    )
+    lines.append("")
+    lines.append("| Policy | FPPR by Intent (q ≥ 15%) | FPPR by Economics (CPQL ≤ ₹600) | FNDR by Intent (Missed Bad) | FNDR by Economics (Missed Bad) |")
+    lines.append("|---|---|---|---|---|")
+
+    for p_key, p_name in [
+        ("oracle", "Oracle"),
+        ("qualloop", "QualLoop"),
+        ("baseline_c", "Baseline C"),
+        ("baseline_a", "Baseline A"),
+        ("baseline_b", "Baseline B"),
+    ]:
+        pm = var_metrics[p_key]
+        rates = pm["rates_with_95_ci"]
+        bi = rates.get("by_intent", {})
+        be = rates.get("by_economics", {})
+        fp_i = f"{bi['false_positive_pause_rate']['count']}/140 ({bi['false_positive_pause_rate']['rate']:.1%})" if bi else "-"
+        fp_e = f"{be['false_positive_pause_rate']['count']}/133 ({be['false_positive_pause_rate']['rate']:.1%})" if be else "-"
+        fn_i = f"{bi['missed_bad_ad_rate']['count']}/35 ({bi['missed_bad_ad_rate']['rate']:.1%})" if bi else "-"
+        fn_e = f"{be['missed_bad_ad_rate']['count']}/42 ({be['missed_bad_ad_rate']['rate']:.1%})" if be else "-"
+        lines.append(f"| **{p_name}** | {fp_i} | {fp_e} | {fn_i} | {fn_e} |")
+
+    lines.append("")
+    lines.append("---")
+    lines.append("")
+    lines.append(f"## 5. Auto-Generated Losses Against Baselines ({len(fixed_mode['auto_generated_losses'])} in Fixed Budget)")
     lines.append("")
     lines.append("| Scenario | Opponent Baseline | Metric | QualLoop Value | Baseline Value | Reason |")
     lines.append("|---|---|---|---|---|---|")

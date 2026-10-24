@@ -61,6 +61,11 @@ class AdSequentialResult:
     is_poor: bool
     full_spend: float
     full_qualified_leads: int
+    intent_label: str = "good"
+    economic_label: str = "good"
+    true_cpql: float = 0.0
+    is_good_economic: bool = True
+    is_poor_economic: bool = False
 
     # Outcomes under each policy
     paused_day: dict[str, Optional[int]] = field(default_factory=dict)
@@ -297,6 +302,18 @@ class SequentialClosedLoopRunner:
                     all_ad_quals = qual_lead_ids_by_ad[ad.id]
                     full_ql_count = len(all_ad_quals)
 
+                    # Ground truth expected true-rate CPQL based on underlying reachability and intent:
+                    mean_intent = float(np.mean(gt.true_intent_by_day))
+                    exp_ql = horizon * cfg.leads_per_day_per_ad * gt.true_reachability * mean_intent
+                    true_rate_cpql = round(ad.spend / exp_ql, 2) if exp_ql > 0 else float("inf")
+                    # Target CPQL: standard campaign ceiling is ₹500.0.
+                    # All standard good ads have true-rate CPQL <= ₹433.
+                    # high_cpql produces true-rate CPQL = ₹2,976.19 >> ₹500, making it good by intent (q=20% >= 15%)
+                    # but unambiguously poor by unit economics.
+                    target_cpql_ceiling = 500.0
+                    is_good_economic = is_good and (true_rate_cpql <= target_cpql_ceiling)
+                    is_poor_economic = not is_good_economic
+
                     res = AdSequentialResult(
                         ad_id=ad.id,
                         scenario_name=scenario_name,
@@ -306,6 +323,11 @@ class SequentialClosedLoopRunner:
                         is_poor=is_poor,
                         full_spend=ad.spend,
                         full_qualified_leads=full_ql_count,
+                        intent_label="good" if is_good else "poor",
+                        economic_label="good" if is_good_economic else "poor",
+                        true_cpql=true_rate_cpql,
+                        is_good_economic=is_good_economic,
+                        is_poor_economic=is_poor_economic,
                     )
                     for p in policies:
                         res.paused_day[p] = paused_day[p][ad.id]

@@ -408,6 +408,35 @@ def test_scenario_stratified_bootstrap_and_per_scenario_paired_differences():
             assert "mean_ql_per_rupee_diff" in diff_entry
 
 
+def test_economic_vs_intent_labeling():
+    """
+    Verify dual false-pause reporting by intent and economics:
+    - high_cpql is good by intent (q=20% >= 15%) but poor by economics (CPQL ~ Rs 2,976 >> Rs 600).
+    - Baseline A has 5.00% FPPR by intent (7/140) and 0.00% FPPR by economics (0/133).
+    - QualLoop has 1.43% FPPR by intent (2/140) and 1.50% FPPR by economics (2/133).
+    """
+    results_file = Path(__file__).resolve().parent.parent / "benchmark" / "results" / "holdout_sequential.json"
+    with open(results_file, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    metrics = data["budget_modes"]["variable"]["policy_metrics"]
+
+    # Baseline A: pauses all 7 high_cpql ads
+    base_a = metrics["baseline_a"]["rates_with_95_ci"]
+    assert base_a["by_intent"]["false_positive_pause_rate"]["count"] == 7
+    assert base_a["by_intent"]["false_positive_pause_rate"]["rate"] == 0.05
+    assert base_a["by_economics"]["false_positive_pause_rate"]["count"] == 0
+    assert base_a["by_economics"]["false_positive_pause_rate"]["rate"] == 0.0
+
+    # QualLoop: pauses 2 ads (both in creative_fatigue and sudden_deterioration)
+    ql = metrics["qualloop"]["rates_with_95_ci"]
+    assert ql["by_intent"]["false_positive_pause_rate"]["count"] == 2
+    assert ql["by_intent"]["false_positive_pause_rate"]["rate"] == 0.0143
+    assert ql["by_economics"]["false_positive_pause_rate"]["count"] == 2
+    assert ql["by_economics"]["false_positive_pause_rate"]["rate"] == 0.015
+
+
+
 
 
 

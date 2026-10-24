@@ -129,6 +129,12 @@ def evaluate_budget_mode(
     policies = ["oracle", "qualloop", "baseline_b", "baseline_a", "baseline_c"]
     baselines = ["baseline_b", "baseline_a", "baseline_c"]
 
+    # Economic labeling ground truth
+    good_ads_econ = [r for r in ad_results if r.is_good_economic]
+    poor_ads_econ = [r for r in ad_results if r.is_poor_economic]
+    n_good_econ = len(good_ads_econ)
+    n_poor_econ = len(poor_ads_econ)
+
     # 1. Oracle base metrics
     oracle_spend = sum(r.spend_incurred["oracle"] for r in ad_results)
     oracle_ql = sum(r.qualified_leads_realized["oracle"] for r in ad_results)
@@ -140,6 +146,7 @@ def evaluate_budget_mode(
         summary = runner.summarize_policy(p, ad_results, oracle_ql_per_rupee, budget_mode=budget_mode)
         sum_dict = asdict(summary)
 
+        # By Intent (q >= 0.15)
         fp_count = summary.good_ads_false_paused
         fppr = summary.good_ads_false_pause_rate
         fppr_ci = wilson_score_interval(fp_count, n_good, 0.95)
@@ -147,6 +154,15 @@ def evaluate_budget_mode(
         fndr_count = summary.poor_ads_missed
         fndr = fndr_count / n_poor if n_poor > 0 else 0.0
         fndr_ci = wilson_score_interval(fndr_count, n_poor, 0.95)
+
+        # By Economics (true CPQL <= target CPQL ceiling)
+        fp_count_econ = sum(1 for a in good_ads_econ if a.paused_day[p] is not None)
+        fppr_econ = fp_count_econ / n_good_econ if n_good_econ > 0 else 0.0
+        fppr_econ_ci = wilson_score_interval(fp_count_econ, n_good_econ, 0.95)
+
+        fndr_count_econ = sum(1 for a in poor_ads_econ if a.paused_day[p] is None)
+        fndr_econ = fndr_count_econ / n_poor_econ if n_poor_econ > 0 else 0.0
+        fndr_econ_ci = wilson_score_interval(fndr_count_econ, n_poor_econ, 0.95)
 
         sum_dict["rates_with_95_ci"] = {
             "false_positive_pause_rate": {
@@ -160,6 +176,35 @@ def evaluate_budget_mode(
                 "total": n_poor,
                 "rate": round(fndr, 4),
                 "ci_95": fndr_ci,
+            },
+            "by_intent": {
+                "false_positive_pause_rate": {
+                    "count": fp_count,
+                    "total": n_good,
+                    "rate": round(fppr, 4),
+                    "ci_95": fppr_ci,
+                },
+                "missed_bad_ad_rate": {
+                    "count": fndr_count,
+                    "total": n_poor,
+                    "rate": round(fndr, 4),
+                    "ci_95": fndr_ci,
+                },
+            },
+            "by_economics": {
+                "false_positive_pause_rate": {
+                    "count": fp_count_econ,
+                    "total": n_good_econ,
+                    "rate": round(fppr_econ, 4),
+                    "ci_95": fppr_econ_ci,
+                },
+                "missed_bad_ad_rate": {
+                    "count": fndr_count_econ,
+                    "total": n_poor_econ,
+                    "rate": round(fndr_econ, 4),
+                    "ci_95": fndr_econ_ci,
+                },
+                "note": "high_cpql (7 ads) is classified as poor by economics due to true CPQL ~ ₹2,976 >> ₹600 target",
             },
         }
         policy_metrics[p] = sum_dict
