@@ -25,7 +25,7 @@ backend_root = str(Path(__file__).resolve().parent.parent)
 if backend_root not in sys.path:
     sys.path.insert(0, backend_root)
 
-from benchmark.baseline import BaselinePolicy
+from benchmark.baseline import BaselinePolicy, BaselineCPolicy
 from benchmark.sequential import SequentialClosedLoopRunner, AdSequentialResult, is_pause
 from decision_engine.engine import DecisionPolicy, evaluate_campaign
 from domain.enums import QualificationResult
@@ -93,8 +93,13 @@ def run_continuous_robustness_benchmark(
         min_maturity_fraction=0.50,
     )
     baseline_b_policy = BaselinePolicy(pause_threshold=0.10)
+    baseline_c_policy = BaselineCPolicy(
+        pause_threshold=0.15,
+        min_contacts=12,
+        qualification_maturity_days=7.0,
+    )
 
-    policies = ["oracle", "qualloop", "baseline_b", "baseline_a"]
+    policies = ["oracle", "qualloop", "baseline_b", "baseline_a", "baseline_c"]
     checkpoints = [3, 7, 14, 21]
 
     ad_results: list[dict[str, Any]] = []
@@ -185,6 +190,19 @@ def run_continuous_robustness_benchmark(
                     if (ctr < 0.012 and cp_day >= 7) or (n_l >= 5 and cpl > 75.0 * 1.5):
                         paused_day["baseline_a"][ad.id] = cp_day
 
+            # Baseline C
+            for ad in sim.advertisements:
+                if paused_day["baseline_c"][ad.id] is None:
+                    c_dec = baseline_c_policy.evaluate(
+                        advertisement=ad,
+                        leads=visible_leads[ad.id],
+                        call_attempts=visible_calls[ad.id],
+                        qualification_outcomes=visible_quals[ad.id],
+                        observation_time=t_cp,
+                    )
+                    if is_pause(c_dec.action):
+                        paused_day["baseline_c"][ad.id] = cp_day
+
         # Compute accounting
         for ad in sim.advertisements:
             gt = gt_by_ad[ad.id]
@@ -273,11 +291,15 @@ def run_continuous_robustness_benchmark(
         n_st = len(st_ads)
         paused_ql = sum(1 for r in st_ads if r["paused_day"]["qualloop"] is not None)
         paused_b = sum(1 for r in st_ads if r["paused_day"]["baseline_b"] is not None)
+        paused_a = sum(1 for r in st_ads if r["paused_day"]["baseline_a"] is not None)
+        paused_c = sum(1 for r in st_ads if r["paused_day"]["baseline_c"] is not None)
         strata_analysis[st] = {
             "n_ads": n_st,
             "mean_true_intent": round(float(np.mean([r["true_intent"] for r in st_ads])), 4) if n_st else 0.0,
             "qualloop_pause_rate": round(paused_ql / n_st, 4) if n_st else 0.0,
             "baseline_b_pause_rate": round(paused_b / n_st, 4) if n_st else 0.0,
+            "baseline_a_pause_rate": round(paused_a / n_st, 4) if n_st else 0.0,
+            "baseline_c_pause_rate": round(paused_c / n_st, 4) if n_st else 0.0,
         }
 
     output = {

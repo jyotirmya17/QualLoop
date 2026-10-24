@@ -7,7 +7,7 @@
     "n_ads": 150,
     "n_good_ads": 34,
     "n_poor_ads": 116,
-    "executed_at": "2026-10-23T03:31:21.281194+00:00"
+    "executed_at": "2026-10-24T12:48:07.528781+00:00"
   },
   "policy_summaries": {
     "oracle": {
@@ -57,6 +57,18 @@
       "good_ads_false_pause_rate": 0.0,
       "poor_ads_missed": 116,
       "poor_ads_missed_rate": 1.0
+    },
+    "baseline_c": {
+      "cumulative_spend": 441250.0,
+      "qualified_leads": 824,
+      "ql_per_rupee": 0.001867,
+      "efficiency_vs_oracle": 0.7559,
+      "spend_on_poor_ads": 317500.0,
+      "forgone_good_ql": 89,
+      "good_ads_false_paused": 19,
+      "good_ads_false_pause_rate": 0.5588,
+      "poor_ads_missed": 7,
+      "poor_ads_missed_rate": 0.0603
     }
   },
   "strata_analysis": {
@@ -64,25 +76,33 @@
       "n_ads": 41,
       "mean_true_intent": 0.0608,
       "qualloop_pause_rate": 0.7805,
-      "baseline_b_pause_rate": 1.0
+      "baseline_b_pause_rate": 1.0,
+      "baseline_a_pause_rate": 0.0,
+      "baseline_c_pause_rate": 1.0
     },
     "marginal_bad": {
       "n_ads": 75,
       "mean_true_intent": 0.1159,
       "qualloop_pause_rate": 0.52,
-      "baseline_b_pause_rate": 0.9867
+      "baseline_b_pause_rate": 0.9867,
+      "baseline_a_pause_rate": 0.0,
+      "baseline_c_pause_rate": 0.9067
     },
     "marginal_good": {
       "n_ads": 33,
       "mean_true_intent": 0.1685,
       "qualloop_pause_rate": 0.2424,
-      "baseline_b_pause_rate": 0.9394
+      "baseline_b_pause_rate": 0.9394,
+      "baseline_a_pause_rate": 0.0,
+      "baseline_c_pause_rate": 0.5758
     },
     "clear_good": {
       "n_ads": 1,
       "mean_true_intent": 0.2247,
       "qualloop_pause_rate": 0.0,
-      "baseline_b_pause_rate": 1.0
+      "baseline_b_pause_rate": 1.0,
+      "baseline_a_pause_rate": 0.0,
+      "baseline_c_pause_rate": 0.0
     }
   },
   "robustness_conclusion": "Under continuous true buying intent, the tuned policy thresholds continue to hold: QualLoop maintains a very low false positive pause rate on profitable ads (even in the marginal good stratum [0.15, 0.22]) while Baseline B indiscriminately kills viable campaigns early."
