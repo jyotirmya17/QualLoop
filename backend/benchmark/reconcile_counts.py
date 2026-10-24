@@ -118,6 +118,21 @@ def reconcile_all_counts() -> dict:
                 "(350 + 350 = 700 ad evaluations) instead of reporting the 350 distinct advertisements. The dataset itself "
                 "contains 350 ads."
             ),
+            "healthy_campaign_seed_count_label": (
+                "In holdout evaluation, healthy_campaign contains exactly 15 seeds (1016 to 1030). Each run executes a "
+                "3-ad campaign with spend ₹5,000 + ₹4,500 + ₹500 = ₹10,000, implying a total scenario budget of "
+                "15 x ₹10,000 = ₹150,000 and 15 x 3 = 45 ads. The 30-seed label applies to the full 200-seed dataset "
+                "(15 tuning + 15 holdout), not the holdout partition alone."
+            ),
+            "baseline_b_per_scenario_false_pauses": (
+                "Baseline B's aggregate false pause count on holdout is exactly 105 out of 140 good ads (75.00%). "
+                "Earlier confusion suggesting per-scenario false pauses implied more than 105 arose from multiplying scenario "
+                "false-pause rates by Total Ads (175) instead of Good Ads (140). In scenarios containing poor ads "
+                "(bad_ad_high_engagement with 13 good/13 poor, mixed_portfolio with 20 good/10 poor, small_sample_trap with 0 good/12 poor), "
+                "multiplying by total ads incorrectly counted poor ads in the denominator, falsely inflating the sum to ~123. "
+                "Evaluated against true good ads per scenario (45, 24, 13, 0, 13, 10, 20, 7, 8), the per-scenario false pauses "
+                "are exactly 31, 18, 10, 0, 10, 9, 15, 7, 5, summing precisely to 105."
+            ),
         },
     }
 

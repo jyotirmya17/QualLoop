@@ -319,6 +319,59 @@ def test_fixed_budget_redistribution():
         assert qualloop["qualified_leads"] >= baseline_b["qualified_leads"]
 
 
+def test_per_scenario_counts_sum_to_aggregate():
+    """
+    Assert that per-scenario seeds, ads, good, poor, and false-pause counts
+    sum exactly to the aggregate (100 / 175 / 140 / 35).
+
+    Why Baseline B's per-scenario false pauses implied more than 105:
+    False Positive Pause Rate (FPPR) is defined as false_pauses / n_good_ads.
+    In scenarios with poor ads (bad_ad_high_engagement: 13 good/13 poor,
+    mixed_portfolio: 20 good/10 poor, small_sample_trap: 0 good/12 poor),
+    multiplying the scenario false-pause rate by the Total Ads column (175 ads)
+    incorrectly inflates the count to ~123.
+    When multiplied by the true number of good ads in each scenario
+    (45, 24, 13, 0, 13, 10, 20, 7, 8), the per-scenario false pauses are
+    31, 18, 10, 0, 10, 9, 15, 7, 5, which sum precisely to 105 (75.00%).
+    """
+    results_file = Path(__file__).resolve().parent.parent / "benchmark" / "results" / "holdout_sequential.json"
+    with open(results_file, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    scenarios = data["budget_modes"]["variable"]["scenario_breakdown"]
+    policies = ["oracle", "qualloop", "baseline_b", "baseline_a", "baseline_c"]
+
+    total_seeds = sum(sc["n_seeds"] for sc in scenarios.values())
+    total_ads = sum(sc["n_ads"] for sc in scenarios.values())
+    total_good = sum(sc["n_good"] for sc in scenarios.values())
+    total_poor = sum(sc["n_poor"] for sc in scenarios.values())
+
+    assert total_seeds == 100, f"Expected 100 seeds, got {total_seeds}"
+    assert total_ads == 175, f"Expected 175 ads, got {total_ads}"
+    assert total_good == 140, f"Expected 140 good ads, got {total_good}"
+    assert total_poor == 35, f"Expected 35 poor ads, got {total_poor}"
+
+    # Verify healthy_campaign has exactly 15 seeds and 45 ads
+    assert scenarios["healthy_campaign"]["n_seeds"] == 15
+    assert scenarios["healthy_campaign"]["n_ads"] == 45
+    assert scenarios["healthy_campaign"]["budget"] == 150000.0
+
+    # Verify per-policy false pause and missed bad ad sums equal aggregate
+    for p in policies:
+        agg_fp = data["policy_metrics"][p]["rates_with_95_ci"]["false_positive_pause_rate"]["count"]
+        sum_sc_fp = sum(sc[p]["good_ads_false_paused"] for sc in scenarios.values())
+        assert sum_sc_fp == agg_fp, f"Policy {p}: sum of per-scenario FP ({sum_sc_fp}) != aggregate ({agg_fp})"
+
+        agg_missed = data["policy_metrics"][p]["rates_with_95_ci"]["missed_bad_ad_rate"]["count"]
+        sum_sc_missed = sum(sc[p]["poor_ads_missed"] for sc in scenarios.values())
+        assert sum_sc_missed == agg_missed, f"Policy {p}: sum of per-scenario missed ({sum_sc_missed}) != aggregate ({agg_missed})"
+
+    # Specifically verify Baseline B per-scenario false pauses sum to exactly 105
+    b_fps = [sc["baseline_b"]["good_ads_false_paused"] for sc in scenarios.values()]
+    assert sum(b_fps) == 105, f"Baseline B false pauses must sum to 105, got {sum(b_fps)}"
+
+
+
 
 
 

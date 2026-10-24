@@ -1,5 +1,5 @@
 {
-  "audit_timestamp": "2026-10-24T12:54:50.553508+00:00",
+  "audit_timestamp": "2026-10-24T13:40:18.060234+00:00",
   "modes": {
     "full": {
       "n_simulations": 200,
@@ -38,6 +38,8 @@
     "350_ads_for_200_seeds": "The 200 pre-committed seeds in seeds.json span 9 scenarios. While 5 scenarios have single-ad campaigns, 4 scenarios have multi-ad campaigns: healthy_campaign (3 ads x 30 seeds = 90), good_ad_low_reachability (2 ads x 25 seeds = 50), bad_ad_high_engagement (2 ads x 25 seeds = 50), and mixed_portfolio (3 ads x 20 seeds = 60). The total ads across all 200 simulations is exactly 90 + 50 + 50 + 25 + 25 + 20 + 60 + 15 + 15 = 350 ads (280 good, 70 poor). There is no double-counting.",
     "350_ads_for_100_holdout_seeds": "Earlier holdout scripts invoked runner.run_benchmark() without passing the holdout seed dict, defaulting to self.load_seeds() (all 200 seeds / 350 ads). When properly constrained to the 100 holdout seeds in seeds_split.json (a 50% stratified split), the exact counts are 100 simulations, 175 ads (140 good, 35 poor).",
     "70_runs": "Earlier text described '70 runs' when evaluating poor ads. This was a terminology error: there are 70 poor ads across the dataset (25 bad_ad_high_engagement + 25 small_sample_trap + 20 mixed_portfolio = 70). The evaluation was executed across 200 simulation runs, not 70 runs.",
-    "4_scenarios_x_50_seeds_700_ads": "Earlier ablation text stated '700 ads'. This occurred because the ablation evaluation runs two passes (fixed priors vs pooled priors) over the 350 ads. The script summed evaluations across both passes (350 + 350 = 700 ad evaluations) instead of reporting the 350 distinct advertisements. The dataset itself contains 350 ads."
+    "4_scenarios_x_50_seeds_700_ads": "Earlier ablation text stated '700 ads'. This occurred because the ablation evaluation runs two passes (fixed priors vs pooled priors) over the 350 ads. The script summed evaluations across both passes (350 + 350 = 700 ad evaluations) instead of reporting the 350 distinct advertisements. The dataset itself contains 350 ads.",
+    "healthy_campaign_seed_count_label": "In holdout evaluation, healthy_campaign contains exactly 15 seeds (1016 to 1030). Each run executes a 3-ad campaign with spend \u20b95,000 + \u20b94,500 + \u20b9500 = \u20b910,000, implying a total scenario budget of 15 x \u20b910,000 = \u20b9150,000 and 15 x 3 = 45 ads. The 30-seed label applies to the full 200-seed dataset (15 tuning + 15 holdout), not the holdout partition alone.",
+    "baseline_b_per_scenario_false_pauses": "Baseline B's aggregate false pause count on holdout is exactly 105 out of 140 good ads (75.00%). Earlier confusion suggesting per-scenario false pauses implied more than 105 arose from multiplying scenario false-pause rates by Total Ads (175) instead of Good Ads (140). In scenarios containing poor ads (bad_ad_high_engagement with 13 good/13 poor, mixed_portfolio with 20 good/10 poor, small_sample_trap with 0 good/12 poor), multiplying by total ads incorrectly counted poor ads in the denominator, falsely inflating the sum to ~123. Evaluated against true good ads per scenario (45, 24, 13, 0, 13, 10, 20, 7, 8), the per-scenario false pauses are exactly 31, 18, 10, 0, 10, 9, 15, 7, 5, summing precisely to 105."
   }
 }

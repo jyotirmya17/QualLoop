@@ -185,8 +185,15 @@ def evaluate_budget_mode(
         sc_budget = sum(a.full_spend for a in sc_ads)
         sc_good = [a for a in sc_ads if a.is_good]
         sc_poor = [a for a in sc_ads if a.is_poor]
+        sc_seeds = sorted(list({a.seed for a in sc_ads}))
 
-        sc_dict: dict[str, Any] = {"budget": round(sc_budget, 2)}
+        sc_dict: dict[str, Any] = {
+            "n_seeds": len(sc_seeds),
+            "n_ads": len(sc_ads),
+            "n_good": len(sc_good),
+            "n_poor": len(sc_poor),
+            "budget": round(sc_budget, 2),
+        }
 
         for p in policies:
             sp = sum(a.spend_incurred[p] for a in sc_ads)
@@ -214,7 +221,9 @@ def evaluate_budget_mode(
                 "qualified_leads": round(ql, 2),
                 "ql_per_rupee": round(ql / sp, 6) if sp > 0 else 0.0,
                 "cpql": round(cpql, 2) if not np.isinf(cpql) else None,
+                "good_ads_false_paused": fp_count,
                 "false_pause_rate": round(fppr, 4),
+                "poor_ads_missed": missed_count,
                 "missed_bad_ad_rate": round(fndr, 4),
                 "days_to_pause": round(dtp, 2) if dtp is not None else None,
                 "spend_on_poor_ads": round(sp_poor, 2),
