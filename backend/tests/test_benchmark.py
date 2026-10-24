@@ -436,6 +436,38 @@ def test_economic_vs_intent_labeling():
     assert ql["by_economics"]["false_positive_pause_rate"]["rate"] == 0.015
 
 
+def test_fair_baseline_c_tuning_and_evaluation():
+    """Verify that Baseline C was tuned on tuning seeds with pre-stated rule and evaluated on holdout."""
+    res_file = Path(__file__).resolve().parent.parent / "benchmark" / "results" / "baseline_c_tuning.json"
+    assert res_file.exists(), "baseline_c_tuning.json must be generated"
+    with open(res_file, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    # 1. Pre-stated rule and grid
+    assert "argmin(FNDR) subject to FPPR <= 4.00%" in data["selection_rule"]
+    assert len(data["tuning_grid"]) == 12
+
+    # 2. Winning configuration
+    sel = data["selected_configuration"]
+    assert sel["min_mature_contacts"] == 30
+    assert sel["qualification_threshold"] == 0.10
+    assert sel["fppr"] <= 0.04
+
+    # 3. Holdout comparison
+    h = data["holdout_evaluation"]
+    # Indistinguishable on total leads at fixed budget
+    assert h["is_statistically_distinguishable_on_fixed_budget_leads"] is False
+    assert "NOT statistically distinguishable" in h["distinguishability_verdict"]
+
+    fixed_ci = h["fixed_redistributed_budget"]["paired_difference_stratified_bootstrap_95_ci"]
+    assert fixed_ci[0] <= 0 <= fixed_ci[1], f"Bootstrap CI {fixed_ci} must span 0"
+
+    # Both policies maintain low false pause rates
+    assert h["error_rates"]["qualloop"]["fp_by_intent"]["rate"] <= 0.04
+    assert h["error_rates"]["tuned_baseline_c"]["fp_by_intent"]["rate"] <= 0.04
+
+
+
 
 
 

@@ -1,0 +1,212 @@
+{
+  "selection_rule": "argmin(FNDR) subject to FPPR <= 4.00% on 100 sequential tuning seeds",
+  "tuning_grid": [
+    {
+      "min_mature_contacts": 10,
+      "qualification_threshold": 0.1,
+      "good_ads_evaluated": 140,
+      "false_pauses": 11,
+      "fppr": 0.0786,
+      "poor_ads_evaluated": 35,
+      "missed_bad_ads": 9,
+      "fndr": 0.2571
+    },
+    {
+      "min_mature_contacts": 10,
+      "qualification_threshold": 0.12,
+      "good_ads_evaluated": 140,
+      "false_pauses": 14,
+      "fppr": 0.1,
+      "poor_ads_evaluated": 35,
+      "missed_bad_ads": 8,
+      "fndr": 0.2286
+    },
+    {
+      "min_mature_contacts": 10,
+      "qualification_threshold": 0.15,
+      "good_ads_evaluated": 140,
+      "false_pauses": 30,
+      "fppr": 0.2143,
+      "poor_ads_evaluated": 35,
+      "missed_bad_ads": 8,
+      "fndr": 0.2286
+    },
+    {
+      "min_mature_contacts": 15,
+      "qualification_threshold": 0.1,
+      "good_ads_evaluated": 140,
+      "false_pauses": 10,
+      "fppr": 0.0714,
+      "poor_ads_evaluated": 35,
+      "missed_bad_ads": 13,
+      "fndr": 0.3714
+    },
+    {
+      "min_mature_contacts": 15,
+      "qualification_threshold": 0.12,
+      "good_ads_evaluated": 140,
+      "false_pauses": 13,
+      "fppr": 0.0929,
+      "poor_ads_evaluated": 35,
+      "missed_bad_ads": 13,
+      "fndr": 0.3714
+    },
+    {
+      "min_mature_contacts": 15,
+      "qualification_threshold": 0.15,
+      "good_ads_evaluated": 140,
+      "false_pauses": 27,
+      "fppr": 0.1929,
+      "poor_ads_evaluated": 35,
+      "missed_bad_ads": 13,
+      "fndr": 0.3714
+    },
+    {
+      "min_mature_contacts": 20,
+      "qualification_threshold": 0.1,
+      "good_ads_evaluated": 140,
+      "false_pauses": 8,
+      "fppr": 0.0571,
+      "poor_ads_evaluated": 35,
+      "missed_bad_ads": 13,
+      "fndr": 0.3714
+    },
+    {
+      "min_mature_contacts": 20,
+      "qualification_threshold": 0.12,
+      "good_ads_evaluated": 140,
+      "false_pauses": 10,
+      "fppr": 0.0714,
+      "poor_ads_evaluated": 35,
+      "missed_bad_ads": 13,
+      "fndr": 0.3714
+    },
+    {
+      "min_mature_contacts": 20,
+      "qualification_threshold": 0.15,
+      "good_ads_evaluated": 140,
+      "false_pauses": 22,
+      "fppr": 0.1571,
+      "poor_ads_evaluated": 35,
+      "missed_bad_ads": 13,
+      "fndr": 0.3714
+    },
+    {
+      "min_mature_contacts": 30,
+      "qualification_threshold": 0.1,
+      "good_ads_evaluated": 140,
+      "false_pauses": 5,
+      "fppr": 0.0357,
+      "poor_ads_evaluated": 35,
+      "missed_bad_ads": 13,
+      "fndr": 0.3714
+    },
+    {
+      "min_mature_contacts": 30,
+      "qualification_threshold": 0.12,
+      "good_ads_evaluated": 140,
+      "false_pauses": 6,
+      "fppr": 0.0429,
+      "poor_ads_evaluated": 35,
+      "missed_bad_ads": 13,
+      "fndr": 0.3714
+    },
+    {
+      "min_mature_contacts": 30,
+      "qualification_threshold": 0.15,
+      "good_ads_evaluated": 140,
+      "false_pauses": 14,
+      "fppr": 0.1,
+      "poor_ads_evaluated": 35,
+      "missed_bad_ads": 13,
+      "fndr": 0.3714
+    }
+  ],
+  "selected_configuration": {
+    "min_mature_contacts": 30,
+    "qualification_threshold": 0.1,
+    "good_ads_evaluated": 140,
+    "false_pauses": 5,
+    "fppr": 0.0357,
+    "poor_ads_evaluated": 35,
+    "missed_bad_ads": 13,
+    "fndr": 0.3714
+  },
+  "selection_rationale": "Selected via primary rule: lowest FNDR (37.14%) among 1 configurations satisfying FPPR <= 4.00%.",
+  "holdout_evaluation": {
+    "distinguishability_verdict": "QualLoop and Tuned Baseline C ARE NOT statistically distinguishable on total qualified leads at fixed budget (mean difference = -0.35 leads/run, 95% bootstrap CI [-1.44, 0.57] spans zero; p = 0.5116). QualLoop's edge is strictly in small-sample false pause prevention.",
+    "is_statistically_distinguishable_on_fixed_budget_leads": false,
+    "fixed_redistributed_budget": {
+      "qualloop_total_leads": 4805.88,
+      "tuned_c_total_leads": 4840.88,
+      "qualloop_cpql": 171.66,
+      "tuned_c_cpql": 170.42,
+      "mean_paired_difference_per_run": -0.35,
+      "paired_difference_stratified_bootstrap_95_ci": [
+        -1.44,
+        0.57
+      ],
+      "paired_t_statistic": -0.6587,
+      "paired_t_pvalue": 0.5116
+    },
+    "variable_budget": {
+      "qualloop_spend": 757750.0,
+      "tuned_c_spend": 760250.0,
+      "qualloop_leads": 2690.0,
+      "tuned_c_leads": 2703.0,
+      "qualloop_cpql": 281.69,
+      "tuned_c_cpql": 281.26,
+      "mean_paired_difference_per_run": -0.13,
+      "paired_difference_stratified_bootstrap_95_ci": [
+        -0.38,
+        0.03
+      ]
+    },
+    "error_rates": {
+      "qualloop": {
+        "fp_by_intent": {
+          "count": 2,
+          "total": 140,
+          "rate": 0.0143
+        },
+        "fp_by_economics": {
+          "count": 2,
+          "total": 133,
+          "rate": 0.015
+        },
+        "fn_by_intent": {
+          "count": 13,
+          "total": 35,
+          "rate": 0.3714
+        },
+        "fn_by_economics": {
+          "count": 20,
+          "total": 42,
+          "rate": 0.4762
+        }
+      },
+      "tuned_baseline_c": {
+        "fp_by_intent": {
+          "count": 3,
+          "total": 140,
+          "rate": 0.0214
+        },
+        "fp_by_economics": {
+          "count": 3,
+          "total": 133,
+          "rate": 0.0226
+        },
+        "fn_by_intent": {
+          "count": 12,
+          "total": 35,
+          "rate": 0.3429
+        },
+        "fn_by_economics": {
+          "count": 19,
+          "total": 42,
+          "rate": 0.4524
+        }
+      }
+    }
+  }
+}

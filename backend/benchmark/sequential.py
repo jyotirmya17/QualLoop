@@ -103,6 +103,7 @@ class SequentialClosedLoopRunner:
         checkpoints: tuple[int, ...] = (3, 7, 14, 21),
         decision_policy: Optional[DecisionPolicy] = None,
         estimator_config: Optional[EstimatorConfig] = None,
+        baseline_c_policy: Optional[BaselineCPolicy] = None,
     ):
         base_dir = Path(__file__).resolve().parent
         self.seeds_path = seeds_path or (base_dir / "seeds.json")
@@ -111,7 +112,7 @@ class SequentialClosedLoopRunner:
         self.decision_policy = decision_policy or DecisionPolicy()
         self.estimator_config = estimator_config or EstimatorConfig()
         self.baseline_b_policy = BaselinePolicy(pause_threshold=0.10)
-        self.baseline_c_policy = BaselineCPolicy(
+        self.baseline_c_policy = baseline_c_policy or BaselineCPolicy(
             pause_threshold=0.15,
             min_contacts=12,
             qualification_maturity_days=7.0,
