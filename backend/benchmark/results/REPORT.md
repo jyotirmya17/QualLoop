@@ -1,6 +1,6 @@
 # QualLoop vs. Naive Baseline Benchmark Report
 
-**Executed At:** 2026-10-23T03:30:37.207908+00:00  
+**Executed At:** 2026-10-24T12:54:50.548508+00:00  
 **Simulations:** 100  
 **Total Ads Evaluated:** 175 (140 good, 35 poor)  
 **QualLoop Policy:** v0.2.0  

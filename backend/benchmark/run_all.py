@@ -40,24 +40,32 @@ def run_all() -> dict[str, str]:
     reconciled = reconcile_all_counts()
     print(f"  -> Count Reconciliation completed in {time.time() - t0:.2f}s")
 
-    # 2. Sequential closed-loop simulation across 200 seeds
-    print("\n[2/4] Running Sequential Closed-Loop Benchmark (200 seeds)...")
+    # 2. Sequential closed-loop simulation across 200 seeds (both variable and fixed budget)
+    print("\n[2/5] Running Sequential Closed-Loop Benchmarks (200 seeds, Variable & Fixed)...")
     t0 = time.time()
     seq_runner = SequentialClosedLoopRunner()
-    seq_res = seq_runner.run_benchmark(save_filename="sequential_closed_loop.json")
+    seq_res_var = seq_runner.run_benchmark(save_filename="sequential_closed_loop.json", budget_mode="variable")
+    seq_res_fixed = seq_runner.run_benchmark(save_filename="sequential_fixed_budget.json", budget_mode="fixed_redistributed")
     print(f"  -> Sequential Closed-Loop completed in {time.time() - t0:.2f}s")
 
-    # 3. Final frozen policy evaluation on 100 holdout seeds
-    print("\n[3/4] Running Holdout Evaluation on Frozen Policy (100 holdout seeds)...")
+    # 3. Final frozen policy evaluation on 100 holdout seeds (both budget modes)
+    print("\n[3/5] Running Holdout Evaluation on Frozen Policy (100 holdout seeds, 5 policies)...")
     t0 = time.time()
     holdout_res = run_holdout_evaluation(save_filename="holdout_sequential.json")
     print(f"  -> Holdout Evaluation completed in {time.time() - t0:.2f}s")
 
     # 4. Continuous intent robustness benchmark
-    print("\n[4/4] Running Continuous Intent Robustness Benchmark (50 runs)...")
+    print("\n[4/5] Running Continuous Intent Robustness Benchmark (50 runs)...")
     t0 = time.time()
     robustness_res = run_continuous_robustness_benchmark(save_filename="robustness_benchmark.json")
     print(f"  -> Continuous Robustness completed in {time.time() - t0:.2f}s")
+
+    # 5. Tuning reproduction and honest selection rule audit
+    print("\n[5/5] Running Tuning Table Reproduction & Audit (100 tuning seeds)...")
+    t0 = time.time()
+    from benchmark.reproduce_tuning import reproduce_tuning_table
+    tuning_res = reproduce_tuning_table()
+    print(f"  -> Tuning Reproduction completed in {time.time() - t0:.2f}s")
 
     total_elapsed = time.time() - start_time
     print("\n" + "=" * 70)
