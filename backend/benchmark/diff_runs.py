@@ -14,7 +14,7 @@ def strip_timestamps(obj):
     if isinstance(obj, dict):
         new_obj = {}
         for k, v in obj.items():
-            if k in ("executed_at", "started_at", "completed_at"):
+            if k in ("executed_at", "started_at", "completed_at", "audit_timestamp", "timestamp"):
                 continue
             new_obj[k] = strip_timestamps(v)
         return new_obj
@@ -60,6 +60,8 @@ def main():
         "holdout_sequential.json",
         "robustness_benchmark.json",
         "tuning_reproduction.json",
+        "baseline_c_tuning.json",
+        "count_reconciliation.json",
     ]
 
     print("\n=================================================================")

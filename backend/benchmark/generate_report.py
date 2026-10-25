@@ -244,6 +244,37 @@ def generate_benchmark_report(
             f"{loss['qualloop_value']} | {loss['baseline_value']} | {loss['reason']} |"
         )
 
+    lines.append("")
+    lines.append("---")
+    lines.append("")
+    lines.append("## 6. Tuned Baseline C Comparison (Pre-Stated Rule on 100 Holdout Seeds)")
+    lines.append("")
+    lines.append(
+        "Baseline C was tuned on the 100 tuning seeds across a 12-configuration grid (min mature contacts $\\in \\{10, 15, 20, 30\\} \\times "
+        "\\text{hurdle} \\in \\{0.10, 0.12, 0.15\\}$) using the identical pre-stated selection rule as QualLoop: "
+        "$\\arg\\min(\\text{FNDR}) \\text{ s.t. } \\text{FPPR} \\le 4.00\\%$.\n\n"
+        "- **Winning Frozen Config:** Min Mature Contacts = 30, Qualification Hurdle = 0.10 (Tuning FPPR = 3.57%, FNDR = 37.14%).\n"
+        "- **Holdout Fixed-Budget Total Leads:** QualLoop = **4,805.88** vs. Tuned Baseline C = **4,840.88**.\n"
+        "- **Paired Difference (QualLoop minus Tuned C):** $\\Delta = -0.35$ leads/run ($p = 0.5116$; Wilcoxon $p = 0.5898$).\n"
+        "- **Scenario-Stratified Bootstrap 95% CI:** `[-1.44, 0.57]` (spans zero).\n"
+        "- **Honest Verdict:** When Baseline C is properly tuned, **QualLoop and Tuned Baseline C are statistically indistinguishable on total qualified leads at fixed budget**."
+    )
+
+    lines.append("")
+    lines.append("---")
+    lines.append("")
+    lines.append("## 7. Comprehensive Limitations & Empirical Boundary Realities")
+    lines.append("")
+    lines.append(
+        "1. **Synthetic Data Prototype:** QualLoop operates exclusively on simulated data with idealized Beta-Binomial generation. It has not been validated against live Meta/Google ad auction dynamics.\n"
+        "2. **Boundary Instability on Continuous Intent:** While false pause rates are 1.4% on discrete bimodal clusters (4% vs 25%), they jump to **23.5% (8/34)** when buying intent is drawn from a continuous distribution ($0.03 + \\text{Beta}(2, 6) \\times 0.32$). Fixed thresholds suffer severe classification noise near the hurdle.\n"
+        "3. **Statistical Parity with Tuned Naive Heuristics:** QualLoop does not produce superior lead volume compared to an optimally tuned point heuristic (Tuned Baseline C delivers 4,840.88 leads vs QualLoop's 4,805.88; 95% bootstrap CI `[-1.44, 0.57]`). QualLoop's true value lies in principled credible intervals, auditability, and safety guarantees—not gross lead maximization.\n"
+        "4. **Diminishing Returns Sensitivity:** Under linear spend scaling ($Spend^{1.0}$), QualLoop produces 4,805.88 leads; under diminishing returns ($Spend^{0.7}$), reallocated spend suffers saturation fatigue, reducing lead yield to 3,739.50 (-22.2%).\n"
+        "5. **Static Maturity Constants:** Contact maturity (3 days) and qualification maturity (7 days) are uniform constants. In real sales pipelines, lead contactability exhibits heavy-tailed Pareto delay dynamics.\n"
+        "6. **Intent vs. Economic Divergence:** `high_cpql` proves that high qualification intent ($q=20\%$) can still be commercially catastrophic if top-of-funnel CPL is uncalibrated ($CPQL \\approx ₹2,976 \\gg ₹500$). Focusing exclusively on qualification conversion without CPQL gating leaves advertising budgets vulnerable.\n"
+        "7. **Dry-Run Meta CAPI Interface:** The feedback module formats and SHA-256 hashes CAPI events according to Meta Graph API specifications, but transmits zero live network traffic to Meta servers."
+    )
+
     content = "\n".join(lines) + "\n"
     with open(out_path, "w", encoding="utf-8") as f:
         f.write(content)

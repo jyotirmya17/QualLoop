@@ -61,11 +61,25 @@ def run_all() -> dict[str, str]:
     print(f"  -> Continuous Robustness completed in {time.time() - t0:.2f}s")
 
     # 5. Tuning reproduction and honest selection rule audit
-    print("\n[5/5] Running Tuning Table Reproduction & Audit (100 tuning seeds)...")
+    print("\n[5/7] Running Tuning Table Reproduction & Audit (100 tuning seeds)...")
     t0 = time.time()
     from benchmark.reproduce_tuning import reproduce_tuning_table
     tuning_res = reproduce_tuning_table()
     print(f"  -> Tuning Reproduction completed in {time.time() - t0:.2f}s")
+
+    # 6. Fair Baseline C tuning and holdout evaluation
+    print("\n[6/7] Running Fair Baseline C Grid Tuning (100 tuning seeds) & Holdout Evaluation...")
+    t0 = time.time()
+    from benchmark.tune_baseline_c import tune_baseline_c
+    baseline_c_res = tune_baseline_c()
+    print(f"  -> Baseline C Tuning completed in {time.time() - t0:.2f}s")
+
+    # 7. Generate REPORT.md from results
+    print("\n[7/7] Regenerating REPORT.md directly from reconciled JSONs...")
+    t0 = time.time()
+    from benchmark.generate_report import generate_benchmark_report
+    report_path = generate_benchmark_report()
+    print(f"  -> REPORT.md generated in {time.time() - t0:.2f}s")
 
     total_elapsed = time.time() - start_time
     print("\n" + "=" * 70)
@@ -81,6 +95,7 @@ def run_all() -> dict[str, str]:
         "sequential_closed_loop": "backend/benchmark/results/sequential_closed_loop.json",
         "holdout_sequential": "backend/benchmark/results/holdout_sequential.json",
         "robustness_benchmark": "backend/benchmark/results/robustness_benchmark.json",
+        "baseline_c_tuning": "backend/benchmark/results/baseline_c_tuning.json",
     }
 
 

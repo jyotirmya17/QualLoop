@@ -106,14 +106,14 @@ Live integration would require:
 
 ## 6. What QualLoop Does Not Claim
 
-- It does not claim to be causally correct. Differences between ads may be due to targeting
-  differences, not creative quality.
-- It does not claim to work better than a human analyst with domain expertise.
+- **No Gross Lead Superiority Over Tuned Heuristics:** When naive Baseline C is properly tuned (30 mature contacts, 0.10 hurdle), its holdout qualified lead output (4,840.88) is statistically indistinguishable from QualLoop's (4,805.88; paired difference $\Delta = -0.35$ leads/run, 95% bootstrap CI $[-1.44, 0.57]$). QualLoop provides credible intervals, uncertainty quantification, and audit compliance—not magical lead volume advantages.
+- **Continuous Boundary Fragility:** On continuous buying intent distributions, QualLoop's false-pause rate jumps from 1.4% on discrete bimodal clusters to 23.5% (8/34). Point and interval thresholds alike exhibit high sampling noise near the hurdle boundary.
+- **Diminishing Returns Sensitivity:** Under linear returns ($Spend^{1.0}$), QualLoop delivers 4,805.88 leads; under concave diminishing returns ($Spend^{0.7}$), audience fatigue reduces realized volume to 3,739.50 leads.
+- **Intent vs. Economic Divergence:** An ad with high conversion intent ($q=20\%$) can still be commercially disastrous if top-of-funnel CPL is excessive (`high_cpql` realizes CPQL $\approx ₹2,976 \gg ₹500$). Qualification gating alone cannot substitute for unit economic cost ceilings.
+- It does not claim to be causally correct. Differences between ads may be due to targeting differences, not creative quality.
 - It does not claim to automatically improve ROAS. It recommends; humans decide.
-- It does not claim that its benchmark results predict real-world performance improvements.
-- It does not claim that its statistical model is the best possible model for this problem.
-  Survival models, multilevel models, and time-series approaches may be more appropriate
-  for specific use cases.
+- It does not claim that its benchmark results predict live real-world performance improvements.
+- It does not claim that its statistical model is the best possible model for this problem. Survival models, multilevel models, and time-series approaches may be more appropriate for specific use cases.
 
 ---
 
