@@ -380,12 +380,20 @@ def test_per_scenario_counts_sum_to_aggregate():
     assert scenarios["healthy_campaign"]["n_ads"] == 45
     assert scenarios["healthy_campaign"]["budget"] == 150000.0
 
-    # Assert budget == seeds x sum(ad spend) for every scenario
+    # Assert budget == seeds x sum(ad spend) for every scenario, with seeds from authoritative holdout split
     from simulator.scenarios import get_scenario
 
+    split_file = Path(__file__).resolve().parent.parent / "benchmark" / "seeds_split.json"
+    with open(split_file, "r", encoding="utf-8") as f:
+        split_data = json.load(f)
+
     for sc_name, sc in scenarios.items():
+        holdout_seeds = split_data["holdout"][sc_name]
+        assert sc["n_seeds"] == len(holdout_seeds), (
+            f"Scenario {sc_name} seed count mismatch: got {sc['n_seeds']}, expected {len(holdout_seeds)}"
+        )
         cfg = get_scenario(sc_name, 1)
-        expected_budget = sc["n_seeds"] * sum(ad.spend for camp in cfg.ads_per_campaign for ad in camp)
+        expected_budget = len(holdout_seeds) * sum(ad.spend for camp in cfg.ads_per_campaign for ad in camp)
         assert sc["budget"] == expected_budget, (
             f"Scenario {sc_name} budget mismatch: got {sc['budget']}, expected {expected_budget}"
         )
