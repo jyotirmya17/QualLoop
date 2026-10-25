@@ -380,6 +380,16 @@ def test_per_scenario_counts_sum_to_aggregate():
     assert scenarios["healthy_campaign"]["n_ads"] == 45
     assert scenarios["healthy_campaign"]["budget"] == 150000.0
 
+    # Assert budget == seeds x sum(ad spend) for every scenario
+    from simulator.scenarios import get_scenario
+
+    for sc_name, sc in scenarios.items():
+        cfg = get_scenario(sc_name, 1)
+        expected_budget = sc["n_seeds"] * sum(ad.spend for camp in cfg.ads_per_campaign for ad in camp)
+        assert sc["budget"] == expected_budget, (
+            f"Scenario {sc_name} budget mismatch: got {sc['budget']}, expected {expected_budget}"
+        )
+
     # Verify per-policy false pause and missed bad ad sums equal aggregate
     for p in policies:
         agg_fp = data["policy_metrics"][p]["rates_with_95_ci"]["false_positive_pause_rate"]["count"]

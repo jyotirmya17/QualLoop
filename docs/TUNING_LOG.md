@@ -62,3 +62,11 @@ In accordance with scientific integrity guidelines:
 ### Trade-off Analysis:
 - **Config 0** achieves complete immunity to false pauses on both tuning and holdout ($\text{FPPR} = 0.00\%$), but at a severe cost: it misses 62.86% of bad ads on holdout, allowing poor campaigns to bleed spend. In the fixed redistributed budget model, this inability to pause bad ads forfeits budget reallocation to good ads, generating **4,598.03** qualified leads (CPQL ₹178.55).
 - **Config 2** strikes the optimal growth-marketing trade-off: it slashes FNDR to **37.14%**, terminating bad ads early so freed spend is reinvested into high-intent ads. This delivers **4,805.88** qualified leads (+$207.85$ leads over Config 0) and reduces CPQL to **₹170.83**, with an observed holdout FPPR of only **1.43%** (2 false pauses out of 140 good ads, well below all naive baselines).
+
+---
+
+## 4. Baseline C Tuning Provenance Disclosure
+
+- **Commit Provenance:** The Baseline C grid-tuning script (`backend/benchmark/tune_baseline_c.py`), selection rule, and holdout benchmark results were first committed together in commit `5a57997` on 2026-10-24 19:49:28 +0530.
+- **Pre-Commit Disclosure:** The Baseline C selection rule was **not committed to version control prior to executing the tuning grid search**. While the tuning search itself was restricted to the 100 tuning seeds (`seeds_split.json`), the rule definition and script were checked in concurrently with the evaluated tuning artifacts.
+
