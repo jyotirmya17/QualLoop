@@ -135,7 +135,7 @@ qualloop/
 │   └── vite.config.ts        # Vite build configuration (proxying to :8000)
 ├── docs/                     # Specifications, architecture, statistical model & decision policy
 ├── scratch/                  # Research artifacts, ablation notes, and mathematical audit logs
-├── REVSPOT_REVIEWER_GUIDE.md # Reviewer walkthrough, setup guide, and feedback questions
+├── REVIEWER_GUIDE.md         # Reviewer walkthrough, setup guide, and evaluation notes
 └── README.md                 # Primary technical documentation (this file)
 ```
 
@@ -162,7 +162,11 @@ The repository has been verified on Python 3.12 and Node.js 20. Setup requires t
    ```bash
    # Windows (PowerShell):
    python -m venv .venv
-   .venv\Scripts\activate
+   .\.venv\Scripts\Activate.ps1
+
+   # Windows (Command Prompt):
+   python -m venv .venv
+   .venv\Scripts\activate.bat
 
    # Linux / macOS:
    python3 -m venv .venv
@@ -176,13 +180,16 @@ The repository has been verified on Python 3.12 and Node.js 20. Setup requires t
 
 4. Configure local environment variables:
    ```bash
-   # Copy safe local defaults (uses SQLite by default)
+   # Windows (PowerShell) / Linux / macOS:
    cp .env.example .env
+
+   # Windows (Command Prompt):
+   copy .env.example .env
    ```
 
 5. Run database migrations to initialize SQLite (`backend/qualloop.db`):
    ```bash
-   alembic upgrade head
+   python -m alembic upgrade head
    ```
 
 6. Start the FastAPI development server:
@@ -213,7 +220,11 @@ The repository has been verified on Python 3.12 and Node.js 20. Setup requires t
 
 3. Configure local environment variables:
    ```bash
+   # Windows (PowerShell) / Linux / macOS:
    cp .env.example .env
+
+   # Windows (Command Prompt):
+   copy .env.example .env
    ```
 
 4. Start the Vite development server:
@@ -314,8 +325,8 @@ When naive point heuristics are tuned on dedicated training seeds (requiring 30 
 ## 11. Companion Documentation
 
 For deep technical dives, consult the specialized documentation in the repository:
-- [RevSpot Reviewer Guide](file:///d:/Developer/qualloop/REVSPOT_REVIEWER_GUIDE.md): Executive summary, interactive walkthrough, and specific commercial feedback questions.
-- [Statistical Model Specification](file:///d:/Developer/qualloop/docs/STATISTICAL_MODEL.md): Full mathematical derivation of the two-stage Beta-Binomial estimator.
-- [Decision Policy Specification](file:///d:/Developer/qualloop/docs/DECISION_POLICY.md): Deterministic state machine rules, evidence thresholds, and rationale strings.
-- [Shadow Architecture Note](file:///d:/Developer/qualloop/scratch/step_4d10_shadow_architecture_note.md): Step 4D.10 design note on isolated shadow telemetry and event schemas.
-- [RevSpot Readiness Audit Report](file:///d:/Developer/qualloop/scratch/step_4d11_revspot_readiness_report.md): Step 4D.11 readiness assessment and architectural audit.
+- [Technical Reviewer Guide](REVIEWER_GUIDE.md): Executive summary, interactive walkthrough, and technical evaluation questions.
+- [Statistical Model Specification](docs/STATISTICAL_MODEL.md): Full mathematical derivation of the two-stage Beta-Binomial estimator.
+- [Decision Policy Specification](docs/DECISION_POLICY.md): Deterministic state machine rules, evidence thresholds, and rationale strings.
+- [Shadow Architecture Note](scratch/step_4d10_shadow_architecture_note.md): Step 4D.10 design note on isolated shadow telemetry and event schemas.
+- [Technical Readiness Audit Report](scratch/step_4d11_readiness_report.md): Step 4D.11 readiness assessment and architectural audit.

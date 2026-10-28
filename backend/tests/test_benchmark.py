@@ -558,14 +558,10 @@ def test_budget_semantics_and_return_models():
 
 
 def _get_v2_results_path() -> Path:
-    candidates = [
-        Path(__file__).resolve().parent.parent.parent / "scratch" / "out_of_sample_results_v2.json",
-        Path("C:/Users/BIT/.gemini/antigravity-ide/brain/cb33dbe4-6d2a-48f4-a290-d2a5f2f9d87d/scratch/out_of_sample_results_v2.json"),
-    ]
-    for p in candidates:
-        if p.exists():
-            return p
-    raise FileNotFoundError(f"V2 benchmark artifact not found in candidates: {candidates}")
+    p = Path(__file__).resolve().parent.parent.parent / "scratch" / "out_of_sample_results_v2.json"
+    if p.exists():
+        return p
+    raise FileNotFoundError(f"V2 benchmark artifact not found at: {p}")
 
 
 def test_paired_run_matching_and_seed_coverage():

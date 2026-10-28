@@ -1,6 +1,6 @@
-# QualLoop — RevSpot Reviewer Guide
+# QualLoop — Technical Reviewer Guide
 
-Welcome to the **QualLoop** evaluation repository. This guide provides a concise walkthrough of the application, its statistical foundations, verified setup instructions, and key evaluation questions for the RevSpot team.
+Welcome to the **QualLoop** evaluation repository. This guide provides a concise walkthrough of the application, its statistical foundations, verified setup instructions, and key technical evaluation questions.
 
 > ⚠ **IMPORTANT PROJECT SCOPE & STATUS**  
 > QualLoop is an **empirical simulation-based MVP and research prototype** with an offline economic shadow evaluator.  
@@ -23,8 +23,8 @@ Standard digital advertising platforms (Meta, Google, TikTok) optimize for top-o
 ## 2. Verified Local Setup (5 Minutes)
 
 ### Prerequisites
-- Python 3.11+
-- Node.js 18+ and npm 9+
+- Python 3.11+ or 3.12+
+- Node.js 18+ or 20+ and npm 9+
 
 *(Note: Docker Compose is not required; run standard native processes below.)*
 
@@ -34,8 +34,10 @@ cd backend
 
 # Create and activate virtual environment
 python -m venv .venv
-# Windows PowerShell:
-.venv\Scripts\activate
+# Windows (PowerShell):
+.\.venv\Scripts\Activate.ps1
+# Windows (Command Prompt):
+.venv\Scripts\activate.bat
 # Linux/macOS:
 source .venv/bin/activate
 
@@ -43,7 +45,10 @@ source .venv/bin/activate
 pip install -e .
 
 # Configure local development environment
+# PowerShell / Linux / macOS:
 cp .env.example .env
+# Windows Command Prompt:
+copy .env.example .env
 
 # Apply database migrations to local SQLite database (backend/qualloop.db)
 python -m alembic upgrade head
@@ -62,7 +67,10 @@ cd frontend
 npm install
 
 # Configure local development environment
+# PowerShell / Linux / macOS:
 cp .env.example .env
+# Windows Command Prompt:
+copy .env.example .env
 
 # Start Vite dev server
 npm run dev
@@ -121,7 +129,7 @@ Once the dashboard loads at `http://127.0.0.1:3000`, follow this workflow:
 - **Monte Carlo CPQL Uncertainty:** Draws 2,000 posterior samples to construct CPQL distributions and detects mathematical instability near zero EQL.
 - **Append-Only Audit Trail:** Persists all recommendations and statistical snapshots to SQLite/PostgreSQL with schema versioning via Alembic.
 - **Offline Economic Shadow Evaluator:** Step 4D.10 isolated shadow runner (`backend/shadow/`) that projects incremental contribution profit ($\Delta \Pi$) and break-even CPQL without mutating live ad state.
-- **Automated Test Suite:** 202 backend tests passing in 43 seconds (`python -m pytest backend/tests`).
+- **Automated Test Suite:** 202 backend tests passing in ~40 seconds (`python -m pytest backend/tests`).
 
 ### What QualLoop Does NOT Do (Explicit Limitations)
 - **No Live Ad Mutation:** QualLoop does not connect to Meta Marketing API or Google Ads API; no ad pause or budget modification is dispatched to external platforms.
@@ -132,14 +140,14 @@ Once the dashboard loads at `http://127.0.0.1:3000`, follow this workflow:
 
 ---
 
-## 5. Key Questions for RevSpot Reviewers
+## 5. Key Questions for Technical Reviewers
 
-We welcome RevSpot's candid feedback on commercial and technical viability:
+We welcome candid feedback on commercial and technical viability:
 
-1. **Reachability vs. Qualification:** In your clients' sales funnels, what fraction of leads are typically uncontactable vs. true disqualifications? Does decoupling these two stages align with how your account managers diagnose creative performance?
-2. **Sales Cycle Delays:** What are the typical sales qualification windows for your lead-generation clients (e.g. 3 days, 7 days, 14 days)? How do your current reporting dashboards handle pending, unresolved leads?
-3. **Economic Hurdle Viability:** For economic decisioning, how feasible is it for clients to provide and maintain segment-level lead values ($V_{\text{QL}}$) and variable intake/telephony costs?
-4. **Audit & Compliance Value:** Is an append-only decision audit trail with mathematical evidence valuable for agency-client transparency and quarterly reporting?
+1. **Reachability vs. Qualification:** In multi-stage sales funnels, what fraction of leads are typically uncontactable vs. true disqualifications? Does decoupling these two stages align with how marketing and sales teams diagnose creative performance?
+2. **Sales Cycle Delays:** What are the typical sales qualification windows for lead-generation campaigns (e.g. 3 days, 7 days, 14 days)? How do existing reporting dashboards handle pending, unresolved leads?
+3. **Economic Hurdle Viability:** For economic decisioning, how feasible is it for advertisers to provide and maintain segment-level lead values ($V_{\text{QL}}$) and variable intake/telephony costs?
+4. **Audit & Compliance Value:** Is an append-only decision audit trail with mathematical evidence valuable for governance, client transparency, and performance auditing?
 5. **Pilot Ingestion Priority:** For an initial non-actioning pilot, which data ingestion path would be most practical:
    - (A) Weekly historical CRM CSV exports?
    - (B) Real-time CRM webhook integration (HubSpot / Salesforce)?
@@ -147,8 +155,8 @@ We welcome RevSpot's candid feedback on commercial and technical viability:
 
 ---
 
-**Contact & Support:** Evaluation Engineering Team  
-**Companion Documents:**  
-- [RevSpot Readiness Audit Report](file:///d:/Developer/qualloop/scratch/step_4d11_revspot_readiness_report.md)  
-- [Statistical Model Specification](file:///d:/Developer/qualloop/docs/STATISTICAL_MODEL.md)  
-- [Shadow Architecture Note](file:///d:/Developer/qualloop/scratch/step_4d10_shadow_architecture_note.md)
+**Contact & Support:** Evaluation Engineering Team
+**Companion Documents:**
+- [Technical Readiness Audit Report](scratch/step_4d11_readiness_report.md)
+- [Statistical Model Specification](docs/STATISTICAL_MODEL.md)
+- [Shadow Architecture Note](scratch/step_4d10_shadow_architecture_note.md)
