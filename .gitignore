@@ -3,12 +3,37 @@ __pycache__/
 *.py[cod]
 *$py.class
 .pytest_cache/
+.coverage
+htmlcov/
+.tox/
 .venv/
 env/
 venv/
 
-# Node
+# Node & Build
 node_modules/
 dist/
+build/
+.vite/
 .DS_Store
+
+# IDE & Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment and Secrets (preserve .env.example)
+.env
+.env.local
+.env.*.local
+*.env
+!.env.example
+!backend/.env.example
+!frontend/.env.example
+
+# Local Databases and Benchmark Runs
+*.db
+*.sqlite
+*.sqlite3
 backend/benchmark/results/benchmark_*.json

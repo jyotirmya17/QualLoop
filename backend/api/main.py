@@ -27,7 +27,12 @@ from api.routers import simulations, ads, decisions, audit, health, benchmark
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup
+    # Startup: verify database connectivity and authoritative schema readiness without mutating schema
+    try:
+        from persistence.database import verify_database_schema
+        verify_database_schema()
+    except Exception as e:
+        raise RuntimeError(f"Database readiness check failed during application startup: {e}") from e
     yield
     # Shutdown (cleanup if needed)
 
@@ -44,7 +49,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000", "*"],
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
