@@ -26,6 +26,7 @@ export const App: React.FC = () => {
   const [benchmarkReport, setBenchmarkReport] = useState<BenchmarkReport | null>(null);
   const [decisions, setDecisions] = useState<Decision[]>([]);
   const [auditEvents, setAuditEvents] = useState<any[]>([]);
+  const [auditError, setAuditError] = useState<string | null>(null);
   const [healthStatus, setHealthStatus] = useState<HealthStatus | null>(null);
   const [isBackendHealthy, setIsBackendHealthy] = useState<boolean>(true);
 
@@ -35,6 +36,19 @@ export const App: React.FC = () => {
   const [isLoadingAnalysis, setIsLoadingAnalysis] = useState<boolean>(false);
   const [isLoadingBenchmark, setIsLoadingBenchmark] = useState<boolean>(false);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+
+  const fetchAuditTrail = useCallback(async () => {
+    try {
+      setAuditError(null);
+      const decs = await api.listDecisions();
+      setDecisions(decs);
+      const audits = await api.getAuditLog();
+      setAuditEvents(audits);
+    } catch (err: any) {
+      console.error('Failed to fetch audit log', err);
+      setAuditError(err?.message || 'Failed to load audit records');
+    }
+  }, []);
 
   // 1. Initial Load: Scenarios, Health, Recent Runs
   const initialize = useCallback(async () => {
@@ -61,10 +75,17 @@ export const App: React.FC = () => {
       const recentRuns = await api.listSimulations();
       if (recentRuns.length > 0) {
         setRuns(recentRuns);
+        // Ensure evaluation is complete before setting selectedRunId to avoid fetchAnalysis race
+        try {
+          await api.evaluateSimulation(recentRuns[0].id);
+        } catch (e) {
+          console.warn('Initial evaluation notice:', e);
+        }
         setSelectedRunId(recentRuns[0].id);
       } else {
         // Run default simulation if store is empty
         const defaultRun = await api.runSimulation('mixed_portfolio', 42);
+        await api.evaluateSimulation(defaultRun.id);
         setRuns([defaultRun]);
         setSelectedRunId(defaultRun.id);
       }
@@ -78,20 +99,13 @@ export const App: React.FC = () => {
       }
 
       // Fetch decisions & audit log
-      try {
-        const decs = await api.listDecisions();
-        setDecisions(decs);
-        const audits = await api.getAuditLog();
-        setAuditEvents(audits);
-      } catch (err) {
-        console.error('Failed to fetch audit log', err);
-      }
+      await fetchAuditTrail();
     } catch (err) {
       console.error('Initialization error:', err);
     } finally {
       setIsRefreshing(false);
     }
-  }, []);
+  }, [fetchAuditTrail]);
 
   useEffect(() => {
     initialize();
@@ -125,19 +139,42 @@ export const App: React.FC = () => {
     };
   }, [selectedRunId]);
 
+  // Explicit evaluate handler
+  const handleEvaluateRun = async (runId: string) => {
+    setIsLoadingAnalysis(true);
+    try {
+      const updatedCampaigns = await api.evaluateSimulation(runId);
+      setCampaigns(updatedCampaigns);
+      // Refresh audit trail
+      const decs = await api.listDecisions();
+      setDecisions(decs);
+      const audits = await api.getAuditLog();
+      setAuditEvents(audits);
+    } catch (err: any) {
+      console.error('Evaluation error:', err);
+      alert(`Evaluation error: ${err?.message || 'Failed to evaluate decisions'}`);
+    } finally {
+      setIsLoadingAnalysis(false);
+    }
+  };
+
   // Run new simulation handler
   const handleRunSimulation = async (scenario: string, seed: number) => {
     setIsRefreshing(true);
     try {
       const newRun = await api.runSimulation(scenario, seed);
+      // Explicitly evaluate and persist decisions & audit events
+      await api.evaluateSimulation(newRun.id);
       setRuns((prev) => [newRun, ...prev]);
       setSelectedRunId(newRun.id);
       // Refresh decisions & audit log
       const decs = await api.listDecisions();
       setDecisions(decs);
-    } catch (err) {
-      console.error('Error running simulation:', err);
-      alert('Failed to run simulation. Please ensure backend is online.');
+      const audits = await api.getAuditLog();
+      setAuditEvents(audits);
+    } catch (err: any) {
+      console.error('Error running simulation or evaluating decisions:', err);
+      alert(`Simulation or evaluation error: ${err?.message || 'Persistence failed'}`);
     } finally {
       setIsRefreshing(false);
     }
@@ -180,6 +217,8 @@ export const App: React.FC = () => {
               campaigns={campaigns}
               scenarioName={currentRun?.scenario_name}
               seed={currentRun?.seed}
+              onEvaluate={selectedRunId ? () => handleEvaluateRun(selectedRunId) : undefined}
+              isEvaluating={isLoadingAnalysis}
             />
 
             {isLoadingAnalysis ? (
@@ -211,6 +250,8 @@ export const App: React.FC = () => {
               decisions={decisions}
               auditEvents={auditEvents}
               isLoading={isRefreshing}
+              error={auditError}
+              onRetry={fetchAuditTrail}
             />
           </div>
         )}

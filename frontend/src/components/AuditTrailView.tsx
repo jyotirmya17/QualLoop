@@ -6,12 +6,16 @@ interface AuditTrailViewProps {
   decisions: Decision[];
   auditEvents: any[];
   isLoading: boolean;
+  error?: string | null;
+  onRetry?: () => void;
 }
 
 export const AuditTrailView: React.FC<AuditTrailViewProps> = ({
   decisions,
   auditEvents,
   isLoading,
+  error,
+  onRetry,
 }) => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [actionFilter, setActionFilter] = useState<string>('all');
@@ -90,9 +94,36 @@ export const AuditTrailView: React.FC<AuditTrailViewProps> = ({
           Audited Decisions ({filteredDecisions.length})
         </h3>
 
+        {error && (
+          <div
+            style={{
+              padding: '12px 16px',
+              borderRadius: '8px',
+              background: 'rgba(239, 68, 68, 0.1)',
+              border: '1px solid rgba(239, 68, 68, 0.3)',
+              color: '#f87171',
+              marginBottom: '16px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+          >
+            <span style={{ fontSize: '0.85rem' }}>Failed to retrieve audit records: {error}</span>
+            {onRetry && (
+              <button
+                className="btn btn-secondary"
+                style={{ padding: '4px 10px', fontSize: '0.75rem' }}
+                onClick={onRetry}
+              >
+                Retry
+              </button>
+            )}
+          </div>
+        )}
+
         {filteredDecisions.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-dim)' }}>
-            {isLoading ? 'Loading audit records...' : 'No decisions found matching criteria.'}
+            {isLoading ? 'Loading audit records...' : error ? 'Audit records unavailable due to error.' : 'No decisions found matching criteria.'}
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>

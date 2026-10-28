@@ -40,13 +40,31 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ scenario_name, seed }),
     }),
+  evaluateSimulation: (runId: string) =>
+    fetchJson<CampaignSummary[]>(`/simulations/${runId}/evaluate`, {
+      method: 'POST',
+    }),
 
   // Ads & Campaign Analysis
   getRunAnalysis: (runId: string) => fetchJson<CampaignSummary[]>(`/ads/run/${runId}`),
 
   // Decisions & Audit
-  listDecisions: () => fetchJson<Decision[]>('/decisions/'),
-  getAuditLog: () => fetchJson<any[]>('/audit/'),
+  listDecisions: (params?: { simulation_run_id?: string; advertisement_id?: string; action?: string; limit?: number }) => {
+    const searchParams = new URLSearchParams();
+    if (params?.simulation_run_id) searchParams.set('simulation_run_id', params.simulation_run_id);
+    if (params?.advertisement_id) searchParams.set('advertisement_id', params.advertisement_id);
+    if (params?.action) searchParams.set('action', params.action);
+    if (params?.limit) searchParams.set('limit', params.limit.toString());
+    const query = searchParams.toString();
+    return fetchJson<Decision[]>(`/decisions/${query ? `?${query}` : ''}`);
+  },
+  getAuditLog: (params?: { decision_id?: string; limit?: number }) => {
+    const searchParams = new URLSearchParams();
+    if (params?.decision_id) searchParams.set('decision_id', params.decision_id);
+    if (params?.limit) searchParams.set('limit', params.limit.toString());
+    const query = searchParams.toString();
+    return fetchJson<any[]>(`/audit/${query ? `?${query}` : ''}`);
+  },
 
   // Benchmark
   getLatestBenchmark: () => fetchJson<BenchmarkReport>('/benchmark/latest'),

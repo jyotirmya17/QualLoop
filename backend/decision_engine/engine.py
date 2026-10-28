@@ -52,6 +52,15 @@ def _determine_tier_and_auto_applied(
     """
     Derive (tier, auto_applied, requires_approval) based on action and spend guardrails.
 
+    Execution Semantics:
+    - 'tier': Governance level ('gated' | 'within_guardrails' | 'autonomous').
+    - 'auto_applied': Boolean flag indicating whether the recommendation is pre-approved
+      for autonomous execution under policy spend guardrails without human intervention.
+      NOTE: In the current release, QualLoop acts as an advisory decision intelligence system;
+      it produces recommendations and simulated outcomes, and does not execute mutations
+      against live advertising APIs.
+    - 'requires_approval': True when human sign-off is mandatory before action.
+
     Rules:
     - Raising budget and launching: ALWAYS tier=gated and auto_applied=false.
     - Pausing and reallocating / shifting spend: ALWAYS tier=within_guardrails.
@@ -108,6 +117,7 @@ def evaluate(
         prior_decisions = []
 
     now = datetime.now(timezone.utc)
+    ci_pct = int(round(estimate.ci_level * 100)) if getattr(estimate, "ci_level", None) else 90
 
     # Check cooldown first — if in cooldown, preserve prior decision and return early
     if prior_decisions:
@@ -210,7 +220,7 @@ def evaluate(
             ad_spend=ad_spend,
             action=DecisionAction.INVESTIGATE_LOW_REACHABILITY,
             reason=(
-                f"The 90% credible interval for reachability on ad '{estimate.advertisement_id}' is "
+                f"The {ci_pct}% credible interval for reachability on ad '{estimate.advertisement_id}' is "
                 f"[{estimate.reachability_ci_low:.1%}, {estimate.reachability_ci_high:.1%}] (mean {estimate.reachability_mean:.1%}), "
                 f"entirely below {policy.low_reachability_upper_bound:.1%}. "
                 f"Generated {estimate.n_contacts}/{estimate.n_mature_leads} contacts. "
@@ -244,13 +254,13 @@ def evaluate(
 
         is_under_cap = ad_spend <= policy.guardrail_action_spend_cap
         action = DecisionAction.PAUSE_AD if is_under_cap else DecisionAction.CONSIDER_PAUSE
-        action_verb = "Pausing ad within guardrails" if is_under_cap else "Recommending pause for human review"
+        action_verb = "Recommending guardrailed pause (auto-applicable under spend cap)" if is_under_cap else "Recommending pause for human review"
         return _make_decision(
             estimate=estimate,
             ad_spend=ad_spend,
             action=action,
             reason=(
-                f"With {estimate.n_mature_contacts} mature contacts ({estimate.k_qualified} qualified), the 90% credible "
+                f"With {estimate.n_mature_contacts} mature contacts ({estimate.k_qualified} qualified), the {ci_pct}% credible "
                 f"interval for qualification rate is [{estimate.qualification_ci_low:.1%}, {estimate.qualification_ci_high:.1%}], "
                 f"sitting entirely below threshold {policy.low_qualification_upper_bound:.1%}. Reachability is adequate "
                 f"({estimate.reachability_mean:.1%}), confirming poor buying intent. "
@@ -266,6 +276,7 @@ def evaluate(
         and not estimate.cpql_unstable
         and estimate.cpql_ci_low is not None
         and estimate.evidence_sufficient_qualification
+        and ad_spend >= policy.budget_guardrail_min_spend
     ):
         for other in campaign_snapshots:
             if (
@@ -309,13 +320,13 @@ def evaluate(
         if ad_spend >= policy.budget_guardrail_min_spend:
             is_under_cap = ad_spend <= policy.guardrail_action_spend_cap
             action = DecisionAction.REALLOCATE_BUDGET if is_under_cap else DecisionAction.CONSIDER_REALLOCATE
-            action_verb = "Reallocating spend within guardrails" if is_under_cap else "Recommending spend reallocation for human review"
+            action_verb = "Recommending guardrailed spend reallocation (auto-applicable under spend cap)" if is_under_cap else "Recommending spend reallocation for human review"
             return _make_decision(
                 estimate=estimate,
                 ad_spend=ad_spend,
                 action=action,
                 reason=(
-                    f"Estimated cost per qualified lead has a 90% credible interval lower bound of "
+                    f"Estimated cost per qualified lead has a {ci_pct}% credible interval lower bound of "
                     f"${estimate.cpql_ci_low:.2f} (mean: ${estimate.cpql_mean:.2f}), exceeding threshold "
                     f"${policy.high_cpql_lower_bound:.2f} on spend ${ad_spend:.2f} and EQL {estimate.eql_mean:.1f}. "
                     f"{action_verb} (spend: ${ad_spend:.2f}, guardrail cap: ${policy.guardrail_action_spend_cap:.2f})."
@@ -354,9 +365,9 @@ def evaluate(
         reason=(
             f"Sample is mature ({estimate.n_mature_leads} mature leads, {estimate.n_mature_contacts} mature contacts, "
             f"{estimate.k_qualified} qualified). Reachability mean {estimate.reachability_mean:.1%} "
-            f"(90% CI: [{estimate.reachability_ci_low:.1%}, {estimate.reachability_ci_high:.1%}]), "
+            f"({ci_pct}% CI: [{estimate.reachability_ci_low:.1%}, {estimate.reachability_ci_high:.1%}]), "
             f"qualification mean {estimate.qualification_mean:.1%} "
-            f"(90% CI: [{estimate.qualification_ci_low:.1%}, {estimate.qualification_ci_high:.1%}]), "
+            f"({ci_pct}% CI: [{estimate.qualification_ci_low:.1%}, {estimate.qualification_ci_high:.1%}]), "
             f"EQL {estimate.eql_mean:.1f}, spend ${ad_spend:.2f}. No failure threshold triggered; continue autonomous monitoring."
         ),
         policy=policy,
@@ -432,6 +443,7 @@ def _make_decision(
     }
 
     posterior_summary = {
+        "ci_level": round(estimate.ci_level, 4) if getattr(estimate, "ci_level", None) else 0.90,
         "reachability_mean": round(estimate.reachability_mean, 4),
         "reachability_ci": [round(estimate.reachability_ci_low, 4), round(estimate.reachability_ci_high, 4)],
         "qualification_mean": round(estimate.qualification_mean, 4),
@@ -485,6 +497,7 @@ def _make_decision(
         "cpql_unstable": estimate.cpql_unstable,
         "evidence_sufficient_reachability": estimate.evidence_sufficient_reachability,
         "evidence_sufficient_qualification": estimate.evidence_sufficient_qualification,
+        "ci_level": round(estimate.ci_level, 4) if getattr(estimate, "ci_level", None) else 0.90,
         "thresholds_applied": thresholds,
     }
     if extra_metrics:

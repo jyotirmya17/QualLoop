@@ -153,17 +153,19 @@ hidden. We handle it explicitly:
   leads"
 - If 90% CI of EQL spans zero to a large value, CPQL uncertainty is "very high"
 
-### 5.3 CPQL Interval
+### 5.3 CPQL Distribution and Interval
 
 ```
-cpql_samples = total_spend / eql_samples  (where eql_samples > 0)
+cpql_samples = total_spend / eql_samples  (where eql_samples >= 0.5)
 ```
 
-Zero-EQL samples are excluded from the CPQL distribution but their count is reported as
-"fraction of outcomes with no qualified leads."
+Samples with near-zero EQL (< 0.5) are excluded from the division to maintain numerical stability, but their count is reported as `zero_eql_fraction = P(EQL < 0.5)`. When `zero_eql_fraction > instability_threshold` (0.20), CPQL is flagged as `unstable = True`.
 
-**Point estimate:** spend / mean(eql_samples)  
-**90% CI:** [percentile(5, valid_cpql_samples), percentile(95, valid_cpql_samples)]
+**Point estimate (posterior mean):** `cpql_mean = mean(cpql_samples)`  
+**90% CI:** `[percentile(5, cpql_samples), percentile(95, cpql_samples)]`
+
+*Mathematical Note on Jensen's Inequality:*  
+Because `f(x) = spend / x` is strictly convex for `x > 0`, by Jensen's Inequality `E[spend / EQL] > spend / E[EQL]` whenever EQL has non-zero posterior uncertainty. Consequently, `cpql_mean` (the posterior expectation of CPQL) will strictly exceed `spend / eql_mean` (the ratio of expectations). The credible interval bounds `[cpql_ci_low, cpql_ci_high]` are derived from the exact same posterior sample distribution as `cpql_mean`.
 
 ---
 

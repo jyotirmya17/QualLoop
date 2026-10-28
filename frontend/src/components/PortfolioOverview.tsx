@@ -1,17 +1,21 @@
 import React from 'react';
-import { DollarSign, Users, Award, PhoneCall, TrendingUp, AlertCircle, Clock } from 'lucide-react';
+import { DollarSign, Users, Award, PhoneCall, TrendingUp, AlertCircle, Clock, CheckCircle2 } from 'lucide-react';
 import { CampaignSummary } from '../types/api';
 
 interface PortfolioOverviewProps {
   campaigns: CampaignSummary[];
   scenarioName?: string;
   seed?: number;
+  onEvaluate?: () => void;
+  isEvaluating?: boolean;
 }
 
 export const PortfolioOverview: React.FC<PortfolioOverviewProps> = ({
   campaigns,
   scenarioName,
   seed,
+  onEvaluate,
+  isEvaluating,
 }) => {
   // Aggregate stats across campaigns and ads
   let totalSpend = 0;
@@ -70,8 +74,20 @@ export const PortfolioOverview: React.FC<PortfolioOverviewProps> = ({
           </p>
         </div>
 
-        {/* Dynamic Warning Badges */}
-        <div style={{ display: 'flex', gap: '8px' }}>
+        {/* Dynamic Warning Badges and Evaluate Action */}
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          {onEvaluate && (
+            <button
+              className="btn btn-secondary"
+              style={{ padding: '5px 12px', fontSize: '0.78rem', display: 'flex', alignItems: 'center', gap: '6px' }}
+              onClick={onEvaluate}
+              disabled={isEvaluating}
+              title="Explicitly evaluate decisions and persist to immutable audit ledger"
+            >
+              <CheckCircle2 size={13} color="#10b981" />
+              <span>{isEvaluating ? 'Evaluating...' : 'Evaluate & Persist'}</span>
+            </button>
+          )}
           {isSmallSample && (
             <div
               style={{

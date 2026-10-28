@@ -3,10 +3,28 @@ CPQL (Cost Per Qualified Lead) estimation via Monte Carlo.
 
 CPQL is a ratio estimator that becomes unstable when EQL (expected qualified
 leads) is near zero. This module handles the instability explicitly by:
-1. Computing a Monte Carlo distribution over EQL
-2. Reporting the fraction of samples with zero qualified leads
-3. Marking CPQL as unstable when zero-EQL fraction is high
-4. Never hiding NaN or infinity behind arbitrary constants
+1. Computing a Monte Carlo distribution over EQL:
+      eql^(i) = n_leads * maturity_fraction * p_r^(i) * p_q^(i)
+   where p_r ~ Beta(alpha_r, beta_r) and p_q ~ Beta(alpha_q, beta_q).
+2. Reporting the fraction of samples with zero/near-zero qualified leads (EQL < 0.5):
+      zero_eql_fraction = P(EQL < 0.5)
+3. Marking CPQL as unstable when zero_eql_fraction > instability_threshold (default 0.20).
+4. Deriving CPQL point estimates and credible intervals from posterior draws:
+      cpql^(i) = spend / eql^(i)  for eql^(i) >= 0.5
+      cpql_mean = E[spend / EQL | EQL >= 0.5]
+      cpql_ci = [percentile(alpha/2, cpql_samples), percentile(1 - alpha/2, cpql_samples)]
+
+MATHEMATICAL NOTE ON JENSEN'S INEQUALITY:
+Because f(x) = spend / x is strictly convex for x > 0 (f''(x) = 2*spend / x^3 > 0),
+by Jensen's Inequality:
+      E[spend / EQL] > spend / E[EQL]
+whenever EQL has non-zero posterior uncertainty.
+Consequently, cpql_mean will strictly exceed (spend / eql_mean).
+This is not a defect or calculation error; cpql_mean is the true posterior expectation
+of the cost-per-qualified-lead ratio, while spend / eql_mean is merely the plug-in
+ratio of expectations (which underestimates expected cost under parameter uncertainty).
+Both cpql_mean and [cpql_ci_low, cpql_ci_high] are derived from the identical posterior
+quantity cpql_samples.
 
 See docs/STATISTICAL_MODEL.md §5 for specification.
 """

@@ -164,6 +164,7 @@ class EstimateSnapshot(BaseModel):
     qualification_prior_alpha: float = 1.0
     qualification_prior_beta: float = 4.0
     is_empirical_prior: bool = False
+    ci_level: float = 0.90
 
 
 class Decision(BaseModel):
@@ -182,6 +183,8 @@ class Decision(BaseModel):
     requires_human_approval: bool
     approval_status: ApprovalStatus = ApprovalStatus.NOT_REQUIRED
     created_at: datetime
+    simulation_run_id: Optional[str] = None
+    is_persisted: bool = False
 
 
 class AuditEvent(BaseModel):

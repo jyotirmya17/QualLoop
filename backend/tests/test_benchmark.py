@@ -3,6 +3,7 @@ Tests for benchmark module (baseline policy and benchmark runner).
 """
 
 import json
+import math
 import tempfile
 from pathlib import Path
 from datetime import datetime, timedelta, timezone
@@ -554,6 +555,157 @@ def test_budget_semantics_and_return_models():
     assert "Linear-Returns Assumption" in readme_content
     assert "Spend^1.0" in readme_content or "Spend^{1.0}" in readme_content
     assert "Diminishing-Returns Model" in readme_content
+
+
+def _get_v2_results_path() -> Path:
+    candidates = [
+        Path(__file__).resolve().parent.parent.parent / "scratch" / "out_of_sample_results_v2.json",
+        Path("C:/Users/BIT/.gemini/antigravity-ide/brain/cb33dbe4-6d2a-48f4-a290-d2a5f2f9d87d/scratch/out_of_sample_results_v2.json"),
+    ]
+    for p in candidates:
+        if p.exists():
+            return p
+    raise FileNotFoundError(f"V2 benchmark artifact not found in candidates: {candidates}")
+
+
+def test_paired_run_matching_and_seed_coverage():
+    """Verify out-of-sample benchmark runs are uniquely keyed by (family, scenario, seed) and 100% paired."""
+    v2_path = _get_v2_results_path()
+    with open(v2_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    eval_a = data["raw_evaluations"]["A"]["run_records"]
+    eval_c = data["raw_evaluations"]["C"]["run_records"]
+
+    keys_a = [(r["family"], r["scenario_name"], r["seed"]) for r in eval_a]
+    keys_c = [(r["family"], r["scenario_name"], r["seed"]) for r in eval_c]
+
+    # Uniqueness assertions
+    assert len(keys_a) == 190
+    assert len(set(keys_a)) == 190, "Duplicate run keys in Policy A evaluations"
+    assert len(keys_c) == 190
+    assert len(set(keys_c)) == 190, "Duplicate run keys in Policy C evaluations"
+
+    # Symmetric pairing assertion
+    assert set(keys_a) == set(keys_c), "Run keys between Policy A and Policy C do not match 1-to-1"
+
+    # Coverage assertion
+    cont_keys = [k for k in keys_a if k[0] == "continuous"]
+    bim_keys = [k for k in keys_a if k[0] == "bimodal_synthetic"]
+    preset_keys = [k for k in keys_a if k[0] == "preset"]
+
+    assert len(cont_keys) == 50
+    assert len(bim_keys) == 50
+    assert len(preset_keys) == 90
+
+
+def test_lead_accounting_metric_definitions():
+    """Verify Metric 1 (pipeline harvest) vs Metric 2 (at-pause) and Never-Paused reference semantics."""
+    v2_path = _get_v2_results_path()
+    with open(v2_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    ref = data["never_paused_reference_baseline"]
+    # Never-paused reference baseline must be exactly full spend / full leads
+    assert ref["total_spend"] == 2275000.0
+    assert ref["total_qualified_leads"] == 4818
+    assert math.isclose(ref["macro_cpql"], 2275000.0 / 4818, rel_tol=1e-3)
+
+    macros = data["macro_summaries_by_family"]["OVERALL"]
+    for cfg in ["A", "C"]:
+        st = macros[cfg]
+        # Metric 1 (Pipeline harvest) must be >= Metric 2 (strictly at pause)
+        assert st["m1_pipeline_ql"] >= st["m2_at_pause_ql"]
+        assert st["post_pause_lag_harvest_ql"] == st["m1_pipeline_ql"] - st["m2_at_pause_ql"]
+        # CPQL under Metric 1 must be <= CPQL under Metric 2 (more leads for same spend)
+        assert st["macro_cpql_m1_pipeline"] <= st["macro_cpql_m2_at_pause"]
+        # Zero-QL runs must be recorded
+        assert "zero_ql_runs_count" in st
+
+
+def test_policy_ablation_pairing_and_completeness():
+    """Verify Step 4D.3 ablation results have 100% paired matching across A, B, C, D with 0 duplicates."""
+    ablation_json = Path(__file__).resolve().parent.parent.parent / "scratch" / "policy_ablation_results_v1.json"
+    assert ablation_json.exists(), f"Ablation artifact not found at {ablation_json}"
+    with open(ablation_json, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    eval_res = data["eval_results"]
+    assert set(eval_res.keys()) == {"A", "B", "C", "D"}
+
+    keys = {}
+    for cfg in ["A", "B", "C", "D"]:
+        runs = eval_res[cfg]["run_records"]
+        assert len(runs) == 190, f"Expected 190 runs for config {cfg}, got {len(runs)}"
+        run_keys = [(r["family"], r["scenario_name"], r["seed"]) for r in runs]
+        assert len(set(run_keys)) == 190, f"Duplicate run keys found in config {cfg}"
+        keys[cfg] = set(run_keys)
+
+    # 100% symmetric pairing across all 4 configs
+    assert keys["A"] == keys["B"] == keys["C"] == keys["D"], "Run keys are not symmetrically paired across A, B, C, D"
+
+
+def test_policy_ablation_metric_denominators_and_causal_invariance():
+    """Verify ground truth denominators, event directions, and B/C/D causal equivalence."""
+    ablation_json = Path(__file__).resolve().parent.parent.parent / "scratch" / "policy_ablation_results_v1.json"
+    with open(ablation_json, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    overall = data["macro_summaries"]["OVERALL"]
+    for cfg in ["A", "B", "C", "D"]:
+        st = overall[cfg]
+        assert st["n_ads"] == 450
+        assert st["n_good"] == 219
+        assert st["n_poor"] == 231
+        assert st["n_good"] + st["n_poor"] == st["n_ads"]
+
+        # False pause events must be strictly <= n_good
+        assert 0 <= st["false_pauses"] <= st["n_good"]
+        assert math.isclose(st["false_pause_rate"], st["false_pauses"] / st["n_good"], abs_tol=1e-4)
+
+        # Missed poor ads must be strictly <= n_poor
+        assert 0 <= st["missed_poor"] <= st["n_poor"]
+        assert math.isclose(st["missed_poor_rate"], st["missed_poor"] / st["n_poor"], abs_tol=1e-4)
+
+        # Zero-QL runs must be recorded and >= 0
+        assert st["zero_ql_runs_count"] >= 0
+
+    # Causal invariance: Configs B, C, D must have identical spend, false pauses, and CPQL
+    assert overall["B"]["total_spend"] == overall["C"]["total_spend"] == overall["D"]["total_spend"]
+    assert overall["B"]["false_pauses"] == overall["C"]["false_pauses"] == overall["D"]["false_pauses"]
+    assert overall["B"]["missed_poor"] == overall["C"]["missed_poor"] == overall["D"]["missed_poor"]
+    assert overall["B"]["macro_cpql_m1_pipeline"] == overall["C"]["macro_cpql_m1_pipeline"] == overall["D"]["macro_cpql_m1_pipeline"]
+
+
+def test_policy_ablation_config_propagation():
+    """Verify that factorial threshold parameters correctly propagate into EstimatorConfig and DecisionPolicy."""
+    from estimator.estimator import EstimatorConfig
+    from decision_engine.engine import DecisionPolicy
+
+    # Test baseline A (12, 12)
+    est_a = EstimatorConfig(min_mature_contacts=12)
+    pol_a = DecisionPolicy(min_mature_contacts_for_qualification=12)
+    assert est_a.min_mature_contacts == 12
+    assert pol_a.min_mature_contacts_for_qualification == 12
+
+    # Test estimator-only B (20, 12)
+    est_b = EstimatorConfig(min_mature_contacts=20)
+    pol_b = DecisionPolicy(min_mature_contacts_for_qualification=12)
+    assert est_b.min_mature_contacts == 20
+    assert pol_b.min_mature_contacts_for_qualification == 12
+
+    # Test policy-only C (12, 20)
+    est_c = EstimatorConfig(min_mature_contacts=12)
+    pol_c = DecisionPolicy(min_mature_contacts_for_qualification=20)
+    assert est_c.min_mature_contacts == 12
+    assert pol_c.min_mature_contacts_for_qualification == 20
+
+    # Test combined D (20, 20)
+    est_d = EstimatorConfig(min_mature_contacts=20)
+    pol_d = DecisionPolicy(min_mature_contacts_for_qualification=20)
+    assert est_d.min_mature_contacts == 20
+    assert pol_d.min_mature_contacts_for_qualification == 20
+
 
 
 

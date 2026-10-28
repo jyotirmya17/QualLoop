@@ -60,8 +60,25 @@ export const AdDetailModal: React.FC<AdDetailModalProps> = ({ adAnalysis, onClos
                   {formatAction(dec.action)}
                 </span>
               </div>
-              <p className="mono" style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>
-                Ad ID: {adv.id} &bull; Policy {dec.policy_version}
+              <p className="mono" style={{ fontSize: '0.75rem', color: 'var(--text-dim)', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                <span>Ad ID: {adv.id}</span>
+                <span>&bull;</span>
+                <span>Decision ID: <strong style={{ color: dec.is_persisted ? '#818cf8' : '#94a3b8' }}>{dec.is_persisted ? dec.id : `${dec.id} (Preview)`}</strong></span>
+                <span
+                  style={{
+                    fontSize: '0.68rem',
+                    padding: '1px 6px',
+                    borderRadius: '4px',
+                    fontWeight: 600,
+                    background: dec.is_persisted ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)',
+                    color: dec.is_persisted ? '#34d399' : '#fbbf24',
+                    border: dec.is_persisted ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(245, 158, 11, 0.3)',
+                  }}
+                >
+                  {dec.is_persisted ? 'AUDITED' : 'PREVIEW ONLY — NOT PERSISTED'}
+                </span>
+                <span>&bull;</span>
+                <span>Policy {dec.policy_version}</span>
               </p>
             </div>
           </div>

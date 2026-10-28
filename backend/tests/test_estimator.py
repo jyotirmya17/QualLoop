@@ -307,6 +307,116 @@ class TestCPQLEstimator:
         large_relative_width = large_eql_width / (large.eql_mean + 1e-9)
         assert small_relative_width > large_relative_width
 
+    def test_cpql_jensens_inequality_guarantee(self):
+        """
+        Prove Jensen's inequality: because f(x) = spend / x is strictly convex for x > 0,
+        the posterior expectation E[spend / EQL] must strictly exceed the plug-in ratio spend / E[EQL]
+        whenever there is posterior parameter uncertainty.
+        """
+        reach = self._make_estimate(40, 25)
+        qual = self._make_estimate(25, 10)
+        rng = np.random.default_rng(12345)
+
+        spend = 3000.0
+        res = estimate_cpql(
+            spend=spend,
+            n_leads=80,
+            maturity_fraction=1.0,
+            reachability_estimate=reach,
+            qualification_estimate=qual,
+            n_samples=20_000,
+            rng=rng,
+        )
+
+        assert res.cpql_mean is not None
+        assert res.eql_mean > 0
+
+        plug_in_ratio = spend / res.eql_mean
+        posterior_mean_cpql = res.cpql_mean
+
+        # Jensen's inequality: E[spend/EQL] > spend / E[EQL]
+        assert posterior_mean_cpql > plug_in_ratio, (
+            f"Posterior expectation {posterior_mean_cpql:.2f} must strictly exceed "
+            f"plug-in ratio of means {plug_in_ratio:.2f} due to Jensen's inequality."
+        )
+
+        # Both CI bounds and mean are derived from identical posterior distribution
+        assert res.cpql_ci_low is not None and res.cpql_ci_high is not None
+        assert res.cpql_ci_low < posterior_mean_cpql < res.cpql_ci_high
+
+    def test_cpql_snapshot_scenario_reproduction(self):
+        """
+        Deterministically reproduce and verify the audit example:
+        Spend: $3,000, eql_mean ≈ 19.96 - 20.11, cpql_mean ≈ 156.44 - 157.47, cpql_ci ≈ [109.5, 223.1].
+        Demonstrates that cpql_mean ≈ $157 vs spend/eql_mean ≈ $150.30 is due to the convex
+        transformation of posterior samples (Jensen's inequality), not an arithmetic error.
+        """
+        # Reachability: 50 / 70 contacted
+        reach = estimate_rate(n=70, k=50, alpha_prior=1.0, beta_prior=1.0)
+        # Qualification: 14 / 35 qualified
+        qual = estimate_rate(n=35, k=14, alpha_prior=1.0, beta_prior=1.0)
+
+        rng = np.random.default_rng(42)
+        res = estimate_cpql(
+            spend=3000.0,
+            n_leads=70,
+            maturity_fraction=1.0,
+            reachability_estimate=reach,
+            qualification_estimate=qual,
+            n_samples=10_000,
+            rng=rng,
+        )
+
+        # EQL mean is ~ 20.11 (target ~ 19.96 - 20.11)
+        assert abs(res.eql_mean - 20.0) < 0.50
+        # Plug-in ratio spend / eql_mean is ~ $149 - $150
+        plug_in = 3000.0 / res.eql_mean
+        assert abs(plug_in - 150.0) < 5.0
+
+        # Posterior mean CPQL is ~ $156.44 - $157.50
+        assert abs(res.cpql_mean - 157.0) < 3.0
+        # Credible interval spans ~ [109.5, 223.1]
+        assert abs(res.cpql_ci_low - 109.5) < 3.0
+        assert abs(res.cpql_ci_high - 223.1) < 3.0
+
+        # Unstable is False and zero_eql_fraction is 0.0
+        assert res.unstable is False
+        assert res.zero_eql_fraction == 0.0
+
+    def test_cpql_zero_and_near_zero_leads_handling(self):
+        """Verify zero-denominator, high zero-fraction, and numerical stability behavior."""
+        reach = self._make_estimate(10, 1)  # very low reachability
+        qual = self._make_estimate(5, 0)   # 0 qualified leads
+
+        rng = np.random.default_rng(42)
+        # 1 lead with tiny rates -> virtually all draws have EQL < 0.5
+        res = estimate_cpql(
+            spend=500.0,
+            n_leads=1,
+            maturity_fraction=0.5,
+            reachability_estimate=reach,
+            qualification_estimate=qual,
+            n_samples=5_000,
+            rng=rng,
+        )
+        assert res.zero_eql_fraction > 0.90
+        assert res.unstable is True
+
+    def test_cpql_negative_spend_rejected(self):
+        """Negative spend must produce degenerate unstable estimate without crash."""
+        reach = self._make_estimate(50, 30)
+        qual = self._make_estimate(20, 5)
+        res = estimate_cpql(
+            spend=-500.0,
+            n_leads=50,
+            maturity_fraction=1.0,
+            reachability_estimate=reach,
+            qualification_estimate=qual,
+        )
+        assert res.cpql_mean is None
+        assert res.unstable is True
+        assert res.zero_eql_fraction == 1.0
+
 
 # ---------------------------------------------------------------------------
 # Full compute_estimates integration test

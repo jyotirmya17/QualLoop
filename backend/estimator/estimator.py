@@ -200,6 +200,7 @@ def compute_estimates(
         qualification_prior_alpha=q_alpha,
         qualification_prior_beta=q_beta,
         is_empirical_prior=is_empirical_prior,
+        ci_level=config.ci_level,
     )
 
 

@@ -81,6 +81,17 @@ export interface Decision {
   requires_human_approval: boolean;
   approval_status: ApprovalStatus;
   created_at: string;
+  simulation_run_id?: string;
+  is_persisted?: boolean;
+}
+
+export interface AuditEvent {
+  id: string;
+  event_type: string;
+  decision_id: string | null;
+  timestamp: string;
+  actor: string;
+  payload: Record<string, any>;
 }
 
 export interface AdAnalysis {
