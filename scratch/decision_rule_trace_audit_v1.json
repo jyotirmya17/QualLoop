@@ -1,0 +1,246 @@
+{
+  "metadata": {
+    "version": "v1_step4d4_trace_audit",
+    "date": "2026-10-27T20:30:00Z",
+    "objective": "Step 4D.4 Decision-Rule Trace Audit and Baseline Verification"
+  },
+  "verified_production_baseline": {
+    "estimator": {
+      "source_file": "backend/estimator/estimator.py",
+      "ci_level": {
+        "symbol": "CI_LEVEL",
+        "value": 0.9
+      },
+      "min_mature_contacts": {
+        "symbol": "MIN_MATURE_CONTACTS",
+        "value": 20
+      },
+      "min_mature_leads": {
+        "symbol": "MIN_MATURE_LEADS",
+        "value": 30
+      },
+      "min_maturity_fraction": {
+        "symbol": "MIN_MATURITY_FRACTION",
+        "value": 0.6
+      },
+      "contact_maturity_days": {
+        "symbol": "contact_maturity_days",
+        "value": 3.0
+      },
+      "qualification_maturity_days": {
+        "symbol": "qualification_maturity_days",
+        "value": 7.0
+      }
+    },
+    "decision_policy": {
+      "source_file": "backend/decision_engine/engine.py",
+      "version": {
+        "symbol": "POLICY_VERSION",
+        "value": "v0.2.0"
+      },
+      "min_mature_contacts_for_qualification": {
+        "symbol": "min_mature_contacts_for_qualification",
+        "value": 20
+      },
+      "min_mature_leads_for_reachability": {
+        "symbol": "min_mature_leads_for_reachability",
+        "value": 30
+      },
+      "min_maturity_fraction": {
+        "symbol": "min_maturity_fraction",
+        "value": 0.6
+      },
+      "low_qualification_upper_bound": {
+        "symbol": "low_qualification_upper_bound",
+        "value": 0.1
+      },
+      "low_reachability_upper_bound": {
+        "symbol": "low_reachability_upper_bound",
+        "value": 0.25
+      },
+      "high_cpql_lower_bound": {
+        "symbol": "high_cpql_lower_bound",
+        "value": 500.0
+      },
+      "target_cpql": {
+        "symbol": "target_cpql",
+        "value": 75.0
+      },
+      "guardrail_action_spend_cap": {
+        "symbol": "guardrail_action_spend_cap",
+        "value": 500.0
+      }
+    },
+    "authoritative_runtime_wiring": {
+      "api_evaluation": "backend/api/evaluation.py instantiates _DEFAULT_CONFIG = EstimatorConfig() and _DEFAULT_POLICY = DecisionPolicy()",
+      "api_ads_router": "backend/api/routers/ads.py instantiates _DEFAULT_CONFIG = EstimatorConfig() and _DEFAULT_POLICY = DecisionPolicy()",
+      "environment_overrides": "None (only DATABASE_URL in persistence/database.py)",
+      "database_overrides": "None (decisions table stores policy_version string and decision record, no parameter override tables)",
+      "preset_overrides": "None (simulator/scenarios.py generates ad traffic, does not override estimator or policy)"
+    }
+  },
+  "bcd_equivalence_findings": {
+    "total_ads_evaluated": 450,
+    "pause_day_differences_B_vs_C": 0,
+    "pause_day_differences_C_vs_D": 0,
+    "spend_differences_B_vs_C": 0,
+    "ql_differences_B_vs_C": 0,
+    "day_14_pauses_in_A": 90,
+    "delayed_to_day_21_in_BCD": 66,
+    "never_paused_missed_in_BCD": 24,
+    "causal_mechanism": "When 12 <= N < 20: Config C triggers Rule 3 directly (COLLECT_MORE_DATA). Config B passes Rule 3, but fails Rule 6 gate (evidence_sufficient_qualification == False), falling through to Rule 10 (CONTINUE_MONITORING). Both are non-pause actions, allowing the ad to continue spending identically until Day 21. When N >= 20, both B and C satisfy Rule 6 identically.",
+    "representative_delayed_traces": [
+      {
+        "ad_id": "2cdbd7b5-5c97-86e5-fbd9-8d1a015a1755",
+        "family": "continuous",
+        "scenario": "continuous_intent",
+        "seed": 22000,
+        "true_intent": 0.09719999999999998,
+        "config_a_pause": {
+          "cp_day": 14,
+          "action": "consider_pause",
+          "reason": "With 18 mature contacts (1 qualified), the 80% credible interval for qualification rate is [4.0%, 13.4%], sitting entirely below threshold 15.0%. Reachability is adequate (63.6%), confirming poor buying intent. Recommending pause for human review (spend: $2500.00, guardrail cap: $500.00).",
+          "n_mature_contacts": 18,
+          "k_qualified": 1,
+          "qual_mean": 0.08374583116725999,
+          "qual_ci_high": 0.1343160479021729,
+          "evidence_sufficient": true
+        },
+        "config_bcd_pause": {
+          "cp_day": 21,
+          "action": "consider_pause",
+          "reason": "With 36 mature contacts (2 qualified), the 80% credible interval for qualification rate is [3.8%, 12.9%], sitting entirely below threshold 15.0%. Reachability is adequate (62.2%), confirming poor buying intent. Recommending pause for human review (spend: $3750.00, guardrail cap: $500.00).",
+          "n_mature_contacts": 36,
+          "k_qualified": 2,
+          "qual_mean": 0.08000652834409425,
+          "qual_ci_high": 0.12904275794806372,
+          "evidence_sufficient": true
+        }
+      },
+      {
+        "ad_id": "45571323-2625-5950-6bf3-1cde37b0412f",
+        "family": "continuous",
+        "scenario": "continuous_intent",
+        "seed": 22003,
+        "true_intent": 0.16830000000000006,
+        "config_a_pause": {
+          "cp_day": 14,
+          "action": "consider_pause",
+          "reason": "With 16 mature contacts (1 qualified), the 80% credible interval for qualification rate is [4.4%, 14.6%], sitting entirely below threshold 15.0%. Reachability is adequate (67.1%), confirming poor buying intent. Recommending pause for human review (spend: $2500.00, guardrail cap: $500.00).",
+          "n_mature_contacts": 16,
+          "k_qualified": 1,
+          "qual_mean": 0.09137414569264919,
+          "qual_ci_high": 0.14616951111132542,
+          "evidence_sufficient": true
+        },
+        "config_bcd_pause": {
+          "cp_day": 21,
+          "action": "consider_pause",
+          "reason": "With 36 mature contacts (3 qualified), the 80% credible interval for qualification rate is [5.5%, 13.4%], sitting entirely below threshold 15.0%. Reachability is adequate (65.2%), confirming poor buying intent. Recommending pause for human review (spend: $3750.00, guardrail cap: $500.00).",
+          "n_mature_contacts": 36,
+          "k_qualified": 3,
+          "qual_mean": 0.09244761685470873,
+          "qual_ci_high": 0.1339099713077839,
+          "evidence_sufficient": true
+        }
+      },
+      {
+        "ad_id": "e0044684-1c68-ea46-47da-2f880257193a",
+        "family": "continuous",
+        "scenario": "continuous_intent",
+        "seed": 22004,
+        "true_intent": 0.0723,
+        "config_a_pause": {
+          "cp_day": 14,
+          "action": "consider_pause",
+          "reason": "With 13 mature contacts (0 qualified), the 80% credible interval for qualification rate is [0.0%, 2.9%], sitting entirely below threshold 15.0%. Reachability is adequate (59.6%), confirming poor buying intent. Recommending pause for human review (spend: $2500.00, guardrail cap: $500.00).",
+          "n_mature_contacts": 13,
+          "k_qualified": 0,
+          "qual_mean": 0.009506353861192569,
+          "qual_ci_high": 0.02911695464364393,
+          "evidence_sufficient": true
+        },
+        "config_bcd_pause": {
+          "cp_day": 21,
+          "action": "consider_pause",
+          "reason": "With 43 mature contacts (2 qualified), the 80% credible interval for qualification rate is [2.4%, 8.3%], sitting entirely below threshold 15.0%. Reachability is adequate (60.0%), confirming poor buying intent. Recommending pause for human review (spend: $3750.00, guardrail cap: $500.00).",
+          "n_mature_contacts": 43,
+          "k_qualified": 2,
+          "qual_mean": 0.05164020383783552,
+          "qual_ci_high": 0.08328842419667729,
+          "evidence_sufficient": true
+        }
+      }
+    ],
+    "representative_missed_traces": [
+      {
+        "ad_id": "55a06f9b-c555-1d6a-6f02-e81d5f712a77",
+        "family": "continuous",
+        "scenario": "continuous_intent",
+        "seed": 22002,
+        "true_intent": 0.05600000000000001,
+        "config_a_pause": {
+          "cp_day": 14,
+          "action": "consider_pause",
+          "reason": "With 12 mature contacts (1 qualified), the 80% credible interval for qualification rate is [4.8%, 13.9%], sitting entirely below threshold 15.0%. Reachability is adequate (58.8%), confirming poor buying intent. Recommending pause for human review (spend: $2500.00, guardrail cap: $500.00).",
+          "n_mature_contacts": 12,
+          "k_qualified": 1,
+          "qual_mean": 0.0908004778972521,
+          "qual_ci_high": 0.13941152125237458,
+          "evidence_sufficient": true
+        },
+        "config_bcd_spend": 5000.0
+      },
+      {
+        "ad_id": "1dfda255-66d3-449c-12e0-dc8ae7178e63",
+        "family": "continuous",
+        "scenario": "continuous_intent",
+        "seed": 22002,
+        "true_intent": 0.08260000000000003,
+        "config_a_pause": {
+          "cp_day": 14,
+          "action": "consider_pause",
+          "reason": "With 17 mature contacts (2 qualified), the 80% credible interval for qualification rate is [5.6%, 14.7%], sitting entirely below threshold 15.0%. Reachability is adequate (73.9%), confirming poor buying intent. Recommending pause for human review (spend: $2500.00, guardrail cap: $500.00).",
+          "n_mature_contacts": 17,
+          "k_qualified": 2,
+          "qual_mean": 0.09894969596462135,
+          "qual_ci_high": 0.14744639247133837,
+          "evidence_sufficient": true
+        },
+        "config_bcd_spend": 5000.0
+      },
+      {
+        "ad_id": "aa10a624-a736-a89a-da03-e2f0eb4725bc",
+        "family": "continuous",
+        "scenario": "continuous_intent",
+        "seed": 22007,
+        "true_intent": 0.08219999999999997,
+        "config_a_pause": {
+          "cp_day": 14,
+          "action": "consider_pause",
+          "reason": "With 17 mature contacts (1 qualified), the 80% credible interval for qualification rate is [4.5%, 13.1%], sitting entirely below threshold 15.0%. Reachability is adequate (61.3%), confirming poor buying intent. Recommending pause for human review (spend: $2500.00, guardrail cap: $500.00).",
+          "n_mature_contacts": 17,
+          "k_qualified": 1,
+          "qual_mean": 0.08532807659814137,
+          "qual_ci_high": 0.13080217612324227,
+          "evidence_sufficient": true
+        },
+        "config_bcd_spend": 5000.0
+      }
+    ]
+  },
+  "boundary_analysis": {
+    "hurdle": 0.15,
+    "window": "[0.13, 0.17]",
+    "total_boundary_ads": 30,
+    "good_boundary_ads": 14,
+    "poor_boundary_ads": 16,
+    "config_a_boundary_fps": 5,
+    "config_d_boundary_fps": 5,
+    "mathematical_explanation": "Under Binomial(30, 0.16), P(k <= 2) = 11.5%. For k=2, Beta(3, 29) has theta_0.90 = 0.149 < 0.15, triggering Rule 6 false pause. Increasing N_min from 12 to 20 delays pause from Day 14 to Day 21 but fails to suppress false pauses because binomial variance at N=30 still frequently samples k <= 2."
+  },
+  "test_verification": {
+    "test_added": "backend/tests/test_decision_engine.py::TestDecisionSemanticsAndSnapshotIntegrity::test_estimator_and_policy_contact_thresholds_distinct_semantics",
+    "result": "PASSED (31/31 passed in test_decision_engine.py, 175 passed in full suite)"
+  }
+}

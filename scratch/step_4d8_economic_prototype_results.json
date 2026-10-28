@@ -1,0 +1,708 @@
+{
+  "PROD_HEURISTIC_P10": {
+    "name": "Production Heuristic (threshold=0.10, ci=0.90)",
+    "type": "heuristic",
+    "total_ads": 450,
+    "total_spend": 2161125.0,
+    "total_ql": 5175,
+    "cpql": 417.61,
+    "paused_count": 64,
+    "mean_pause_day": 17.94,
+    "pause_counts": {
+      "3": 0,
+      "7": 0,
+      "14": 28,
+      "21": 36
+    },
+    "valuation_metrics": {
+      "V_300": {
+        "lead_value": 300.0,
+        "net_contribution_profit": -608625.0,
+        "n_viable": 182,
+        "n_unviable": 268,
+        "false_pauses_econ": 1,
+        "false_pause_rate": 0.0055,
+        "false_pause_ci95": [
+          0.001,
+          0.0305
+        ],
+        "missed_unviable": 205,
+        "missed_unviable_rate": 0.7649,
+        "missed_unviable_ci95": [
+          0.7106,
+          0.8117
+        ],
+        "spend_on_unviable": 1451625.0,
+        "spend_on_missed_unviable": 1237000.0
+      },
+      "V_600": {
+        "lead_value": 600.0,
+        "net_contribution_profit": 943875.0,
+        "n_viable": 279,
+        "n_unviable": 171,
+        "false_pauses_econ": 6,
+        "false_pause_rate": 0.0215,
+        "false_pause_ci95": [
+          0.0099,
+          0.0461
+        ],
+        "missed_unviable": 113,
+        "missed_unviable_rate": 0.6608,
+        "missed_unviable_ci95": [
+          0.587,
+          0.7275
+        ],
+        "spend_on_unviable": 981875.0,
+        "spend_on_missed_unviable": 777500.0
+      },
+      "V_1200": {
+        "lead_value": 1200.0,
+        "net_contribution_profit": 4048875.0,
+        "n_viable": 363,
+        "n_unviable": 87,
+        "false_pauses_econ": 26,
+        "false_pause_rate": 0.0716,
+        "false_pause_ci95": [
+          0.0493,
+          0.1029
+        ],
+        "missed_unviable": 49,
+        "missed_unviable_rate": 0.5632,
+        "missed_unviable_ci95": [
+          0.4585,
+          0.6626
+        ],
+        "spend_on_unviable": 572125.0,
+        "spend_on_missed_unviable": 424500.0
+      }
+    },
+    "segmented_profit": 1369675.0
+  },
+  "PROD_HEURISTIC_P15": {
+    "name": "Production Heuristic on 15% Hurdle (threshold=0.15, ci=0.90)",
+    "type": "heuristic",
+    "total_ads": 450,
+    "total_spend": 2075000.0,
+    "total_ql": 5108,
+    "cpql": 406.23,
+    "paused_count": 110,
+    "mean_pause_day": 18.07,
+    "pause_counts": {
+      "3": 0,
+      "7": 0,
+      "14": 46,
+      "21": 64
+    },
+    "valuation_metrics": {
+      "V_300": {
+        "lead_value": 300.0,
+        "net_contribution_profit": -542600.0,
+        "n_viable": 182,
+        "n_unviable": 268,
+        "false_pauses_econ": 5,
+        "false_pause_rate": 0.0275,
+        "false_pause_ci95": [
+          0.0118,
+          0.0627
+        ],
+        "missed_unviable": 163,
+        "missed_unviable_rate": 0.6082,
+        "missed_unviable_ci95": [
+          0.5486,
+          0.6647
+        ],
+        "spend_on_unviable": 1368500.0,
+        "spend_on_missed_unviable": 1016000.0
+      },
+      "V_600": {
+        "lead_value": 600.0,
+        "net_contribution_profit": 989800.0,
+        "n_viable": 279,
+        "n_unviable": 171,
+        "false_pauses_econ": 13,
+        "false_pause_rate": 0.0466,
+        "false_pause_ci95": [
+          0.0274,
+          0.0781
+        ],
+        "missed_unviable": 74,
+        "missed_unviable_rate": 0.4327,
+        "missed_unviable_ci95": [
+          0.3608,
+          0.5077
+        ],
+        "spend_on_unviable": 903250.0,
+        "spend_on_missed_unviable": 574500.0
+      },
+      "V_1200": {
+        "lead_value": 1200.0,
+        "net_contribution_profit": 4054600.0,
+        "n_viable": 363,
+        "n_unviable": 87,
+        "false_pauses_econ": 55,
+        "false_pause_rate": 0.1515,
+        "false_pause_ci95": [
+          0.1183,
+          0.192
+        ],
+        "missed_unviable": 32,
+        "missed_unviable_rate": 0.3678,
+        "missed_unviable_ci95": [
+          0.2741,
+          0.4727
+        ],
+        "spend_on_unviable": 527625.0,
+        "spend_on_missed_unviable": 325000.0
+      }
+    },
+    "segmented_profit": 1411400.0
+  },
+  "ECON_V300": {
+    "name": "Economic Evaluator (V_QL = Rs 300)",
+    "type": "economic",
+    "total_ads": 450,
+    "total_spend": 1963125.0,
+    "total_ql": 5058,
+    "cpql": 388.12,
+    "paused_count": 167,
+    "mean_pause_day": 19.03,
+    "pause_counts": {
+      "3": 0,
+      "7": 0,
+      "14": 47,
+      "21": 120
+    },
+    "valuation_metrics": {
+      "V_300": {
+        "lead_value": 300.0,
+        "net_contribution_profit": -445725.0,
+        "n_viable": 182,
+        "n_unviable": 268,
+        "false_pauses_econ": 2,
+        "false_pause_rate": 0.011,
+        "false_pause_ci95": [
+          0.003,
+          0.0392
+        ],
+        "missed_unviable": 103,
+        "missed_unviable_rate": 0.3843,
+        "missed_unviable_ci95": [
+          0.3281,
+          0.4438
+        ],
+        "spend_on_unviable": 1254875.0,
+        "spend_on_missed_unviable": 586000.0
+      },
+      "V_600": {
+        "lead_value": 600.0,
+        "net_contribution_profit": 1071675.0,
+        "n_viable": 279,
+        "n_unviable": 171,
+        "false_pauses_econ": 18,
+        "false_pause_rate": 0.0645,
+        "false_pause_ci95": [
+          0.0412,
+          0.0997
+        ],
+        "missed_unviable": 22,
+        "missed_unviable_rate": 0.1287,
+        "missed_unviable_ci95": [
+          0.0865,
+          0.1871
+        ],
+        "spend_on_unviable": 803375.0,
+        "spend_on_missed_unviable": 199500.0
+      },
+      "V_1200": {
+        "lead_value": 1200.0,
+        "net_contribution_profit": 4106475.0,
+        "n_viable": 363,
+        "n_unviable": 87,
+        "false_pauses_econ": 90,
+        "false_pause_rate": 0.2479,
+        "false_pause_ci95": [
+          0.2063,
+          0.2948
+        ],
+        "missed_unviable": 10,
+        "missed_unviable_rate": 0.1149,
+        "missed_unviable_ci95": [
+          0.0636,
+          0.1988
+        ],
+        "spend_on_unviable": 482750.0,
+        "spend_on_missed_unviable": 152000.0
+      }
+    },
+    "segmented_profit": 1486775.0
+  },
+  "ECON_V600": {
+    "name": "Economic Evaluator (V_QL = Rs 600)",
+    "type": "economic",
+    "total_ads": 450,
+    "total_spend": 2164625.0,
+    "total_ql": 5205,
+    "cpql": 415.87,
+    "paused_count": 59,
+    "mean_pause_day": 19.69,
+    "pause_counts": {
+      "3": 0,
+      "7": 0,
+      "14": 11,
+      "21": 48
+    },
+    "valuation_metrics": {
+      "V_300": {
+        "lead_value": 300.0,
+        "net_contribution_profit": -603125.0,
+        "n_viable": 182,
+        "n_unviable": 268,
+        "false_pauses_econ": 0,
+        "false_pause_rate": 0.0,
+        "false_pause_ci95": [
+          0.0,
+          0.0207
+        ],
+        "missed_unviable": 209,
+        "missed_unviable_rate": 0.7799,
+        "missed_unviable_ci95": [
+          0.7265,
+          0.8253
+        ],
+        "spend_on_unviable": 1452625.0,
+        "spend_on_missed_unviable": 1177500.0
+      },
+      "V_600": {
+        "lead_value": 600.0,
+        "net_contribution_profit": 958375.0,
+        "n_viable": 279,
+        "n_unviable": 171,
+        "false_pauses_econ": 1,
+        "false_pause_rate": 0.0036,
+        "false_pause_ci95": [
+          0.0006,
+          0.02
+        ],
+        "missed_unviable": 113,
+        "missed_unviable_rate": 0.6608,
+        "missed_unviable_ci95": [
+          0.587,
+          0.7275
+        ],
+        "spend_on_unviable": 976000.0,
+        "spend_on_missed_unviable": 706500.0
+      },
+      "V_1200": {
+        "lead_value": 1200.0,
+        "net_contribution_profit": 4081375.0,
+        "n_viable": 363,
+        "n_unviable": 87,
+        "false_pauses_econ": 16,
+        "false_pause_rate": 0.0441,
+        "false_pause_ci95": [
+          0.0273,
+          0.0704
+        ],
+        "missed_unviable": 44,
+        "missed_unviable_rate": 0.5057,
+        "missed_unviable_ci95": [
+          0.4027,
+          0.6083
+        ],
+        "spend_on_unviable": 556375.0,
+        "spend_on_missed_unviable": 345000.0
+      }
+    },
+    "segmented_profit": 1388075.0
+  },
+  "ECON_V1200": {
+    "name": "Economic Evaluator (V_QL = Rs 1,200)",
+    "type": "economic",
+    "total_ads": 450,
+    "total_spend": 2266125.0,
+    "total_ql": 5244,
+    "cpql": 432.14,
+    "paused_count": 5,
+    "mean_pause_day": 21.0,
+    "pause_counts": {
+      "3": 0,
+      "7": 0,
+      "14": 0,
+      "21": 5
+    },
+    "valuation_metrics": {
+      "V_300": {
+        "lead_value": 300.0,
+        "net_contribution_profit": -692925.0,
+        "n_viable": 182,
+        "n_unviable": 268,
+        "false_pauses_econ": 0,
+        "false_pause_rate": 0.0,
+        "false_pause_ci95": [
+          0.0,
+          0.0207
+        ],
+        "missed_unviable": 263,
+        "missed_unviable_rate": 0.9813,
+        "missed_unviable_ci95": [
+          0.9571,
+          0.992
+        ],
+        "spend_on_unviable": 1554125.0,
+        "spend_on_missed_unviable": 1508000.0
+      },
+      "V_600": {
+        "lead_value": 600.0,
+        "net_contribution_profit": 880275.0,
+        "n_viable": 279,
+        "n_unviable": 171,
+        "false_pauses_econ": 0,
+        "false_pause_rate": 0.0,
+        "false_pause_ci95": [
+          0.0,
+          0.0136
+        ],
+        "missed_unviable": 166,
+        "missed_unviable_rate": 0.9708,
+        "missed_unviable_ci95": [
+          0.9334,
+          0.9874
+        ],
+        "spend_on_unviable": 1075625.0,
+        "spend_on_missed_unviable": 1029500.0
+      },
+      "V_1200": {
+        "lead_value": 1200.0,
+        "net_contribution_profit": 4026675.0,
+        "n_viable": 363,
+        "n_unviable": 87,
+        "false_pauses_econ": 0,
+        "false_pause_rate": 0.0,
+        "false_pause_ci95": [
+          0.0,
+          0.0105
+        ],
+        "missed_unviable": 82,
+        "missed_unviable_rate": 0.9425,
+        "missed_unviable_ci95": [
+          0.8724,
+          0.9752
+        ],
+        "spend_on_unviable": 636625.0,
+        "spend_on_missed_unviable": 590500.0
+      }
+    },
+    "segmented_profit": 1309875.0
+  },
+  "ECON_SEGMENTED": {
+    "name": "Economic Evaluator (Segmented: Tier 1 = Rs 1,500, Tier 2 = Rs 400)",
+    "type": "economic",
+    "total_ads": 450,
+    "total_spend": 2106875.0,
+    "total_ql": 5165,
+    "cpql": 407.91,
+    "paused_count": 87,
+    "mean_pause_day": 19.07,
+    "pause_counts": {
+      "3": 0,
+      "7": 0,
+      "14": 24,
+      "21": 63
+    },
+    "valuation_metrics": {
+      "V_300": {
+        "lead_value": 300.0,
+        "net_contribution_profit": -557375.0,
+        "n_viable": 182,
+        "n_unviable": 268,
+        "false_pauses_econ": 0,
+        "false_pause_rate": 0.0,
+        "false_pause_ci95": [
+          0.0,
+          0.0207
+        ],
+        "missed_unviable": 181,
+        "missed_unviable_rate": 0.6754,
+        "missed_unviable_ci95": [
+          0.6172,
+          0.7286
+        ],
+        "spend_on_unviable": 1394875.0,
+        "spend_on_missed_unviable": 1015000.0
+      },
+      "V_600": {
+        "lead_value": 600.0,
+        "net_contribution_profit": 992125.0,
+        "n_viable": 279,
+        "n_unviable": 171,
+        "false_pauses_econ": 7,
+        "false_pause_rate": 0.0251,
+        "false_pause_ci95": [
+          0.0122,
+          0.0509
+        ],
+        "missed_unviable": 91,
+        "missed_unviable_rate": 0.5322,
+        "missed_unviable_ci95": [
+          0.4575,
+          0.6054
+        ],
+        "spend_on_unviable": 929500.0,
+        "spend_on_missed_unviable": 579000.0
+      },
+      "V_1200": {
+        "lead_value": 1200.0,
+        "net_contribution_profit": 4091125.0,
+        "n_viable": 363,
+        "n_unviable": 87,
+        "false_pauses_econ": 38,
+        "false_pause_rate": 0.1047,
+        "false_pause_ci95": [
+          0.0772,
+          0.1404
+        ],
+        "missed_unviable": 38,
+        "missed_unviable_rate": 0.4368,
+        "missed_unviable_ci95": [
+          0.3374,
+          0.5415
+        ],
+        "spend_on_unviable": 542750.0,
+        "spend_on_missed_unviable": 312500.0
+      }
+    },
+    "segmented_profit": 1438625.0
+  },
+  "paired_comparisons_vs_prod_p10": {
+    "PROD_HEURISTIC_P15": {
+      "V_300": {
+        "total_delta_profit": 54725.0,
+        "mean_delta_profit_per_ad": 147.91,
+        "se_delta_profit": 23.05,
+        "ci95_delta_profit_per_ad": [
+          102.74,
+          193.07
+        ],
+        "t_stat": 6.418,
+        "p_value": 0.0
+      },
+      "V_600": {
+        "total_delta_profit": 37325.0,
+        "mean_delta_profit_per_ad": 100.88,
+        "se_delta_profit": 20.65,
+        "ci95_delta_profit_per_ad": [
+          60.4,
+          141.35
+        ],
+        "t_stat": 4.885,
+        "p_value": 0.0
+      },
+      "V_1200": {
+        "total_delta_profit": 2525.0,
+        "mean_delta_profit_per_ad": 6.82,
+        "se_delta_profit": 27.69,
+        "ci95_delta_profit_per_ad": [
+          -47.44,
+          61.09
+        ],
+        "t_stat": 0.246,
+        "p_value": 0.8054
+      },
+      "Segmented": {
+        "total_delta_profit": 32425.0,
+        "mean_delta_profit_per_ad": 87.64,
+        "se_delta_profit": 27.91,
+        "ci95_delta_profit_per_ad": [
+          32.94,
+          142.33
+        ],
+        "t_stat": 3.14,
+        "p_value": 0.0018
+      }
+    },
+    "ECON_V300": {
+      "V_300": {
+        "total_delta_profit": 134900.0,
+        "mean_delta_profit_per_ad": 364.59,
+        "se_delta_profit": 33.44,
+        "ci95_delta_profit_per_ad": [
+          299.06,
+          430.13
+        ],
+        "t_stat": 10.904,
+        "p_value": 0.0
+      },
+      "V_600": {
+        "total_delta_profit": 102800.0,
+        "mean_delta_profit_per_ad": 277.84,
+        "se_delta_profit": 29.31,
+        "ci95_delta_profit_per_ad": [
+          220.39,
+          335.29
+        ],
+        "t_stat": 9.479,
+        "p_value": 0.0
+      },
+      "V_1200": {
+        "total_delta_profit": 38600.0,
+        "mean_delta_profit_per_ad": 104.32,
+        "se_delta_profit": 37.12,
+        "ci95_delta_profit_per_ad": [
+          31.57,
+          177.08
+        ],
+        "t_stat": 2.81,
+        "p_value": 0.0052
+      },
+      "Segmented": {
+        "total_delta_profit": 91200.0,
+        "mean_delta_profit_per_ad": 246.49,
+        "se_delta_profit": 37.19,
+        "ci95_delta_profit_per_ad": [
+          173.6,
+          319.38
+        ],
+        "t_stat": 6.628,
+        "p_value": 0.0
+      }
+    },
+    "ECON_V600": {
+      "V_300": {
+        "total_delta_profit": -7500.0,
+        "mean_delta_profit_per_ad": -20.27,
+        "se_delta_profit": 23.79,
+        "ci95_delta_profit_per_ad": [
+          -66.9,
+          26.36
+        ],
+        "t_stat": -0.852,
+        "p_value": 0.3947
+      },
+      "V_600": {
+        "total_delta_profit": 1500.0,
+        "mean_delta_profit_per_ad": 4.05,
+        "se_delta_profit": 22.15,
+        "ci95_delta_profit_per_ad": [
+          -39.36,
+          47.47
+        ],
+        "t_stat": 0.183,
+        "p_value": 0.8549
+      },
+      "V_1200": {
+        "total_delta_profit": 19500.0,
+        "mean_delta_profit_per_ad": 52.7,
+        "se_delta_profit": 35.22,
+        "ci95_delta_profit_per_ad": [
+          -16.32,
+          121.73
+        ],
+        "t_stat": 1.497,
+        "p_value": 0.1354
+      },
+      "Segmented": {
+        "total_delta_profit": 6500.0,
+        "mean_delta_profit_per_ad": 17.57,
+        "se_delta_profit": 36.75,
+        "ci95_delta_profit_per_ad": [
+          -54.47,
+          89.6
+        ],
+        "t_stat": 0.478,
+        "p_value": 0.6329
+      }
+    },
+    "ECON_V1200": {
+      "V_300": {
+        "total_delta_profit": -74400.0,
+        "mean_delta_profit_per_ad": -201.08,
+        "se_delta_profit": 29.18,
+        "ci95_delta_profit_per_ad": [
+          -258.27,
+          -143.89
+        ],
+        "t_stat": -6.892,
+        "p_value": 0.0
+      },
+      "V_600": {
+        "total_delta_profit": -55800.0,
+        "mean_delta_profit_per_ad": -150.81,
+        "se_delta_profit": 27.95,
+        "ci95_delta_profit_per_ad": [
+          -205.6,
+          -96.02
+        ],
+        "t_stat": -5.395,
+        "p_value": 0.0
+      },
+      "V_1200": {
+        "total_delta_profit": -18600.0,
+        "mean_delta_profit_per_ad": -50.27,
+        "se_delta_profit": 39.17,
+        "ci95_delta_profit_per_ad": [
+          -127.04,
+          26.5
+        ],
+        "t_stat": -1.283,
+        "p_value": 0.2001
+      },
+      "Segmented": {
+        "total_delta_profit": -53900.0,
+        "mean_delta_profit_per_ad": -145.68,
+        "se_delta_profit": 40.86,
+        "ci95_delta_profit_per_ad": [
+          -225.77,
+          -65.58
+        ],
+        "t_stat": -3.565,
+        "p_value": 0.0004
+      }
+    },
+    "ECON_SEGMENTED": {
+      "V_300": {
+        "total_delta_profit": 33950.0,
+        "mean_delta_profit_per_ad": 91.76,
+        "se_delta_profit": 29.54,
+        "ci95_delta_profit_per_ad": [
+          33.86,
+          149.65
+        ],
+        "t_stat": 3.106,
+        "p_value": 0.002
+      },
+      "V_600": {
+        "total_delta_profit": 30650.0,
+        "mean_delta_profit_per_ad": 82.84,
+        "se_delta_profit": 27.33,
+        "ci95_delta_profit_per_ad": [
+          29.26,
+          136.41
+        ],
+        "t_stat": 3.031,
+        "p_value": 0.0026
+      },
+      "V_1200": {
+        "total_delta_profit": 24050.0,
+        "mean_delta_profit_per_ad": 65.0,
+        "se_delta_profit": 36.14,
+        "ci95_delta_profit_per_ad": [
+          -5.83,
+          135.83
+        ],
+        "t_stat": 1.799,
+        "p_value": 0.0729
+      },
+      "Segmented": {
+        "total_delta_profit": 47150.0,
+        "mean_delta_profit_per_ad": 127.43,
+        "se_delta_profit": 40.23,
+        "ci95_delta_profit_per_ad": [
+          48.58,
+          206.28
+        ],
+        "t_stat": 3.168,
+        "p_value": 0.0017
+      }
+    }
+  }
+}

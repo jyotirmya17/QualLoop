@@ -1,0 +1,158 @@
+{
+  "specification_version": "1.0.0",
+  "step": "4D.7",
+  "title": "QualLoop Decision Objective and Economic Model Specification",
+  "date": "2026-10-28",
+  "status": "APPROVED_SPECIFICATION",
+  "observable_quantities": {
+    "media_spend": {
+      "symbol": "S_i",
+      "units": "currency (INR / USD)",
+      "source": "Ad platform telemetry (Meta/Google API)",
+      "is_observable": true
+    },
+    "leads_generated": {
+      "symbol": "L_i",
+      "units": "integer count",
+      "source": "CRM / Webhook ingestion",
+      "is_observable": true
+    },
+    "call_attempts": {
+      "symbol": "A_i",
+      "units": "integer count",
+      "source": "Telephony / Dialer logs",
+      "is_observable": true
+    },
+    "contacts_reached": {
+      "symbol": "C_i",
+      "units": "integer count",
+      "source": "Dialer disposition (ANSWERED)",
+      "is_observable": true
+    },
+    "qualified_leads": {
+      "symbol": "QL_i",
+      "units": "integer count",
+      "source": "Sales rep disposition in CRM (QUALIFIED)",
+      "is_observable": true
+    },
+    "timestamps": {
+      "symbols": ["t_created", "t_call", "t_resolved"],
+      "units": "ISO 8601 UTC timestamps",
+      "source": "Event ingestion engine",
+      "is_observable": true
+    }
+  },
+  "business_assumptions_unobservables": {
+    "downstream_conversion_rate": {
+      "symbol": "p_deal",
+      "definition": "P(Deal Won | Qualified Lead)",
+      "units": "probability [0, 1]",
+      "status": "UNOBSERVED_IN_SIMULATOR",
+      "default_proxy": "Requires CRM closed-won pipeline integration"
+    },
+    "gross_deal_value": {
+      "symbol": "R_deal",
+      "definition": "Average revenue / contract value per closed deal",
+      "units": "currency per closed deal",
+      "status": "UNOBSERVED_IN_SIMULATOR",
+      "default_proxy": "Requires billing / order telemetry"
+    },
+    "gross_contribution_margin": {
+      "symbol": "GM_fraction",
+      "definition": "Revenue minus COGS and fulfillment cost per deal",
+      "units": "ratio [0, 1]",
+      "status": "UNOBSERVED_IN_SIMULATOR",
+      "default_proxy": "Accounting standard"
+    },
+    "lead_economic_value": {
+      "symbol": "V_QL",
+      "definition": "E[V_QL] = p_deal * (R_deal * GM_fraction) - c_fulfill",
+      "units": "currency per qualified lead",
+      "status": "PARAMETERIZED_SWEEP",
+      "default_sweep_range": [50.0, 75.0, 100.0, 150.0, 200.0, 300.0, 500.0, 750.0, 1000.0, 1500.0, 2000.0]
+    },
+    "variable_servicing_costs": {
+      "cost_per_lead_processing": {
+        "symbol": "c_lead",
+        "units": "currency per lead",
+        "nominal_value": 0.0
+      },
+      "cost_per_call_attempt": {
+        "symbol": "c_call",
+        "units": "currency per outbound call attempt",
+        "nominal_value": 0.0
+      }
+    }
+  },
+  "expected_contribution_profit_model": {
+    "objective_function": "Maximize Portfolio Expected Contribution Profit Pi(pi)",
+    "formula": "Pi(pi) = sum_{i=1}^M [ V_QL(i) * QL_i(pi) - S_i(pi) - c_lead * L_i(pi) - c_call * A_i(pi) ]",
+    "breakeven_cpql_condition": "E[CPQL_i] <= V_QL(i) - (c_lead + c_call * a_bar_i) / (r_i * q_i)",
+    "heterogeneous_lead_value_extension": "V_QL(i, tier) = p_deal(tier) * Margin(tier) - c_fulfill(tier)"
+  },
+  "qualification_hurdle_economic_derivation": {
+    "cpql_formula": "CPQL = Spend / QL = CPL / (reachability * qualification_rate)",
+    "breakeven_qualification_rate_formula": "q*(i) = CPL_i / (reachability_i * Target_CPQL)",
+    "failure_of_static_hurdles": [
+      {
+        "case": "Cheap leads (CPL = 15, Reach = 0.60, Target CPQL = 500)",
+        "breakeven_rate_q_star": 0.05,
+        "ad_qualification_rate": 0.08,
+        "realized_cpql": 312.50,
+        "is_profitable": true,
+        "static_10pct_policy_action": "PAUSE_AD (Severe False Pause)",
+        "static_15pct_policy_action": "PAUSE_AD (Severe False Pause)"
+      },
+      {
+        "case": "Expensive leads (CPL = 90, Reach = 0.60, Target CPQL = 500)",
+        "breakeven_rate_q_star": 0.30,
+        "ad_qualification_rate": 0.18,
+        "realized_cpql": 833.33,
+        "is_profitable": false,
+        "static_10pct_policy_action": "CONTINUE (Severe Missed Poor Ad)",
+        "static_15pct_policy_action": "CONTINUE (Severe Missed Poor Ad)"
+      }
+    ]
+  },
+  "oracle_classification": {
+    "classification": "HEURISTIC_COMPARATOR",
+    "is_universal_optimum": false,
+    "reasons_non_optimal": [
+      "Stops poor ads rigidly at Day 14 regardless of marginal profitability D14-D28",
+      "Causes negative regret when lead value exceeds marginal CPQL",
+      "Uses unconstrained ground-truth knowledge unattainable by deployable policies"
+    ],
+    "true_economic_oracle_definition": "Pauses ad i at timestamp t* iff E[Marginal Contribution Profit(t > t*)] < 0"
+  },
+  "data_collection_specification": {
+    "required_crm_fields": [
+      "lead_id",
+      "advertisement_id",
+      "campaign_id",
+      "created_at",
+      "qualification_result",
+      "deal_won",
+      "deal_value",
+      "closed_at",
+      "gross_margin_fraction"
+    ],
+    "sensitivity_sweep_parameters": {
+      "V_QL_range": [50.0, 2500.0],
+      "crossover_anchors": {
+        "V_star_P15_vs_ConfigA": 883.65,
+        "V_star_P10_vs_ConfigA": 1078.27,
+        "V_star_P10_vs_P15": 1640.91
+      }
+    }
+  },
+  "success_criteria_next_experiment": {
+    "primary_criterion": "Expected Net Contribution Profit E[Pi(pi)] or Minimized Economic Regret relative to Profit Oracle",
+    "guardrails": {
+      "portfolio_cpql_cap": 500.0,
+      "max_false_pause_rate_on_profitable_ads": 0.02,
+      "max_missed_poor_rate_on_unprofitable_ads": 0.20,
+      "max_spend_waste_before_pause": 1.5
+    },
+    "statistical_validation": "Paired bootstrap 95% confidence interval on profit delta excluding zero across at least 150 independent seeds"
+  }
+}

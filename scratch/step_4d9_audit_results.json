@@ -1,0 +1,442 @@
+{
+  "audit_version": "1.0.0",
+  "step": "4D.9",
+  "status": "AUDIT_COMPLETE",
+  "n_runs": 190,
+  "total_ads_evaluated": 450,
+  "bug_identified": {
+    "name": "Composite Key Omission in Step 4D.8 Paired Aggregation",
+    "root_cause": "Step 4D.8 keyed ad records by `ad.id` alone. In preset scenarios with shared seeds (26001-26010), `_deterministic_id(rng)` yielded identical ad UUIDs across different scenario presets, causing 80 preset ads to overwrite each other in the paired evaluation dictionary (370 entries instead of 450). Step 4D.9 resolves this by keying on `(scenario_name, seed, creative_id)`, restoring all 450 ads and reconciling aggregate profit differences with paired sums to zero error."
+  },
+  "policy_totals": {
+    "PROD_HEURISTIC_P10": {
+      "name": "Production Heuristic (threshold=0.10, ci=0.90)",
+      "total_ads": 450,
+      "total_spend": 2161125.0,
+      "total_ql": 5175,
+      "cpql": 417.61,
+      "paused_count": 64,
+      "mean_pause_day": 17.94,
+      "net_contribution_profits": {
+        "V_300": -608625.0,
+        "V_600": 943875.0,
+        "V_1200": 4048875.0,
+        "Segmented": 1369675.0
+      }
+    },
+    "PROD_HEURISTIC_P15": {
+      "name": "Production Heuristic on 15% Hurdle (threshold=0.15, ci=0.90)",
+      "total_ads": 450,
+      "total_spend": 2075000.0,
+      "total_ql": 5108,
+      "cpql": 406.23,
+      "paused_count": 110,
+      "mean_pause_day": 18.07,
+      "net_contribution_profits": {
+        "V_300": -542600.0,
+        "V_600": 989800.0,
+        "V_1200": 4054600.0,
+        "Segmented": 1411400.0
+      }
+    },
+    "ECON_V300": {
+      "name": "Economic Evaluator (V_QL = Rs 300)",
+      "total_ads": 450,
+      "total_spend": 1963125.0,
+      "total_ql": 5055,
+      "cpql": 388.35,
+      "paused_count": 167,
+      "mean_pause_day": 19.07,
+      "net_contribution_profits": {
+        "V_300": -446625.0,
+        "V_600": 1069875.0,
+        "V_1200": 4102875.0,
+        "Segmented": 1485575.0
+      }
+    },
+    "ECON_V600": {
+      "name": "Economic Evaluator (V_QL = Rs 600)",
+      "total_ads": 450,
+      "total_spend": 2164625.0,
+      "total_ql": 5205,
+      "cpql": 415.87,
+      "paused_count": 59,
+      "mean_pause_day": 19.69,
+      "net_contribution_profits": {
+        "V_300": -603125.0,
+        "V_600": 958375.0,
+        "V_1200": 4081375.0,
+        "Segmented": 1388075.0
+      }
+    },
+    "ECON_V1200": {
+      "name": "Economic Evaluator (V_QL = Rs 1,200)",
+      "total_ads": 450,
+      "total_spend": 2266125.0,
+      "total_ql": 5244,
+      "cpql": 432.14,
+      "paused_count": 5,
+      "mean_pause_day": 21.0,
+      "net_contribution_profits": {
+        "V_300": -692925.0,
+        "V_600": 880275.0,
+        "V_1200": 4026675.0,
+        "Segmented": 1309875.0
+      }
+    },
+    "ECON_SEGMENTED": {
+      "name": "Economic Evaluator (Segmented: Tier 1 = Rs 1,500, Tier 2 = Rs 400)",
+      "total_ads": 450,
+      "total_spend": 2106875.0,
+      "total_ql": 5165,
+      "cpql": 407.91,
+      "paused_count": 87,
+      "mean_pause_day": 19.07,
+      "net_contribution_profits": {
+        "V_300": -557375.0,
+        "V_600": 992125.0,
+        "V_1200": 4091125.0,
+        "Segmented": 1438625.0
+      }
+    }
+  },
+  "paired_comparisons_n450": {
+    "PROD_HEURISTIC_P15": {
+      "V_300": {
+        "n_ads": 450,
+        "total_delta_profit": 66025.0,
+        "aggregate_profit_cand": -542600.0,
+        "aggregate_profit_base": -608625.0,
+        "reconciliation_error": 0.0,
+        "reconciliation_status": "EXACT_RECONCILIATION_CONFIRMED",
+        "mean_delta_profit_per_ad": 146.72,
+        "se_delta_profit": 21.13,
+        "ci95_delta_profit_per_ad": [
+          105.31,
+          188.13
+        ],
+        "t_stat": 6.945,
+        "p_value": 0.0
+      },
+      "V_600": {
+        "n_ads": 450,
+        "total_delta_profit": 45925.0,
+        "aggregate_profit_cand": 989800.0,
+        "aggregate_profit_base": 943875.0,
+        "reconciliation_error": 0.0,
+        "reconciliation_status": "EXACT_RECONCILIATION_CONFIRMED",
+        "mean_delta_profit_per_ad": 102.06,
+        "se_delta_profit": 18.87,
+        "ci95_delta_profit_per_ad": [
+          65.06,
+          139.05
+        ],
+        "t_stat": 5.407,
+        "p_value": 0.0
+      },
+      "V_1200": {
+        "n_ads": 450,
+        "total_delta_profit": 5725.0,
+        "aggregate_profit_cand": 4054600.0,
+        "aggregate_profit_base": 4048875.0,
+        "reconciliation_error": 0.0,
+        "reconciliation_status": "EXACT_RECONCILIATION_CONFIRMED",
+        "mean_delta_profit_per_ad": 12.72,
+        "se_delta_profit": 24.63,
+        "ci95_delta_profit_per_ad": [
+          -35.54,
+          60.99
+        ],
+        "t_stat": 0.517,
+        "p_value": 0.60567
+      },
+      "Segmented": {
+        "n_ads": 450,
+        "total_delta_profit": 41725.0,
+        "aggregate_profit_cand": 1411400.0,
+        "aggregate_profit_base": 1369675.0,
+        "reconciliation_error": 0.0,
+        "reconciliation_status": "EXACT_RECONCILIATION_CONFIRMED",
+        "mean_delta_profit_per_ad": 92.72,
+        "se_delta_profit": 24.4,
+        "ci95_delta_profit_per_ad": [
+          44.9,
+          140.54
+        ],
+        "t_stat": 3.8,
+        "p_value": 0.00016
+      }
+    },
+    "ECON_V300": {
+      "V_300": {
+        "n_ads": 450,
+        "total_delta_profit": 162000.0,
+        "aggregate_profit_cand": -446625.0,
+        "aggregate_profit_base": -608625.0,
+        "reconciliation_error": 0.0,
+        "reconciliation_status": "EXACT_RECONCILIATION_CONFIRMED",
+        "mean_delta_profit_per_ad": 360.0,
+        "se_delta_profit": 35.05,
+        "ci95_delta_profit_per_ad": [
+          291.29,
+          428.71
+        ],
+        "t_stat": 10.27,
+        "p_value": 0.0
+      },
+      "V_600": {
+        "n_ads": 450,
+        "total_delta_profit": 126000.0,
+        "aggregate_profit_cand": 1069875.0,
+        "aggregate_profit_base": 943875.0,
+        "reconciliation_error": 0.0,
+        "reconciliation_status": "EXACT_RECONCILIATION_CONFIRMED",
+        "mean_delta_profit_per_ad": 280.0,
+        "se_delta_profit": 32.16,
+        "ci95_delta_profit_per_ad": [
+          216.97,
+          343.03
+        ],
+        "t_stat": 8.707,
+        "p_value": 0.0
+      },
+      "V_1200": {
+        "n_ads": 450,
+        "total_delta_profit": 54000.0,
+        "aggregate_profit_cand": 4102875.0,
+        "aggregate_profit_base": 4048875.0,
+        "reconciliation_error": 0.0,
+        "reconciliation_status": "EXACT_RECONCILIATION_CONFIRMED",
+        "mean_delta_profit_per_ad": 120.0,
+        "se_delta_profit": 38.87,
+        "ci95_delta_profit_per_ad": [
+          43.81,
+          196.19
+        ],
+        "t_stat": 3.087,
+        "p_value": 0.00215
+      },
+      "Segmented": {
+        "n_ads": 450,
+        "total_delta_profit": 115900.0,
+        "aggregate_profit_cand": 1485575.0,
+        "aggregate_profit_base": 1369675.0,
+        "reconciliation_error": 0.0,
+        "reconciliation_status": "EXACT_RECONCILIATION_CONFIRMED",
+        "mean_delta_profit_per_ad": 257.56,
+        "se_delta_profit": 37.26,
+        "ci95_delta_profit_per_ad": [
+          184.52,
+          330.59
+        ],
+        "t_stat": 6.912,
+        "p_value": 0.0
+      }
+    },
+    "ECON_V600": {
+      "V_300": {
+        "n_ads": 450,
+        "total_delta_profit": 5500.0,
+        "aggregate_profit_cand": -603125.0,
+        "aggregate_profit_base": -608625.0,
+        "reconciliation_error": 0.0,
+        "reconciliation_status": "EXACT_RECONCILIATION_CONFIRMED",
+        "mean_delta_profit_per_ad": 12.22,
+        "se_delta_profit": 28.33,
+        "ci95_delta_profit_per_ad": [
+          -43.3,
+          67.74
+        ],
+        "t_stat": 0.431,
+        "p_value": 0.66634
+      },
+      "V_600": {
+        "n_ads": 450,
+        "total_delta_profit": 14500.0,
+        "aggregate_profit_cand": 958375.0,
+        "aggregate_profit_base": 943875.0,
+        "reconciliation_error": 0.0,
+        "reconciliation_status": "EXACT_RECONCILIATION_CONFIRMED",
+        "mean_delta_profit_per_ad": 32.22,
+        "se_delta_profit": 27.2,
+        "ci95_delta_profit_per_ad": [
+          -21.08,
+          85.53
+        ],
+        "t_stat": 1.185,
+        "p_value": 0.23674
+      },
+      "V_1200": {
+        "n_ads": 450,
+        "total_delta_profit": 32500.0,
+        "aggregate_profit_cand": 4081375.0,
+        "aggregate_profit_base": 4048875.0,
+        "reconciliation_error": 0.0,
+        "reconciliation_status": "EXACT_RECONCILIATION_CONFIRMED",
+        "mean_delta_profit_per_ad": 72.22,
+        "se_delta_profit": 35.05,
+        "ci95_delta_profit_per_ad": [
+          3.52,
+          140.93
+        ],
+        "t_stat": 2.06,
+        "p_value": 0.03995
+      },
+      "Segmented": {
+        "n_ads": 450,
+        "total_delta_profit": 18400.0,
+        "aggregate_profit_cand": 1388075.0,
+        "aggregate_profit_base": 1369675.0,
+        "reconciliation_error": 0.0,
+        "reconciliation_status": "EXACT_RECONCILIATION_CONFIRMED",
+        "mean_delta_profit_per_ad": 40.89,
+        "se_delta_profit": 36.25,
+        "ci95_delta_profit_per_ad": [
+          -30.17,
+          111.95
+        ],
+        "t_stat": 1.128,
+        "p_value": 0.26
+      }
+    },
+    "ECON_V1200": {
+      "V_300": {
+        "n_ads": 450,
+        "total_delta_profit": -84300.0,
+        "aggregate_profit_cand": -692925.0,
+        "aggregate_profit_base": -608625.0,
+        "reconciliation_error": 0.0,
+        "reconciliation_status": "EXACT_RECONCILIATION_CONFIRMED",
+        "mean_delta_profit_per_ad": -187.33,
+        "se_delta_profit": 32.93,
+        "ci95_delta_profit_per_ad": [
+          -251.88,
+          -122.78
+        ],
+        "t_stat": -5.688,
+        "p_value": 0.0
+      },
+      "V_600": {
+        "n_ads": 450,
+        "total_delta_profit": -63600.0,
+        "aggregate_profit_cand": 880275.0,
+        "aggregate_profit_base": 943875.0,
+        "reconciliation_error": 0.0,
+        "reconciliation_status": "EXACT_RECONCILIATION_CONFIRMED",
+        "mean_delta_profit_per_ad": -141.33,
+        "se_delta_profit": 31.33,
+        "ci95_delta_profit_per_ad": [
+          -202.74,
+          -79.93
+        ],
+        "t_stat": -4.511,
+        "p_value": 1e-05
+      },
+      "V_1200": {
+        "n_ads": 450,
+        "total_delta_profit": -22200.0,
+        "aggregate_profit_cand": 4026675.0,
+        "aggregate_profit_base": 4048875.0,
+        "reconciliation_error": 0.0,
+        "reconciliation_status": "EXACT_RECONCILIATION_CONFIRMED",
+        "mean_delta_profit_per_ad": -49.33,
+        "se_delta_profit": 37.66,
+        "ci95_delta_profit_per_ad": [
+          -123.14,
+          24.47
+        ],
+        "t_stat": -1.31,
+        "p_value": 0.19082
+      },
+      "Segmented": {
+        "n_ads": 450,
+        "total_delta_profit": -59800.0,
+        "aggregate_profit_cand": 1309875.0,
+        "aggregate_profit_base": 1369675.0,
+        "reconciliation_error": 0.0,
+        "reconciliation_status": "EXACT_RECONCILIATION_CONFIRMED",
+        "mean_delta_profit_per_ad": -132.89,
+        "se_delta_profit": 39.79,
+        "ci95_delta_profit_per_ad": [
+          -210.88,
+          -54.9
+        ],
+        "t_stat": -3.34,
+        "p_value": 0.00091
+      }
+    },
+    "ECON_SEGMENTED": {
+      "V_300": {
+        "n_ads": 450,
+        "total_delta_profit": 51250.0,
+        "aggregate_profit_cand": -557375.0,
+        "aggregate_profit_base": -608625.0,
+        "reconciliation_error": 0.0,
+        "reconciliation_status": "EXACT_RECONCILIATION_CONFIRMED",
+        "mean_delta_profit_per_ad": 113.89,
+        "se_delta_profit": 32.75,
+        "ci95_delta_profit_per_ad": [
+          49.69,
+          178.09
+        ],
+        "t_stat": 3.477,
+        "p_value": 0.00056
+      },
+      "V_600": {
+        "n_ads": 450,
+        "total_delta_profit": 48250.0,
+        "aggregate_profit_cand": 992125.0,
+        "aggregate_profit_base": 943875.0,
+        "reconciliation_error": 0.0,
+        "reconciliation_status": "EXACT_RECONCILIATION_CONFIRMED",
+        "mean_delta_profit_per_ad": 107.22,
+        "se_delta_profit": 30.81,
+        "ci95_delta_profit_per_ad": [
+          46.84,
+          167.61
+        ],
+        "t_stat": 3.48,
+        "p_value": 0.00055
+      },
+      "V_1200": {
+        "n_ads": 450,
+        "total_delta_profit": 42250.0,
+        "aggregate_profit_cand": 4091125.0,
+        "aggregate_profit_base": 4048875.0,
+        "reconciliation_error": 0.0,
+        "reconciliation_status": "EXACT_RECONCILIATION_CONFIRMED",
+        "mean_delta_profit_per_ad": 93.89,
+        "se_delta_profit": 35.91,
+        "ci95_delta_profit_per_ad": [
+          23.52,
+          164.26
+        ],
+        "t_stat": 2.615,
+        "p_value": 0.00923
+      },
+      "Segmented": {
+        "n_ads": 450,
+        "total_delta_profit": 68950.0,
+        "aggregate_profit_cand": 1438625.0,
+        "aggregate_profit_base": 1369675.0,
+        "reconciliation_error": 0.0,
+        "reconciliation_status": "EXACT_RECONCILIATION_CONFIRMED",
+        "mean_delta_profit_per_ad": 153.22,
+        "se_delta_profit": 38.78,
+        "ci95_delta_profit_per_ad": [
+          77.21,
+          229.24
+        ],
+        "t_stat": 3.951,
+        "p_value": 9e-05
+      }
+    }
+  },
+  "calibration_audit": {
+    "n_samples": 132,
+    "mean_predicted_prob": 0.6557,
+    "empirical_fraction_profitable": 0.0227,
+    "calibration_status": "EXPLORATORY_NOT_CALIBRATED",
+    "notes": "Posterior distribution models parameter estimation uncertainty via Beta posteriors, but projects future lead volume deterministically. Lead arrivals in reality follow a Poisson process with variance Var(L) = lambda * delta_t. Because point-projection ignores Poisson realization noise and binomial sampling noise in small sample horizons, the nominal posterior probability distribution is exploratory rather than calibrated."
+  }
+}
