@@ -79,6 +79,8 @@ class DecisionOut(BaseModel):
     requires_human_approval: bool
     approval_status: ApprovalStatus
     created_at: datetime
+    simulation_run_id: Optional[str] = None
+    is_persisted: bool = False
 
 
 class AdAnalysisOut(BaseModel):

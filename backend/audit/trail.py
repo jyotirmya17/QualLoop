@@ -1,56 +1,48 @@
 """
-Audit trail — in-memory store for decision records.
+Audit trail — durable store for decision records and audit events.
 
-In v1, decisions are kept in an in-memory list. The persistence layer
-(SQLAlchemy + PostgreSQL) will replace this when the API is running with
-a live database. The in-memory implementation allows the core modules and
-tests to run without a database dependency.
+Delegates to the persistence layer (SQLAlchemy + SQLite/PostgreSQL)
+so decisions and audit events survive process restarts while maintaining
+identical interfaces for existing callers and tests.
 """
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
 from typing import Optional
 
 from domain.models import AuditEvent, Decision
-
-# In-memory store (replaced by DB in production)
-_decisions: list[Decision] = []
-_audit_events: list[AuditEvent] = []
+from persistence.repository import (
+    clear_all as _clear_all,
+    query_audit_events as _query_audit_events,
+    query_decisions as _query_decisions,
+    record_decision as _record_decision,
+    record_decisions as _record_decisions,
+)
 
 
 def record_decision(decision: Decision) -> None:
     """Append a decision to the audit trail. Immutable — no updates allowed."""
-    _decisions.append(decision)
-    _audit_events.append(
-        AuditEvent(
-            decision_id=decision.id,
-            event_type="decision_created",
-            data={
-                "action": decision.action.value,
-                "policy_version": decision.policy_version,
-                "confidence_level": decision.confidence_level,
-                "requires_human_approval": decision.requires_human_approval,
-            },
-            created_at=datetime.now(timezone.utc),
-        )
-    )
+    _record_decision(decision)
+
+
+def record_decisions(decisions: list[Decision]) -> None:
+    """Append multiple decisions to the audit trail atomically."""
+    _record_decisions(decisions)
 
 
 def query_decisions(
     advertisement_id: Optional[str] = None,
     action: Optional[str] = None,
+    simulation_run_id: Optional[str] = None,
     limit: int = 100,
 ) -> list[Decision]:
     """Query decisions from the audit trail with optional filters."""
-    results = list(_decisions)
-    if advertisement_id is not None:
-        results = [d for d in results if d.advertisement_id == advertisement_id]
-    if action is not None:
-        results = [d for d in results if d.action.value == action]
-    # Most recent first
-    results.sort(key=lambda d: d.created_at, reverse=True)
-    return results[:limit]
+    return _query_decisions(
+        advertisement_id=advertisement_id,
+        action=action,
+        simulation_run_id=simulation_run_id,
+        limit=limit,
+    )
 
 
 def query_audit_events(
@@ -58,14 +50,9 @@ def query_audit_events(
     limit: int = 100,
 ) -> list[AuditEvent]:
     """Query raw audit events."""
-    results = list(_audit_events)
-    if decision_id is not None:
-        results = [e for e in results if e.decision_id == decision_id]
-    results.sort(key=lambda e: e.created_at, reverse=True)
-    return results[:limit]
+    return _query_audit_events(decision_id=decision_id, limit=limit)
 
 
 def clear_all() -> None:
-    """Clear in-memory store. Only for testing."""
-    _decisions.clear()
-    _audit_events.clear()
+    """Clear store. Only for testing."""
+    _clear_all()

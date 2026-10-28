@@ -17,9 +17,9 @@ from api.schemas.responses import (
     AdAnalysisOut, AdvertisementOut, CampaignSummaryOut,
     EstimateSnapshotOut, DecisionOut,
 )
-from api.store import get, list_runs
-from estimator.estimator import compute_campaign_estimates, compute_estimates, EstimatorConfig
-from decision_engine.engine import evaluate, evaluate_campaign, DecisionPolicy
+from api.evaluation import evaluate_and_persist_run, get_or_compute_analysis
+from estimator.estimator import compute_estimates, EstimatorConfig
+from decision_engine.engine import evaluate, DecisionPolicy
 
 router = APIRouter()
 
@@ -67,89 +67,16 @@ def _build_ad_analysis(
 def get_run_analysis(run_id: str):
     """
     Get full analysis for all campaigns and ads in a simulation run.
-
-    Returns a list of CampaignSummaryOut, each containing per-ad estimates
-    and recommendations. Note: this computes estimates at request time —
-    in production this would be a read from a pre-computed table.
+    Pure read-only operation: attaches persisted decisions if evaluated,
+    or transient calculations without database mutation if not evaluated.
     """
-    result = get(run_id)
-    if result is None:
-        raise HTTPException(status_code=404, detail=f"Simulation run '{run_id}' not found")
+    return get_or_compute_analysis(run_id)
 
-    # Index domain objects by ad_id
-    leads_by_ad: dict[str, list] = defaultdict(list)
-    calls_by_ad: dict[str, list] = defaultdict(list)
-    quals_by_ad: dict[str, list] = defaultdict(list)
 
-    for lead in result.leads:
-        leads_by_ad[lead.advertisement_id].append(lead)
-
-    lead_id_set = {l.id for l in result.leads}
-    leads_by_id = {l.id: l for l in result.leads}
-
-    for ca in result.call_attempts:
-        if ca.lead_id in lead_id_set:
-            ad_id = leads_by_id[ca.lead_id].advertisement_id
-            calls_by_ad[ad_id].append(ca)
-
-    for qo in result.qualification_outcomes:
-        if qo.lead_id in lead_id_set:
-            ad_id = leads_by_id[qo.lead_id].advertisement_id
-            quals_by_ad[ad_id].append(qo)
-
-    # Index ads by campaign (via ad_sets)
-    ad_set_to_campaign = {ads.id: ads.campaign_id for ads in result.ad_sets}
-    campaign_map = {c.id: c for c in result.campaigns}
-    ads_by_campaign: dict[str, list] = defaultdict(list)
-    for ad in result.advertisements:
-        campaign_id = ad_set_to_campaign.get(ad.ad_set_id, "unknown")
-        ads_by_campaign[campaign_id].append(ad)
-
-    summaries = []
-    for campaign in result.campaigns:
-        campaign_ads = ads_by_campaign.get(campaign.id, [])
-        ads_data = [
-            (
-                ad,
-                leads_by_ad.get(ad.id, []),
-                calls_by_ad.get(ad.id, []),
-                quals_by_ad.get(ad.id, []),
-            )
-            for ad in campaign_ads
-        ]
-        snapshots = compute_campaign_estimates(
-            ads_data=ads_data,
-            observation_time=result.run.completed_at,
-            config=_DEFAULT_CONFIG,
-            seed=result.run.seed,
-        )
-        ad_spends = {ad.id: ad.spend for ad in campaign_ads}
-        decisions = evaluate_campaign(
-            snapshots=snapshots,
-            ad_spends=ad_spends,
-            policy=_DEFAULT_POLICY,
-        )
-        ad_analyses = []
-        for ad, snapshot, decision in zip(campaign_ads, snapshots, decisions):
-            ad_analyses.append(AdAnalysisOut(
-                advertisement=AdvertisementOut(
-                    id=ad.id,
-                    ad_set_id=ad.ad_set_id,
-                    creative_id=ad.creative_id,
-                    spend=ad.spend,
-                    impressions=ad.impressions,
-                    clicks=ad.clicks,
-                ),
-                estimate=EstimateSnapshotOut(**snapshot.model_dump()),
-                decision=DecisionOut(**decision.model_dump()),
-            ))
-
-        summaries.append(CampaignSummaryOut(
-            campaign_id=campaign.id,
-            campaign_name=campaign.name,
-            total_spend=campaign.total_spend,
-            n_ads=len(campaign_ads),
-            ads=ad_analyses,
-        ))
-
-    return summaries
+@router.post("/run/{run_id}/evaluate", response_model=list[CampaignSummaryOut])
+def evaluate_run_analysis(run_id: str):
+    """
+    Explicit, idempotent evaluation of a simulation run.
+    Persists decisions and audit events to durable storage.
+    """
+    return evaluate_and_persist_run(run_id)

@@ -12,7 +12,8 @@ from datetime import datetime, timezone
 
 from fastapi import APIRouter, HTTPException
 
-from api.schemas.responses import RunSimulationIn, SimulationRunOut
+from api.evaluation import evaluate_and_persist_run
+from api.schemas.responses import CampaignSummaryOut, RunSimulationIn, SimulationRunOut
 from api.store import save, get, list_runs
 from simulator import get_scenario, run_simulation
 from simulator.scenarios import SCENARIO_REGISTRY
@@ -90,3 +91,13 @@ def get_simulation(run_id: str):
         n_ads=result.run.n_ads,
         n_leads=result.run.n_leads,
     )
+
+
+@router.post("/{run_id}/evaluate", response_model=list[CampaignSummaryOut])
+def evaluate_simulation_endpoint(run_id: str):
+    """
+    Explicit, idempotent evaluation of a simulation run.
+    Evaluates Bayesian estimates and policy decisions, persisting decisions
+    and audit events to durable storage.
+    """
+    return evaluate_and_persist_run(run_id)
