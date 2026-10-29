@@ -558,7 +558,7 @@ def test_budget_semantics_and_return_models():
 
 
 def _get_v2_results_path() -> Path:
-    p = Path(__file__).resolve().parent.parent.parent / "scratch" / "out_of_sample_results_v2.json"
+    p = Path(__file__).resolve().parent.parent.parent / "docs" / "archive" / "out_of_sample_results_v2.json"
     if p.exists():
         return p
     raise FileNotFoundError(f"V2 benchmark artifact not found at: {p}")
@@ -621,7 +621,7 @@ def test_lead_accounting_metric_definitions():
 
 def test_policy_ablation_pairing_and_completeness():
     """Verify Step 4D.3 ablation results have 100% paired matching across A, B, C, D with 0 duplicates."""
-    ablation_json = Path(__file__).resolve().parent.parent.parent / "scratch" / "policy_ablation_results_v1.json"
+    ablation_json = Path(__file__).resolve().parent.parent.parent / "docs" / "archive" / "policy_ablation_results_v1.json"
     assert ablation_json.exists(), f"Ablation artifact not found at {ablation_json}"
     with open(ablation_json, "r", encoding="utf-8") as f:
         data = json.load(f)
@@ -643,7 +643,7 @@ def test_policy_ablation_pairing_and_completeness():
 
 def test_policy_ablation_metric_denominators_and_causal_invariance():
     """Verify ground truth denominators, event directions, and B/C/D causal equivalence."""
-    ablation_json = Path(__file__).resolve().parent.parent.parent / "scratch" / "policy_ablation_results_v1.json"
+    ablation_json = Path(__file__).resolve().parent.parent.parent / "docs" / "archive" / "policy_ablation_results_v1.json"
     with open(ablation_json, "r", encoding="utf-8") as f:
         data = json.load(f)
 

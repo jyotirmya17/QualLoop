@@ -1,4 +1,4 @@
-# Step 4D.4.1 — Correct the Boundary-Rule Proposal & Production Baseline Evaluation
+# Correct the Boundary-Rule Proposal & Production Baseline Evaluation
 
 **Role:** Skeptical ML Evaluation Engineer  
 **Date:** 2026-10-28  
@@ -14,12 +14,12 @@
 ## 1. Mathematical Verification & Correction of the Proposed Boundary Rule
 
 ### 1.1 The Prior Report's Example
-In the Step 4D.4 trace report (`decision_rule_trace_audit_v1.json` / `.md`), the false-pause example was stated as:
+In the Historical Phase trace report (`decision_rule_trace_audit_v1.json` / `.md`), the false-pause example was stated as:
 > *"Under Binomial(30, 0.16), $P(k \le 2) = 11.5\%$. For $k=2$, $\text{Beta}(3, 29)$ has $\theta_{0.90} = 0.149 < 0.15$, triggering Rule 6 false pause."*
 
 The author subsequently proposed a boundary abstention condition (hysteresis):
 ```python
-# Proposed in Step 4D.4:
+# Proposed in Historical Phase:
 if abs(estimate.qualification_mean - policy.low_qualification_upper_bound) <= 0.015:
     return COLLECT_MORE_DATA
 ```
@@ -35,7 +35,7 @@ if abs(estimate.qualification_mean - policy.low_qualification_upper_bound) <= 0.
      $$\mu_{\text{post}} = \frac{3}{35} = \mathbf{0.0857} \quad (8.57\%)$$
      $$\theta_{0.90} = \text{Beta}^{-1}(0.90; 3, 32) = \mathbf{0.1490} \quad (14.90\%)$$
      $$\theta_{0.95} = \text{Beta}^{-1}(0.95; 3, 32) = \mathbf{0.1738} \quad (17.38\%)$$
-   - The Step 4D.4 author copied the numerical output ($\theta_{0.90} \approx 0.149$) from the actual runtime execution but wrote the algebraic label $\text{Beta}(3, 29)$ based on an unverified flat prior assumption.
+   - The Historical Phase author copied the numerical output ($\theta_{0.90} \approx 0.149$) from the actual runtime execution but wrote the algebraic label $\text{Beta}(3, 29)$ based on an unverified flat prior assumption.
 
 2. **Why the Proposed `abs(qualification_mean - threshold) <= 0.015` Condition Fails:**
    - Under the benchmark threshold $\tau = 0.15$:

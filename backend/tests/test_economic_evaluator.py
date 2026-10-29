@@ -17,12 +17,11 @@ from dataclasses import dataclass
 from pathlib import Path
 import pytest
 
-# Ensure repo root is on sys.path to import scratch module
 repo_root = Path(__file__).resolve().parents[2]
 if str(repo_root) not in sys.path:
     sys.path.insert(0, str(repo_root))
 
-from scratch.economic_evaluator import (
+from backend.shadow.economic_evaluator import (
     EconomicAction,
     EconomicParameters,
     evaluate_ad_economic_viability,

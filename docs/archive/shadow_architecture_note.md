@@ -1,4 +1,4 @@
-# Step 4D.10 — Isolated Shadow-Mode Foundation Architecture Note
+# Isolated Shadow-Mode Foundation Architecture Note
 
 **Document Status:** Version 1.0.0 (OFFLINE REPLAY & TEST FIXTURES ONLY — NOT DEPLOYED TO PRODUCTION)  
 **Author:** Evaluation Engineering & Platform Security Team  
@@ -14,7 +14,7 @@
 
 ## 1. Executive Summary & Design Scope
 
-Step 4D.10 establishes an isolated, non-actioning shadow-evaluation and telemetry foundation for QualLoop. The system runs an economic decision evaluator in parallel with the active production decision path, logging rich economic telemetry while maintaining a strict zero-mutation boundary.
+Historical Phase establishes an isolated, non-actioning shadow-evaluation and telemetry foundation for QualLoop. The system runs an economic decision evaluator in parallel with the active production decision path, logging rich economic telemetry while maintaining a strict zero-mutation boundary.
 
 ### Key Guarantees:
 1. **Zero External Action:** Shadow evaluations are strictly informational. The runner has no client bindings or credentials for Meta Marketing API or Google Ads API.

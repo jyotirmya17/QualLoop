@@ -1,4 +1,4 @@
-# QualLoop Step 4D.3 — Controlled Policy Ablation Report
+# Controlled Policy Ablation Report
 
 **Auditor:** Skeptical ML Evaluation Engineer  
 **Date:** 2026-10-27  
@@ -41,7 +41,7 @@ To prevent data snooping and ensure unbiased validation:
   - Presets Holdout: Seeds 1016–1030, 2014–2025, 3013–3025, 4014–4025, 5013–5025, 6011–6020, 7011–7020, 8009–8015, 9008–9015
   - Continuous Development Ablation (Step 4C): Seeds 7000–7049
   - Out-of-Sample Validation Split (Step 4D): Seeds 12000–12049, 14000–14049, 16001–16010
-- **Precommitted Untouched Validation Split for Step 4D.3:**
+- **Precommitted Untouched Validation Split for Historical Phase:**
   - **Continuous Intent:** 50 runs, seeds 22000–22049 (150 ads)
   - **Bimodal Synthetic:** 50 runs, seeds 24000–24049 (150 ads)
   - **Presets (9 Scenarios):** 10 runs each, seeds 26001–26010 (90 runs, 150 ads)

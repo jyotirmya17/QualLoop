@@ -1,4 +1,4 @@
-# QualLoop Step 4D.3 — Benchmark Reconciliation Report
+# Benchmark Reconciliation Report
 
 **Auditor:** Skeptical ML Evaluation Engineer  
 **Date:** 2026-10-27  
@@ -15,7 +15,7 @@ The benchmark's raw simulation records and underlying JSON artifacts are complet
 
 ## 2. Artifact Reconciliation Master Table
 
-| Attribute | Holdout Sequential (Step 4B) | Ablation Study (Step 4C) | Out-of-Sample Raw (Step 4D) | Out-of-Sample V2 (Step 4D.2) |
+| Attribute | Holdout Sequential (Step 4B) | Ablation Study (Step 4C) | Out-of-Sample Raw (Step 4D) | Out-of-Sample V2 (Historical Phase) |
 |---|---|---|---|---|
 | **Artifact File** | `backend/benchmark/results/holdout_sequential.json` | `scratch/ablation_raw_results.json` | `scratch/out_of_sample_raw_results.json` | `scratch/out_of_sample_results_v2.json` |
 | **Artifact Version** | `v1_frozen_holdout` | `v1_step4c_ablation` | `v1_step4d_raw` | `v2_step4d2_reconciled` |
@@ -42,18 +42,18 @@ The benchmark's raw simulation records and underlying JSON artifacts are complet
 ## 3. Discrepancy Forensic Audit & Root Cause Analysis
 
 ### Discrepancy 1: Seed Range Inconsistency in Prior Reports
-- **Finding:** The Step 4D.2 text response claimed evaluation over seeds `8000–8049 and 9000–9049`, while the code and JSON artifacts used seeds `12000–12049`, `14000–14049`, and `16001–16010`.
-- **Root Cause:** In the project's historical split (`seeds_split.json`), seeds 8000..8015 and 9000..9015 were used for the holdout preset scenarios (`high_cpql` and `sudden_deterioration`). The assistant drafting the Step 4D.2 response confused historical holdout seed notation with the newly instantiated out-of-sample seeds (`12000` for continuous, `14000` for bimodal synthetic, and `16001..16010` for presets). Both `run_out_of_sample_validation.py` and `run_out_of_sample_validation_v2.py` actually ran and saved seeds `12000..12049`, `14000..14049`, and `16001..16010`.
+- **Finding:** The Historical Phase text response claimed evaluation over seeds `8000–8049 and 9000–9049`, while the code and JSON artifacts used seeds `12000–12049`, `14000–14049`, and `16001–16010`.
+- **Root Cause:** In the project's historical split (`seeds_split.json`), seeds 8000..8015 and 9000..9015 were used for the holdout preset scenarios (`high_cpql` and `sudden_deterioration`). The assistant drafting the Historical Phase response confused historical holdout seed notation with the newly instantiated out-of-sample seeds (`12000` for continuous, `14000` for bimodal synthetic, and `16001..16010` for presets). Both `run_out_of_sample_validation.py` and `run_out_of_sample_validation_v2.py` actually ran and saved seeds `12000..12049`, `14000..14049`, and `16001..16010`.
 
 ### Discrepancy 2: Ad Denominator (570 Claimed vs 510 in Table vs 450 True)
-- **Finding:** The Step 4D.2 narrative claimed "570 ad evaluations", while its printed markdown table showed denominators summing to 510 ($240 + 270$), and the underlying JSON contains exactly 450 ads.
+- **Finding:** The Historical Phase narrative claimed "570 ad evaluations", while its printed markdown table showed denominators summing to 510 ($240 + 270$), and the underlying JSON contains exactly 450 ads.
 - **Root Cause:**
   1. *The 570 claim:* The author assumed $190 \text{ runs} \times 3 \text{ ads/run} = 570 \text{ ads}$. However, 7 of the 9 benchmark preset scenarios do **not** have 3 ads per run: 5 presets have 1 ad, 2 presets have 2 ads, and only 2 presets have 3 ads. The 90 preset runs contain exactly 150 ads total ($90 \text{ runs} \implies 150 \text{ ads}$). Thus, $150 \text{ (cont)} + 150 \text{ (bim)} + 150 \text{ (preset)} = 450 \text{ ads}$.
-  2. *The 510 table ($240 + 270$):* The table in the Step 4D.2 markdown response was accidentally copied from an exploratory scratch draft (where 50 cont + 50 bim + 90 presets were imagined as 3 ads each minus 60 filtered ads).
+  2. *The 510 table ($240 + 270$):* The table in the Historical Phase markdown response was accidentally copied from an exploratory scratch draft (where 50 cont + 50 bim + 90 presets were imagined as 3 ads each minus 60 filtered ads).
   3. *The True Count:* Recomputation directly from `out_of_sample_results_v2.json` confirms exactly **450 unique ads**: **201 good ads** and **249 poor ads** ($201 + 249 = 450$).
 
 ### Discrepancy 3: "Zero Missed Poor Ads" Claim in Text
-- **Finding:** The Step 4D.2 markdown table reported `Missed Poor Ad Rate: 0.0% (0/270)` across all scenarios.
+- **Finding:** The Historical Phase markdown table reported `Missed Poor Ad Rate: 0.0% (0/270)` across all scenarios.
 - **Root Cause:** In the actual JSON artifact `out_of_sample_results_v2.json`, missed poor ads is **74 / 249 (29.72%)** for both Policy A and Policy C. In the previous turn, the assistant copy-pasted a table layout containing a placeholder column (`0.0%`) without querying the actual `missed_poor` fields in the generated JSON.
 - **Verification:** Recomputing from raw ad records confirms that out of 249 poor ads:
   - 175 poor ads were successfully paused by Day 21.

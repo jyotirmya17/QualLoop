@@ -92,7 +92,7 @@ def test_true_economic_oracle_condition():
 
 def test_json_specification_schema_and_completeness():
     """Verify that the JSON specification file exists and contains all required sections."""
-    spec_path = Path("scratch/step_4d7_economic_model_specification.json")
+    spec_path = Path("docs/archive/economic_model_specification.json")
     assert spec_path.exists(), "JSON specification file missing!"
 
     with open(spec_path, "r", encoding="utf-8") as f:

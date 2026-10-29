@@ -1,4 +1,4 @@
-# Step 4D.7 — Decision Objective and Economic Model Specification
+# Decision Objective and Economic Model Specification
 
 **Role:** Skeptical ML Evaluation Engineer  
 **Date:** 2026-10-28  
@@ -32,7 +32,7 @@ $$\max_{\mathbf{x} \in \text{Campaigns}} \sum_{i} S_i \quad \text{subject to } \
 #### Fundamental Economic Defects of This Implied Objective:
 1. **Rate Fetishization vs Economic Efficiency:** Rule 6 pauses any ad with $\theta_{\text{qual, high}} < 0.10$, regardless of how cheaply the ad acquired leads or whether its realized CPQL was outstanding.
 2. **Asymmetric Rule Ordering:** Rule 6 terminates ads solely based on intermediate qualification intent ($q$), evaluated *before* the CPQL reallocation rules (Rules 7 and 8). An ad with low qualification rate ($q=0.08$) and cheap CPL (yielding profitable ₹200 CPQL) is killed by Rule 6 before CPQL rules are ever evaluated.
-3. **Implicit Homogeneous Lead Valuation:** The Step 4D.5 regret model implicitly assumed that every qualified lead generated across all campaigns, creative formats, and buyer segments carries an identical, static dollar value $V_{\text{QL}}$.
+3. **Implicit Homogeneous Lead Valuation:** The Historical Phase regret model implicitly assumed that every qualified lead generated across all campaigns, creative formats, and buyer segments carries an identical, static dollar value $V_{\text{QL}}$.
 
 ---
 
@@ -125,14 +125,14 @@ A fixed qualification hurdle ($q < 0.10$ or $q < 0.15$) is **cost-blind**—it c
 
 ## 5. Classification of the Day 14 Oracle as a Heuristic Comparator
 
-In Step 4D.5 and 4D.6, the evaluation compared policies against a "Day 14 Oracle" that pauses poor ads ($q_{\text{true}} < \tau_{\text{biz}}$) at Day 14.  
+In Historical Phase and 4D.6, the evaluation compared policies against a "Day 14 Oracle" that pauses poor ads ($q_{\text{true}} < \tau_{\text{biz}}$) at Day 14.  
 **We formally classify this Day 14 Oracle as a HEURISTIC COMPARATOR, NOT a universal profit optimum.**
 
 ### Mathematical Proof of Non-Optimality:
 1. **Arbitrary Time Boundary:** Day 14 was chosen because $3 \text{ days contact} + 7 \text{ days qual} = 10 \text{ days}$, making Day 14 the first discrete evaluation checkpoint where mature evidence exists. It has no intrinsic economic optimality.
 2. **Failure under High Lead Value:**
    If $V_{\text{QL}} = ₹2,000$ and an ad with $q_{\text{true}} = 0.08$ produces qualified leads between Day 14 and Day 28 at an incremental CPQL of ₹800, terminating the ad at Day 14 foregoes $+₹1,200$ net profit per lead.
-   This produced the **negative regret** mathematically audited in Step 4D.6.
+   This produced the **negative regret** mathematically audited in Historical Phase.
 3. **Definition of the True Economic Profit Oracle:**
    A true economic oracle pauses ad $i$ at timestamp $t^*$ if and only if the expected marginal profit of continuing the campaign is negative:
    $$\mathbb{E}[\text{Marginal Profit}_i(t > t^*)] = V_{\text{QL}}(i) \cdot \Delta QL_i(t > t^*) - \Delta S_i(t > t^*) < 0$$
@@ -193,7 +193,7 @@ Automated tests in [`backend/tests/test_step_4d7_spec.py`](file:///d:/Developer/
 ---
 
 ## 9. Conclusion
-- Step 4D.7 formally establishes that static qualification rate thresholds (10% or 15%) are fundamentally misaligned with business contribution profit.
+- Historical Phase formally establishes that static qualification rate thresholds (10% or 15%) are fundamentally misaligned with business contribution profit.
 - The Day 14 oracle is rigorously classified as a heuristic comparator, not an economic ceiling.
 - The decision engine's future evolution must transition from rate-only filtering to expected CPQL / contribution profit optimization anchored by confirmed commercial parameters.
 - **Specification complete. No production code modified, no thresholds tuned, and no deployment proposed.**

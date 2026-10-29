@@ -1,4 +1,4 @@
-# Step 4D.4 — Decision-Rule Trace Audit and Baseline Verification
+# Decision-Rule Trace Audit and Baseline Verification
 
 **Auditor:** Skeptical ML Evaluation Engineer  
 **Date:** 2026-10-27  
@@ -40,7 +40,7 @@ A critical finding of this audit is that **production runtime defaults differ ma
 
 ## 2. Why Configurations B, C, and D Produced Identical Results
 
-In Step 4D.3, across all 450 evaluated ads:
+In Historical Phase, across all 450 evaluated ads:
 - **Pause day differences (B vs C): 0**
 - **Pause day differences (C vs D): 0**
 - **Spend differences (B vs C): ₹0.00**

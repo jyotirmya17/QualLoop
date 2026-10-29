@@ -19,7 +19,7 @@ from backend.shadow.contracts import (
     ShadowEconomicDecisionLoggedEvent,
 )
 from backend.shadow.sink import ShadowEventSink
-from scratch.economic_evaluator import (
+from backend.shadow.economic_evaluator import (
     EconomicAction,
     EconomicParameters,
     evaluate_ad_economic_viability,

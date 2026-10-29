@@ -76,3 +76,38 @@ def test_ast_detector_catches_synthetic_violation():
             if "ground_truth" in (node.module or "").lower() or (node.module or "").startswith("simulator"):
                 found_violation = True
     assert found_violation is True
+
+
+def test_no_scratch_imports_in_backend():
+    """
+    Static AST test: Enforce that no module under backend/ imports from scratch/.
+    Production code and tests in backend/ must be self-contained or use canonical modules.
+    """
+    backend_dir = Path(__file__).parent.parent
+    violations = []
+
+    for py_file in backend_dir.rglob("*.py"):
+        with open(py_file, "r", encoding="utf-8") as f:
+            try:
+                tree = ast.parse(f.read(), filename=str(py_file))
+            except SyntaxError:
+                continue
+
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                for alias in node.names:
+                    if alias.name == "scratch" or alias.name.startswith("scratch."):
+                        violations.append(
+                            f"{py_file.relative_to(backend_dir)}:{node.lineno} imports '{alias.name}'"
+                        )
+            elif isinstance(node, ast.ImportFrom):
+                module = node.module or ""
+                if module == "scratch" or module.startswith("scratch."):
+                    violations.append(
+                        f"{py_file.relative_to(backend_dir)}:{node.lineno} imports from '{module}'"
+                    )
+
+    assert not violations, (
+        f"Found illegal imports from scratch/ in backend/:\n" + "\n".join(violations)
+    )
+

@@ -1,4 +1,4 @@
-# Step 4D.9 — Economic Evaluator Integrity and Shadow-Mode Readiness Audit Report
+# Economic Evaluator Integrity and Shadow-Mode Readiness Audit Report
 
 **Document Version:** 1.0.0  
 **Audit Date:** October 28, 2026  
@@ -16,7 +16,7 @@
 
 | Audit Domain | Verdict | Key Finding |
 |---|---|---|
-| **1. Mathematical Reconciliation** | **RECONCILED (with bug fix)** | Identified that Step 4D.8 paired analysis suffered from an ad ID collision across presets sharing seeds (370 unique IDs instead of 450). Replaced with composite key `(scenario_name, seed, creative_id)`, reconciling aggregate profit and paired difference sums to **₹0.00 error across all policies**. |
+| **1. Mathematical Reconciliation** | **RECONCILED (with bug fix)** | Identified that Historical Phase paired analysis suffered from an ad ID collision across presets sharing seeds (370 unique IDs instead of 450). Replaced with composite key `(scenario_name, seed, creative_id)`, reconciling aggregate profit and paired difference sums to **₹0.00 error across all policies**. |
 | **2. Decision-Time Isolation** | **VERIFIED & SECURE** | AST inspection and unit tests confirm `evaluate_ad_economic_viability` accepts zero ground truth and accesses no future timestamps. |
 | **3. Statistical Calibration** | **EXPLORATORY (Not Calibrated)** | While parameter uncertainty ($\text{Beta}$ posteriors) is modeled, future lead arrivals and realization variance are projected deterministically. Formally classified as **exploratory**. |
 | **4. Shadow-Mode Readiness** | **SAFE FOR READ-ONLY SHADOWING** | Defined schema and isolation safeguards. Shadow mode is safe to implement in log-only mode; live production actioning remains prohibited. |
@@ -25,12 +25,12 @@
 
 ## 2. Mathematical Profit Reconciliation ($N=450$ Ads)
 
-### 2.1 Root Cause of Step 4D.8 Discrepancy
-In Step 4D.8, aggregate policy profit differences did not exactly match the paired per-ad difference sums:
+### 2.1 Root Cause of Historical Phase Discrepancy
+In Historical Phase, aggregate policy profit differences did not exactly match the paired per-ad difference sums:
 - In `run_evaluation_step_4d8.py`, ads were stored in a dictionary keyed solely by `a["ad_id"]`.
 - The simulation engine uses `_deterministic_id(rng)` initialized with `seed`. In the preset benchmark (10 seeds, 9 presets per seed = 90 runs), identical seeds (e.g. 26001) were reused across different presets.
 - Consequently, the first ad of each preset with the same seed generated the exact same UUID, causing **80 ads to overwrite earlier entries**, reducing the paired sample from 450 to 370 ads.
-- **Resolution:** Step 4D.9 introduces composite key `f"{scenario_name}_{seed}_{creative_id}"`. Every one of the 450 ads is distinct, and all paired sums reconcile to policy aggregate totals to ₹0.00.
+- **Resolution:** Historical Phase introduces composite key `f"{scenario_name}_{seed}_{creative_id}"`. Every one of the 450 ads is distinct, and all paired sums reconcile to policy aggregate totals to ₹0.00.
 
 ### 2.2 Reconciled Policy Totals Across All 450 Ads
 

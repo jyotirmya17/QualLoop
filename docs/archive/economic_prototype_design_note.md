@@ -1,4 +1,4 @@
-# Step 4D.8 — Economic Viability Evaluator Prototype Design Note
+# Economic Viability Evaluator Prototype Design Note
 
 **Document Status:** Version 1.0.0 (OFFLINE PROTOTYPE — DO NOT DEPLOY / DO NOT MERGE TO PROD)  
 **Author:** Evaluation Engineering  

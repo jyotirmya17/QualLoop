@@ -157,6 +157,6 @@ We welcome candid feedback on commercial and technical viability:
 
 **Contact & Support:** Evaluation Engineering Team
 **Companion Documents:**
-- [Technical Readiness Audit Report](scratch/step_4d11_readiness_report.md)
+- [Technical Readiness Audit Report](docs/archive/readiness_report.md)
 - [Statistical Model Specification](docs/STATISTICAL_MODEL.md)
-- [Shadow Architecture Note](scratch/step_4d10_shadow_architecture_note.md)
+- [Shadow Architecture Note](docs/archive/shadow_architecture_note.md)

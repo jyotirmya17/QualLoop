@@ -1,8 +1,8 @@
-# Step 4D.6 — Economic-Regret Integrity Audit
+# Economic-Regret Integrity Audit
 
 **Role:** Skeptical ML Evaluation Engineer  
 **Date:** 2026-10-28  
-**Audit Scope:** Verification and integrity audit of Step 4D.5 regret equations, oracle definitions, algebraic crossovers, and metric accounting. No production decision rules, defaults, migrations, or runtime behaviors modified; no git commits created.  
+**Audit Scope:** Verification and integrity audit of Historical Phase regret equations, oracle definitions, algebraic crossovers, and metric accounting. No production decision rules, defaults, migrations, or runtime behaviors modified; no git commits created.  
 **Deliverables:**
 - Audit Results: [`scratch/step_4d6_regret_integrity_audit_v1.json`](file:///d:/Developer/qualloop/scratch/step_4d6_regret_integrity_audit_v1.json)
 - Audit Script: [`scratch/audit_step_4d6.py`](file:///d:/Developer/qualloop/scratch/audit_step_4d6.py)
@@ -51,7 +51,7 @@ $$\text{Spend}_{\text{Good}} + \text{Spend}_{\text{Poor}} = \text{Total Spend}$$
 ### 2.1 Oracle Characteristics & Constraints
 1. **Ground Truth Knowledge:** The Oracle possesses **perfect, unconstrained knowledge of hidden true intent** ($q_{\text{true}}$). A real-world deployable online policy cannot possess this knowledge.
 2. **Oracle Stopping Timing on Poor Ads:**
-   - The Step 4D.5 Oracle stops poor ads ($q_{\text{true}} < \tau_{\text{biz}}$) at **Day 14** ($t_{\text{min}} = 14$).
+   - The Historical Phase Oracle stops poor ads ($q_{\text{true}} < \tau_{\text{biz}}$) at **Day 14** ($t_{\text{min}} = 14$).
    - *Rationale:* Day 14 was chosen as a practical data-mature benchmark because it matches the earliest checkpoint where both contact maturity (3 days) and qualification maturity (7 days) have elapsed.
    - *Theoretical vs Deployable:* An unconstrained theoretical oracle would pause poor ads at Day 0 ($S=0$). Stopping at Day 14 represents a "best possible policy constrained by observational maturity".
 3. **Lead Attribution & Spend Accounting:** The Oracle preserves the identical sequential pipeline-harvest lead attribution (Metric 1: leads created before Day 14 that qualify post-pause are harvested).
@@ -173,7 +173,7 @@ Rs 0                     Rs 883.65                   Rs 1,640.91                
 
 ## 7. Audit Conclusion & Recommendation
 
-1. **The Step 4D.5 regret formulation and crossover values are mathematically correct, algebraically robust, and independently verified.**
+1. **The Historical Phase regret formulation and crossover values are mathematically correct, algebraically robust, and independently verified.**
 2. **The three-regime policy ranking is proven:**
    - If $V_{\text{QL}} < ₹883.65 \implies$ **Config A** minimizes regret.
    - If $₹883.65 \le V_{\text{QL}} \le ₹1,640.91 \implies$ **PROD_P15** minimizes regret.

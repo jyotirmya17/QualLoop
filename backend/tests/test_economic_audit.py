@@ -20,12 +20,12 @@ repo_root = Path(__file__).resolve().parents[2]
 if str(repo_root) not in sys.path:
     sys.path.insert(0, str(repo_root))
 
-from scratch.economic_evaluator import (
+from backend.shadow.economic_evaluator import (
     EconomicAction,
     EconomicParameters,
     evaluate_ad_economic_viability,
 )
-from scratch.run_evaluation_step_4d8 import build_dataset
+from backend.shadow.dataset import build_dataset
 
 def test_composite_key_uniqueness_across_presets():
     """Verify composite key (scenario_name, seed, creative_id) resolves collisions in presets."""
@@ -46,7 +46,7 @@ def test_composite_key_uniqueness_across_presets():
 
 def test_aggregate_profit_reconciles_to_paired_sum():
     """Verify that aggregate profit differences equal paired per-ad difference sums to 0.00."""
-    audit_file = repo_root / "scratch" / "step_4d9_audit_results.json"
+    audit_file = repo_root / "docs" / "archive" / "audit_results.json"
     assert audit_file.exists(), "Audit results JSON must exist"
 
     with open(audit_file, "r", encoding="utf-8") as f:
@@ -78,7 +78,7 @@ def test_decision_time_isolation_strictly_enforced():
 
 def test_calibration_exploratory_flag_enforced():
     """Verify that uncalibrated posterior profit probabilities are labeled exploratory."""
-    audit_file = repo_root / "scratch" / "step_4d9_audit_results.json"
+    audit_file = repo_root / "docs" / "archive" / "audit_results.json"
     with open(audit_file, "r", encoding="utf-8") as f:
         data = json.load(f)
 
