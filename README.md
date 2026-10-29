@@ -1,8 +1,15 @@
 # QualLoop
 
+**Executive Summary:**
+1. **What it shows:** QualLoop demonstrates how decoupling lead reachability delays from buyer qualification intent prevents premature ad pauses in high-consideration advertising campaigns.
+2. **Key result:** Standard naive CRM loops that treat immature or unreached leads as failures wrongly paused 75% of good ads (105/140), slashing lead yield to 2,515 vs QualLoop's 4,806 qualified leads under a fixed budget.
+3. **Honest parity:** An optimally tuned maturity-aware heuristic rule achieves statistical parity with QualLoop (4,841 vs 4,806 qualified leads; bootstrap 95% CI `[-1.44, 0.57]`), demonstrating that QualLoop's advantage lies in principled Bayesian uncertainty bounds, auditability, and guardrailed safety rather than raw lead maximization.
+
+---
+
 **QualLoop is an uncertainty-aware decision intelligence engine that evaluates high-consideration advertising campaigns through two-stage Bayesian estimation, cohort maturity gating, and deterministic governance rules. Operating over simulated lead pipelines, it prevents premature ad pauses by distinguishing reachability delays from true sales disqualifications.**
 
-> **Independent Project Disclaimer:** QualLoop is an independent open-source research and engineering prototype; it has no affiliation with, endorsement from, or access to the proprietary systems, databases, or infrastructure of Revspot.
+> **Independent Project Disclaimer:** QualLoop is an independent open-source research and engineering prototype.
 
 > ⚠ **IMPORTANT PROJECT STATUS & SCOPE**  
 > QualLoop is an **empirical simulation-based MVP and research prototype** with an offline economic shadow evaluator. For a detailed breakdown of real-world operational boundaries, consult [docs/LIMITATIONS.md](docs/LIMITATIONS.md).
@@ -69,7 +76,7 @@ Because Cost-per-Qualified-Lead is a nonlinear ratio of spend to random variable
    $$\text{Effective\_Spend} = \text{Spend} \times \text{maturity\_fraction}$$
 4. **Sample CPQL (Truncated Conditional Distribution):**
    $$\text{CPQL}^{(s)} = \frac{\text{Effective\_Spend}}{\text{EQL}^{(s)}} \quad \text{for samples where } \text{EQL}^{(s)} \ge 0.5$$
-   The reported `cpql_mean` is the truncated conditional expectation $\mathbb{E}[\text{Spend}/\text{EQL} \mid \text{EQL} \ge 0.5]$, alongside the median `cpql_median` and 90% credible intervals.
+   The reported `cpql_mean` is the truncated conditional expectation $\mathbb{E}[\text{Spend}/\text{EQL} \mid \text{EQL} \ge 0.5]$, alongside the median `cpql_median` and 90% credible intervals. Algebraically, CPQL no longer depends on the maturity fraction except through the $\text{EQL} \ge 0.5$ stability cutoff, because the maturity fraction scales both the spend numerator and lead denominator equally.
 5. **Instability Detection:** If more than 20% of posterior mass falls near zero EQL ($\text{EQL} < 0.5$; `instability_threshold = 0.20`), the system flags the creative as `CPQL_UNSTABLE` rather than reporting misleading point values.
 6. **Estimator Path:** Both the API service (`backend/api/evaluation.py`) and sequential benchmarking suite (`backend/benchmark/sequential.py`) execute the **empirical-Bayes pooled shrinkage** estimator path (`enable_shrinkage=True`), borrowing statistical strength across ads within campaigns.
 
@@ -131,7 +138,7 @@ QualLoop implements a 3-tier governance model (`backend/decision_engine/engine.p
 | Governance Tier | Allowed Decision Actions | Execution Semantics | Human Approval |
 |---|---|---|:---:|
 | **`autonomous`** | `collect_more_data`<br>`continue_monitoring`<br>`investigate_low_reachability`<br>`refresh_creative`<br>`flag_insufficient_evidence` | Safe observational and monitoring recommendations. Pre-approved for autonomous execution. | **Not Required** (`auto_applied=True`) |
-| **`within_guardrails`** | `pause_ad`<br>`reallocate_budget`<br>`shift_spend`<br>`consider_pause`<br>`consider_reallocate` | Downside-limiting budget protection actions. Executed autonomously only if ad spend is below policy spend cap ($\le \$500$); otherwise flagged for review. | **Conditional** (Spend $\le \$500$: Pre-approved; Spend $> \$500$: Required) |
+| **`within_guardrails`** | `pause_ad`<br>`reallocate_budget`<br>`shift_spend`<br>`consider_pause`<br>`consider_reallocate` | Downside-limiting budget protection actions. Executed autonomously only if ad spend is below policy spend cap ($\le ₹500$); otherwise flagged for review. | **Conditional** (Spend $\le ₹500$: Pre-approved; Spend $> ₹500$: Required) |
 | **`gated`** | `raise_budget`<br>`launch_ad`<br>`flag_abnormal_change` | High-stakes mutations expanding capital commitment or responding to anomalous distribution shifts. | **Mandatory Human Sign-Off** (`auto_applied=False`, `requires_human_approval=True`) |
 
 ### Real Decision Records from Actual System Runs
@@ -475,7 +482,7 @@ qualloop/
 │   ├── persistence/          # SQLAlchemy models, session factory & schema readiness verification
 │   ├── shadow/               # Isolated economic shadow evaluation foundation
 │   ├── simulator/            # Synthetic ad, lead, call, and scenario generator
-│   └── tests/                # Automated pytest suite (202 tests)
+│   └── tests/                # Automated pytest suite (205 tests)
 ├── frontend/                 # React 18 + TypeScript + Vite dashboard
 │   ├── src/
 │   │   ├── components/       # PortfolioOverview, AdDetailModal, AuditTrailView, BenchmarkLab
@@ -596,7 +603,7 @@ QualLoop includes automated tests covering the Bayesian estimator, deterministic
 # From repository root (with backend virtualenv active):
 python -m pytest backend/tests/ -v
 ```
-*Current test suite status:* **202 passed** (0 failures).
+*Current test suite status:* **205 passed** (0 failures).
 
 ### Reproducing the Master Benchmark Suite
 To re-run the complete 7-step benchmark harness across all 100 holdout seeds and generate the authoritative performance report:
@@ -643,7 +650,7 @@ Once the dashboard is running at `http://127.0.0.1:3000`:
 ### 9.1 Main Empirical Finding
 The headline finding from re-running the master benchmark suite (`python backend/benchmark/run_all.py`) is that **the naive CRM feedback loop (Baseline B) that counts immature and unreached leads as failures wrongly paused 75.0% of good ads (105 out of 140) and ended with about 2,515 vs QualLoop's 4,806 qualified leads** at a fixed budget (₹821,000) under linear returns:
 
-- **Baseline B (Naive CRM Loop):** Prematurely paused 105 out of 140 good ads (FPPR = 75.0%), burning ₹482,279 in unspent wasted budget and capturing only **2,515.12 qualified leads** (Headline CPQL = ₹326.43).
+- **Baseline B (Naive CRM Loop):** Prematurely paused 105 out of 140 good ads (FPPR = 75.0%), leaving ₹482,279 unspent and capturing only **2,515.12 qualified leads** (Headline CPQL = ₹326.43).
 - **QualLoop (Uncertainty-Aware):** Enforced cohort maturity gating and 90% posterior credible intervals, yielding only 2 false pauses out of 140 good ads (FPPR = 1.4%) and capturing **4,805.88 qualified leads** (Headline CPQL = ₹170.83).
 
 ### 9.2 Honest Nuance & Parity Realities
@@ -652,17 +659,17 @@ A rigorous scientific benchmark must also surface what does *not* differentiate 
 1. **Tuned Maturity-Aware Rule (Baseline C) is Statistically Indistinguishable:**  
    When a naive point-estimate rule is tuned on dedicated training seeds (requiring 30 mature contacts before pausing at a 10% hurdle), it achieves **4,840.88 qualified leads vs. QualLoop's 4,805.88** under fixed budget linear returns. The paired difference ($\Delta = -0.35$ leads/run, $p = 0.5116$; Wilcoxon $p = 0.5898$) has a scenario-stratified 95% bootstrap CI of `[-1.44, 0.57]`, which spans zero. When maturity gating is applied, Bayesian intervals and simple sample-size thresholds produce virtually identical volume.
 2. **Empirical-Bayes Shrinkage Showed No Measurable Benefit:**  
-   In controlled policy ablations, empirical-Bayes pooled shrinkage showed no statistically significant reduction in false pause rates or regret compared to independent priors, as intra-campaign creative variance exceeded inter-campaign variance across the standard scenarios.
+   In controlled policy ablations, empirical-Bayes pooled shrinkage showed no statistically significant reduction in false pause rates or regret compared to independent priors.
 3. **Classification Sensitivity on Continuous Intent:**  
    While QualLoop's false pause rate is 1.4% on discrete bimodal scenario clusters (clear 4% vs 25% intent), on continuous intent distributions ($q \sim 0.03 + \text{Beta}(2, 6) \times 0.32$), **QualLoop's false pauses rose to about 23.5% (8/34)** due to boundary uncertainty around the 15% hurdle.
 
-### 9.3 Ground-Truth Oracle Definition
-The benchmark comparator is the **Day-0 Ground Truth Oracle** as implemented in `backend/benchmark/sequential.py:167-172`:
+### 9.3 Intent-Label Comparator Definition
+The benchmark comparator is the **Day-0 Intent-Label Comparator** (formerly referred to as Oracle) as implemented in `backend/benchmark/sequential.py:167-172`:
 ```python
 # Evaluated against hidden true generative parameters at Day 0:
 is_good_ad = ad_ground_truth.true_intent >= 0.15  # Qualification hurdle: 15%
 ```
-The Oracle immediately pauses ads with true buying intent below 15% on Day 0 and reallocates 100% of budget into ads with true intent $\ge 15\%$, serving as a theoretical performance ceiling.
+The intent-label comparator immediately pauses ads with true buying intent below 15% on Day 0 and reallocates 100% of budget into ads with true intent $\ge 15\%$. Because it operates purely on intent labels without economic cost gating, it keeps economically poor ads running if their qualification intent meets the threshold even when their top-of-funnel CPL is commercially disastrous (e.g., in the `high_cpql` scenario).
 
 ### 9.4 Master Benchmark Headline Results (100 Holdout Seeds / ₹821,000 Budget)
 
@@ -671,7 +678,7 @@ Budget freed by paused ads is reallocated equally across surviving active ads, w
 
 | Policy | Budget (₹) | Realized Spend | Unspent Budget | Total Qualified Leads | Headline CPQL (₹) | False Pauses (FPPR) | Missed Bad Ads (FNDR) |
 |---|---|---|---|---|---|---|---|
-| **Oracle (Day-0 Ground Truth)** | ₹821,000 | ₹814,999.40 | ₹6,000.60 | **5,518.55** | **₹148.77** | 0/140 (0.0%) | 0/35 (0.0%) |
+| **Intent-Label Comparator (Day-0 Intent)** | ₹821,000 | ₹814,999.40 | ₹6,000.60 | **5,518.55** | **₹148.77** | 0/140 (0.0%) | 0/35 (0.0%) |
 | **QualLoop (Uncertainty-Aware)** | ₹821,000 | ₹818,499.17 | ₹2,500.83 | **4,805.88** | **₹170.83** | 2/140 (1.4%) | 13/35 (37.1%) |
 | **Baseline C (Tuned Maturity-Aware)** | ₹821,000 | ₹808,449.28 | ₹12,550.72 | **4,737.22** | **₹173.31** | 19/140 (13.6%) | 10/35 (28.6%) |
 | **Baseline A (Top-of-Funnel CPL)** | ₹821,000 | ₹698,856.16 | ₹122,143.84 | **4,372.24** | **₹187.78** | 7/140 (5.0%) | 35/35 (100.0%) |
@@ -682,7 +689,7 @@ Accounts for audience saturation in digital ad auctions, where incremental leads
 
 | Policy | Budget (₹) | Realized Spend | Unspent Budget | Total Qualified Leads | Headline CPQL (₹) | False Pauses (FPPR) | Missed Bad Ads (FNDR) |
 |---|---|---|---|---|---|---|---|
-| **Oracle (Day-0 Ground Truth)** | ₹821,000 | ₹814,999.40 | ₹6,000.60 | **4,079.79** | **₹201.24** | 0/140 (0.0%) | 0/35 (0.0%) |
+| **Intent-Label Comparator (Day-0 Intent)** | ₹821,000 | ₹814,999.40 | ₹6,000.60 | **4,079.79** | **₹201.24** | 0/140 (0.0%) | 0/35 (0.0%) |
 | **QualLoop (Uncertainty-Aware)** | ₹821,000 | ₹818,499.17 | ₹2,500.83 | **3,739.50** | **₹219.55** | 2/140 (1.4%) | 13/35 (37.1%) |
 | **Baseline C (Tuned Maturity-Aware)** | ₹821,000 | ₹808,449.28 | ₹12,550.72 | **3,675.48** | **₹223.37** | 19/140 (13.6%) | 10/35 (28.6%) |
 | **Baseline A (Top-of-Funnel CPL)** | ₹821,000 | ₹698,856.16 | ₹122,143.84 | **3,516.12** | **₹233.50** | 7/140 (5.0%) | 35/35 (100.0%) |
@@ -698,10 +705,10 @@ Accounts for audience saturation in digital ad auctions, where incremental leads
 | **Data Ingestion** | Synthetic generator in code. Reachability bias is **handled in simulation**. | CRM webhook receiver (HubSpot/Salesforce) and daily CSV upload. |
 | **Feedback Mutation** | Dry-run CAPI (version unverified) payload building with SHA-256 hashing. | Configurable, customer-approved CAPI offline conversion upload. |
 | **Continuous Intent Boundary** | False pause rate rises to **23.5% (8/34)** on continuous distributions near the 15% hurdle. | Hierarchical threshold smoothing and adaptive sample sizing. |
-| **Risk Control** | Uses heuristic risk guardrails in simulation; not a formal PAC-Bayes risk bound. | Conformal prediction bounds with formal false-pause error guarantees. |
 | **Economic Calibration** | Offline shadow prototype with uncalibrated probabilities. | Empirical probability calibration using posterior predictive sampling. |
 | **Authentication & RBAC** | None (open local API). | Multi-tenant OAuth2/OIDC, team accounts, and role-based permissions. |
 | **Persistence** | SQLite (local default) / PostgreSQL via Alembic. | Production RDS PostgreSQL with connection pooling. |
+
 
 For deep analysis of operational assumptions and edge cases, see [docs/LIMITATIONS.md](docs/LIMITATIONS.md).
 
