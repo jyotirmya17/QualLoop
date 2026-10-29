@@ -1,6 +1,6 @@
 # QualLoop Benchmark Reconciliation & Performance Report
 
-**Generated At:** 2026-10-24T14:53:07.692464+00:00  
+**Generated At:** 2026-10-29T02:59:52.434352+00:00  
 **Dataset Partition:** Holdout (100 seeds, 9 scenarios)  
 **Total Advertisements:** 175 (140 Good, 35 Poor)  
 **Frozen Policy:** Config 2 (Frozen) (argmin(FNDR) subject to bounded sequential FPPR on 100 tuning seeds)  
