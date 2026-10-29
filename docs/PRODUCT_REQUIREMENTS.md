@@ -138,7 +138,7 @@ Isolated module that prepares qualified-lead events for Meta's Conversions API.
 
 **Capabilities:**
 - Accept validated qualification outcomes from the domain layer
-- Build correctly-structured event payloads per Meta CAPI v21.0 specification
+- Build correctly-structured event payloads per Meta CAPI (version unverified) specification
 - Validate required fields before accepting a payload
 - Preserve event timestamps
 - Support event deduplication identifiers

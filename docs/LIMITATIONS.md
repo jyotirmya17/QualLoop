@@ -91,7 +91,7 @@ that would affect how spend is actually distributed in real campaigns.
 ## 5. Meta Conversions API
 
 The feedback module builds and validates CAPI event payloads but does not transmit them. In
-dry-run mode, nothing is sent to Meta. The payload structure is based on Graph API v21.0
+dry-run mode, nothing is sent to Meta. The payload structure is based on Graph API (version unverified)
 documentation reviewed at the time of writing. Meta's API specifications change over time and
 would need to be re-verified before any live integration.
 

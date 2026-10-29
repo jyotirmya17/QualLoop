@@ -65,7 +65,7 @@ export const HealthView: React.FC<HealthViewProps> = ({ health, isBackendHealthy
             <div style={{ fontSize: '1.2rem', fontWeight: 700, color: '#38bdf8', marginTop: '4px' }}>
               DRY-RUN ENFORCED
             </div>
-            <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Meta CAPI v21.0 Payload Validator</span>
+            <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Meta CAPI Payload Validator (version unverified)</span>
           </div>
         </div>
       </div>

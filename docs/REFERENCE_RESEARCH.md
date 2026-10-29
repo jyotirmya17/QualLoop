@@ -313,7 +313,7 @@ uncertainty, not failure.
 **Accessible:** YES  
 **License:** MIT  
 **Language:** TypeScript (Node.js)  
-**Version:** v2.0.2, Graph API v21.0  
+**Version:** v2.0.2, Graph API (version unverified)  
 **Tools:** 199 tools across 7 Meta platforms
 
 ### Files Inspected
@@ -322,7 +322,7 @@ uncertainty, not failure.
 
 ### What Is Actually Present
 
-- MCP server wrapping Meta Graph API v21.0
+- MCP server wrapping Meta Graph API (version unverified)
 - CAPI tool: `meta_send_conversion_event` — confirms payload fields
 - Campaign management, pixel management, token debugging
 
@@ -330,7 +330,7 @@ uncertainty, not failure.
 
 CAPI payload shape confirmed: event_name, event_time (Unix timestamp),
 user_data (hashed), custom_data, action_source (`website`).
-Graph API v21.0 is current.
+Graph API (version unverified).
 
 ### Concepts Worth Learning
 
