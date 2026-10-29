@@ -13,7 +13,7 @@
     "seed_file": "seeds.json",
     "qualloop_policy_version": "v0.2.0",
     "baseline_description": "Naive 10% threshold on un-matured contact/qualification ratios",
-    "executed_at": "2026-10-29T02:58:47.752457+00:00"
+    "executed_at": "2026-10-29T13:30:23.349709+00:00"
   },
   "aggregate_metrics": {
     "qualloop": {
@@ -145,7 +145,7 @@
       "gt_intent_mean": 0.03,
       "qualloop_action": "shift_spend",
       "baseline_action": "consider_pause",
-      "qualloop_reason": "Cost-per-qualified-lead interval for ad '98d6de09-b3c3-67e0-6e83-b0aaaac67e2e' [$366.17, $929.30] (mean: $592.45) sits entirely above ad 'd6a89d7b-dd3d-9a1d-5ee2-5a28639a480a' interval [$34.44, $54.27] (mean: $43.33). Recommend guardrailed spend shift of up to 25% from ad '98d6de09-b3c3-67e0-6e83-b0aaaac67e2e' to ad 'd6a89d7b-dd3d-9a1d-5ee2-5a28639a480a'.",
+      "qualloop_reason": "Cost-per-qualified-lead interval for ad '98d6de09-b3c3-67e0-6e83-b0aaaac67e2e' [$328.88, $834.65] (mean: $532.11) sits entirely above ad 'd6a89d7b-dd3d-9a1d-5ee2-5a28639a480a' interval [$31.64, $49.87] (mean: $39.81). Recommend guardrailed spend shift of up to 25% from ad '98d6de09-b3c3-67e0-6e83-b0aaaac67e2e' to ad 'd6a89d7b-dd3d-9a1d-5ee2-5a28639a480a'.",
       "explanation": "QualLoop was too conservative to pause a poor ad"
     },
     {
@@ -418,7 +418,7 @@
       "gt_intent_mean": 0.04,
       "qualloop_action": "shift_spend",
       "baseline_action": "consider_pause",
-      "qualloop_reason": "Cost-per-qualified-lead interval for ad '727b1be0-336d-f7e1-207b-4f915b14331c' [$337.12, $1664.44] (mean: $800.29) sits entirely above ad 'c65cc061-3ed3-d32b-b64e-f6b1c779ed22' interval [$126.20, $237.59] (mean: $173.47). Recommend guardrailed spend shift of up to 25% from ad '727b1be0-336d-f7e1-207b-4f915b14331c' to ad 'c65cc061-3ed3-d32b-b64e-f6b1c779ed22'.",
+      "qualloop_reason": "Cost-per-qualified-lead interval for ad '727b1be0-336d-f7e1-207b-4f915b14331c' [$293.90, $1451.05] (mean: $697.69) sits entirely above ad 'c65cc061-3ed3-d32b-b64e-f6b1c779ed22' interval [$111.80, $210.48] (mean: $153.67). Recommend guardrailed spend shift of up to 25% from ad '727b1be0-336d-f7e1-207b-4f915b14331c' to ad 'c65cc061-3ed3-d32b-b64e-f6b1c779ed22'.",
       "explanation": "QualLoop was too conservative to pause a poor ad"
     },
     {
@@ -431,7 +431,7 @@
       "gt_intent_mean": 0.04,
       "qualloop_action": "shift_spend",
       "baseline_action": "consider_pause",
-      "qualloop_reason": "Cost-per-qualified-lead interval for ad '1d85d9fd-22e4-7f1a-aa4c-49cf08bf64a6' [$289.96, $1322.96] (mean: $649.70) sits entirely above ad '3c5f92c7-df15-f412-b339-d6e577dda061' interval [$106.85, $192.01] (mean: $143.51). Recommend guardrailed spend shift of up to 25% from ad '1d85d9fd-22e4-7f1a-aa4c-49cf08bf64a6' to ad '3c5f92c7-df15-f412-b339-d6e577dda061'.",
+      "qualloop_reason": "Cost-per-qualified-lead interval for ad '1d85d9fd-22e4-7f1a-aa4c-49cf08bf64a6' [$252.33, $1151.28] (mean: $565.39) sits entirely above ad '3c5f92c7-df15-f412-b339-d6e577dda061' interval [$91.92, $165.18] (mean: $123.46). Recommend guardrailed spend shift of up to 25% from ad '1d85d9fd-22e4-7f1a-aa4c-49cf08bf64a6' to ad '3c5f92c7-df15-f412-b339-d6e577dda061'.",
       "explanation": "QualLoop was too conservative to pause a poor ad"
     },
     {
@@ -444,7 +444,7 @@
       "gt_intent_mean": 0.04,
       "qualloop_action": "shift_spend",
       "baseline_action": "consider_pause",
-      "qualloop_reason": "Cost-per-qualified-lead interval for ad '85afc1a6-33d4-ced3-ed4c-9fd87bd4ce47' [$227.47, $800.56] (mean: $438.50) sits entirely above ad 'fabc9c9b-3f48-89b7-60a0-1b70239cd5e2' interval [$90.09, $146.11] (mean: $114.97). Recommend guardrailed spend shift of up to 25% from ad '85afc1a6-33d4-ced3-ed4c-9fd87bd4ce47' to ad 'fabc9c9b-3f48-89b7-60a0-1b70239cd5e2'.",
+      "qualloop_reason": "Cost-per-qualified-lead interval for ad '85afc1a6-33d4-ced3-ed4c-9fd87bd4ce47' [$202.75, $713.54] (mean: $390.84) sits entirely above ad 'fabc9c9b-3f48-89b7-60a0-1b70239cd5e2' interval [$79.67, $129.21] (mean: $101.68). Recommend guardrailed spend shift of up to 25% from ad '85afc1a6-33d4-ced3-ed4c-9fd87bd4ce47' to ad 'fabc9c9b-3f48-89b7-60a0-1b70239cd5e2'.",
       "explanation": "QualLoop was too conservative to pause a poor ad"
     },
     {
@@ -457,7 +457,7 @@
       "gt_intent_mean": 0.04,
       "qualloop_action": "shift_spend",
       "baseline_action": "consider_pause",
-      "qualloop_reason": "Cost-per-qualified-lead interval for ad '2d6d4b9f-8ac9-26ae-9a33-ed625c7c1197' [$326.21, $1654.41] (mean: $773.32) sits entirely above ad 'ff2279ce-dff9-89f2-ac90-2c18d35d951f' interval [$129.80, $249.79] (mean: $180.16). Recommend guardrailed spend shift of up to 25% from ad '2d6d4b9f-8ac9-26ae-9a33-ed625c7c1197' to ad 'ff2279ce-dff9-89f2-ac90-2c18d35d951f'.",
+      "qualloop_reason": "Cost-per-qualified-lead interval for ad '2d6d4b9f-8ac9-26ae-9a33-ed625c7c1197' [$278.04, $1410.13] (mean: $659.13) sits entirely above ad 'ff2279ce-dff9-89f2-ac90-2c18d35d951f' interval [$114.42, $220.19] (mean: $158.81). Recommend guardrailed spend shift of up to 25% from ad '2d6d4b9f-8ac9-26ae-9a33-ed625c7c1197' to ad 'ff2279ce-dff9-89f2-ac90-2c18d35d951f'.",
       "explanation": "QualLoop was too conservative to pause a poor ad"
     },
     {
@@ -470,7 +470,7 @@
       "gt_intent_mean": 0.04,
       "qualloop_action": "shift_spend",
       "baseline_action": "consider_pause",
-      "qualloop_reason": "Cost-per-qualified-lead interval for ad '5f708511-b507-bf11-31b4-cb61d4a7d2b0' [$342.60, $1597.05] (mean: $785.87) sits entirely above ad 'a4c1ed88-2f62-c7b0-8cca-4ee3fa5474ed' interval [$131.17, $243.35] (mean: $178.92). Recommend guardrailed spend shift of up to 25% from ad '5f708511-b507-bf11-31b4-cb61d4a7d2b0' to ad 'a4c1ed88-2f62-c7b0-8cca-4ee3fa5474ed'.",
+      "qualloop_reason": "Cost-per-qualified-lead interval for ad '5f708511-b507-bf11-31b4-cb61d4a7d2b0' [$311.19, $1450.65] (mean: $713.83) sits entirely above ad 'a4c1ed88-2f62-c7b0-8cca-4ee3fa5474ed' interval [$112.06, $207.89] (mean: $152.85). Recommend guardrailed spend shift of up to 25% from ad '5f708511-b507-bf11-31b4-cb61d4a7d2b0' to ad 'a4c1ed88-2f62-c7b0-8cca-4ee3fa5474ed'.",
       "explanation": "QualLoop was too conservative to pause a poor ad"
     },
     {
@@ -483,7 +483,7 @@
       "gt_intent_mean": 0.04,
       "qualloop_action": "shift_spend",
       "baseline_action": "consider_pause",
-      "qualloop_reason": "Cost-per-qualified-lead interval for ad '9db78f55-4b88-10bd-19aa-d2203dd300d6' [$217.17, $693.78] (mean: $398.93) sits entirely above ad 'e68db100-31da-2883-da33-9021407ef1cb' interval [$79.94, $124.95] (mean: $99.75). Recommend guardrailed spend shift of up to 25% from ad '9db78f55-4b88-10bd-19aa-d2203dd300d6' to ad 'e68db100-31da-2883-da33-9021407ef1cb'.",
+      "qualloop_reason": "Cost-per-qualified-lead interval for ad '9db78f55-4b88-10bd-19aa-d2203dd300d6' [$192.11, $613.73] (mean: $352.90) sits entirely above ad 'e68db100-31da-2883-da33-9021407ef1cb' interval [$72.83, $113.84] (mean: $90.89). Recommend guardrailed spend shift of up to 25% from ad '9db78f55-4b88-10bd-19aa-d2203dd300d6' to ad 'e68db100-31da-2883-da33-9021407ef1cb'.",
       "explanation": "QualLoop was too conservative to pause a poor ad"
     }
   ]
