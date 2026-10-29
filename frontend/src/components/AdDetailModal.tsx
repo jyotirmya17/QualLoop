@@ -138,7 +138,7 @@ export const AdDetailModal: React.FC<AdDetailModalProps> = ({ adAnalysis, onClos
               Approval: {dec.approval_status}
             </span>
             <span style={{ fontSize: '0.72rem', background: 'rgba(99, 102, 241, 0.15)', color: '#a5b4fc', padding: '3px 8px', borderRadius: '4px', border: '1px solid rgba(99, 102, 241, 0.3)' }}>
-              Spend: ${adv.spend.toFixed(0)}
+              Spend: ₹{adv.spend.toFixed(0)}
             </span>
           </div>
         </div>
@@ -217,12 +217,12 @@ export const AdDetailModal: React.FC<AdDetailModalProps> = ({ adAnalysis, onClos
             <div>
               <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Cost Per Qualified Lead (CPQL, Truncated Mean):</span>
               <div style={{ fontSize: '1.3rem', fontWeight: 700, color: est.cpql_unstable ? '#f59e0b' : '#34d399' }}>
-                {est.cpql_unstable || est.cpql_mean === null ? 'Unstable' : `$${est.cpql_mean.toFixed(0)}`}
+                {est.cpql_unstable || est.cpql_mean === null ? 'Unstable' : `₹${est.cpql_mean.toFixed(0)}`}
               </div>
               <span className="mono" style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
                 {est.cpql_unstable
                   ? `Zero-EQL draw fraction: ${(est.zero_eql_fraction * 100).toFixed(0)}%`
-                  : `90% CI: [$${est.cpql_ci_low?.toFixed(0)}, $${est.cpql_ci_high?.toFixed(0)}]`}
+                  : `90% CI: [₹${est.cpql_ci_low?.toFixed(0)}, ₹${est.cpql_ci_high?.toFixed(0)}]`}
               </span>
             </div>
           </div>

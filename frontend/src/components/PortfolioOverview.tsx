@@ -136,7 +136,7 @@ export const PortfolioOverview: React.FC<PortfolioOverviewProps> = ({
             <span>Total Spend</span>
             <DollarSign size={16} color="#6366f1" />
           </div>
-          <div className="kpi-value">${totalSpend.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</div>
+          <div className="kpi-value">₹{totalSpend.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</div>
           <div className="kpi-sub">{totalImpressions.toLocaleString()} imp &bull; {totalClicks.toLocaleString()} clicks</div>
         </div>
 
@@ -196,7 +196,7 @@ export const PortfolioOverview: React.FC<PortfolioOverviewProps> = ({
             <DollarSign size={16} color="#f59e0b" />
           </div>
           <div className="kpi-value" style={{ color: portfolioCPQL ? '#fde68a' : 'var(--text-dim)' }}>
-            {portfolioCPQL ? `$${portfolioCPQL.toFixed(0)}` : 'Unstable'}
+            {portfolioCPQL ? `₹${portfolioCPQL.toFixed(0)}` : 'Unstable'}
           </div>
           <div className="kpi-sub">
             {portfolioCPQL ? 'Cost per verified buyer' : 'Zero or near-zero qualified leads'}

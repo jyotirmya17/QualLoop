@@ -166,7 +166,7 @@ export const CampaignAdTable: React.FC<CampaignAdTableProps> = ({ campaigns, onS
 
                     <td>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                        <span style={{ fontWeight: 600 }}>${adv.spend.toFixed(0)}</span>
+                        <span style={{ fontWeight: 600 }}>₹{adv.spend.toFixed(0)}</span>
                         <span style={{ fontSize: '0.72rem', color: 'var(--text-dim)' }}>
                           {est.n_leads} leads &bull; {adv.clicks} clicks
                         </span>
@@ -250,7 +250,7 @@ export const CampaignAdTable: React.FC<CampaignAdTableProps> = ({ campaigns, onS
                           </span>
                         ) : (
                           <>
-                            <span style={{ fontWeight: 600 }}>${est.cpql_mean.toFixed(0)}</span>
+                            <span style={{ fontWeight: 600 }}>₹{est.cpql_mean.toFixed(0)}</span>
                             <span className="mono" style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>
                               [{est.cpql_ci_low?.toFixed(0)}, {est.cpql_ci_high?.toFixed(0)}]
                             </span>

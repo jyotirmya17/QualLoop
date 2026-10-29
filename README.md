@@ -29,7 +29,7 @@
 
 | Benchmark Lab | Interactive Demo Walkthrough |
 |:---:|:---:|
-| ![Benchmark Lab](docs/img/benchmark_lab.png) | [Watch Demo Walkthrough Video](docs/img/demo_walkthrough.webp) |
+| ![Benchmark Lab](docs/img/benchmark_lab.png) | [Watch Demo Walkthrough Video (Hosted MP4 Video Placeholder)](https://github.com/jyotirmya17/QualLoop/releases/tag/v0.2.0) |
 
 ---
 
@@ -530,9 +530,10 @@ The repository has been verified on Python 3.12 and Node.js 20. Setup requires t
    source venv/bin/activate
    ```
 
-3. Install backend dependencies:
+3. Install backend dependencies (in editable mode or via requirements):
    ```bash
-   pip install -r requirements.txt
+   pip install -e .
+   # or: pip install -r requirements.txt
    ```
 
 4. Configure local environment variables:
