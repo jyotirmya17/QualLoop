@@ -586,7 +586,7 @@ class TestDecisionRecordsAndTiers:
         assert decision.requires_human_approval is True
         assert decision.approval_status == ApprovalStatus.PENDING
         assert "target CPQL" in decision.reason
-        assert "$58.00" in decision.reason
+        assert "₹58.00" in decision.reason
 
 
 class TestDecisionSemanticsAndSnapshotIntegrity:

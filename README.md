@@ -139,38 +139,50 @@ QualLoop implements a 3-tier governance model (`backend/decision_engine/engine.p
 Below are 3 authentic decision record JSON objects extracted directly from simulation executions:
 
 <details>
-<summary><strong>1. Autonomous Tier Decision Record (Real Run)</strong></summary>
+<summary><strong>1. Autonomous Tier Decision Record (Real Run: mixed_portfolio, seed 42)</strong></summary>
+
+* **Scenario:** `mixed_portfolio` | **Seed:** `42` | **Run ID:** `8826d916-cdfb-21c6-c1ff-91a761565a70`
+* **Advertisement ID:** `71445abc-2f0d-dac2-4097-acb7a3823bc9` | **Creative ID:** `creative_excellent`
 
 ```json
 {
-  "id": "f80e7300-c911-4a09-8e83-c6456a4e3ac1",
+  "id": "a9f0265f-3f75-4d58-92f5-10603b9e3ad1",
   "advertisement_id": "71445abc-2f0d-dac2-4097-acb7a3823bc9",
-  "estimate_snapshot_id": "d7c8cec4-1084-4db2-9b6c-70f9f5f95cad",
+  "estimate_snapshot_id": "267510ba-727b-478a-a706-a0de56661e82",
   "policy_version": "v0.2.0",
-  "action": "collect_more_data",
-  "reason": "Observed 13 mature leads for ad '71445abc-2f0d-dac2-4097-acb7a3823bc9', below required threshold of 30. Reachability rate cannot be evaluated reliably yet.",
+  "action": "continue_monitoring",
+  "reason": "Sample is mature (127 mature leads, 62 mature contacts, 22 qualified). Reachability mean 67.2% (90% CI: [61.3%, 72.9%]), qualification mean 34.3% (90% CI: [25.1%, 44.0%]), EQL 29.4, spend ₹4000.00. No failure threshold triggered; continue autonomous monitoring.",
   "supporting_metrics": {
     "inputs": {
-      "ad_spend": 500.0,
-      "n_leads": 21,
-      "n_mature_leads": 13,
-      "n_contacts": 10,
-      "n_mature_contacts": 4,
-      "k_qualified": 0,
-      "maturity_fraction_contact": 0.619,
-      "maturity_fraction_qualification": 0.4
+      "ad_spend": 4000.0,
+      "n_leads": 140,
+      "n_mature_leads": 127,
+      "n_contacts": 95,
+      "n_mature_contacts": 62,
+      "k_qualified": 22,
+      "maturity_fraction_contact": 0.9071,
+      "maturity_fraction_qualification": 0.6526
     },
     "posterior_summary": {
       "ci_level": 0.9,
-      "reachability_mean": 0.4667,
-      "reachability_ci": [0.2636, 0.675],
-      "qualification_mean": 0.1111,
-      "qualification_ci": [0.0064, 0.3123],
-      "eql_mean": 0.66,
-      "cpql_mean": 337.14,
-      "cpql_ci": [128.4, 580.82],
-      "cpql_unstable": true,
-      "zero_eql_fraction": 0.5247
+      "reachability_mean": 0.6719,
+      "reachability_ci": [
+        0.6129,
+        0.7287
+      ],
+      "qualification_mean": 0.3427,
+      "qualification_ci": [
+        0.2509,
+        0.4398
+      ],
+      "eql_mean": 29.37,
+      "cpql_mean": 127.65,
+      "cpql_ci": [
+        94.88,
+        171.53
+      ],
+      "cpql_unstable": false,
+      "zero_eql_fraction": 0.0
     },
     "thresholds": {
       "min_mature_leads": 30,
@@ -183,14 +195,47 @@ Below are 3 authentic decision record JSON objects extracted directly from simul
       "budget_guardrail_min_spend": 100.0,
       "spend_shift_cap_fraction": 0.25,
       "guardrail_action_spend_cap": 500.0
+    },
+    "tier": "autonomous",
+    "auto_applied": true,
+    "policy_version": "v0.2.0",
+    "n_leads": 140,
+    "n_mature_leads": 127,
+    "n_contacts": 95,
+    "n_mature_contacts": 62,
+    "k_qualified": 22,
+    "maturity_fraction_contact": 0.9071,
+    "reachability_mean": 0.6719,
+    "reachability_ci_low": 0.6129,
+    "reachability_ci_high": 0.7287,
+    "qualification_mean": 0.3427,
+    "qualification_ci_low": 0.2509,
+    "qualification_ci_high": 0.4398,
+    "eql_mean": 29.37,
+    "cpql_mean": 127.65,
+    "cpql_unstable": false,
+    "evidence_sufficient_reachability": true,
+    "evidence_sufficient_qualification": true,
+    "ci_level": 0.9,
+    "thresholds_applied": {
+      "min_mature_leads": 30,
+      "min_mature_contacts": 20,
+      "min_maturity_fraction": 0.6,
+      "low_reachability_upper_bound": 0.25,
+      "low_qualification_upper_bound": 0.1,
+      "high_cpql_lower_bound": 500.0,
+      "target_cpql": 75.0,
+      "budget_guardrail_min_spend": 100.0,
+      "spend_shift_cap_fraction": 0.25,
+      "guardrail_action_spend_cap": 500.0
     }
   },
-  "confidence_level": "low",
+  "confidence_level": "high",
   "tier": "autonomous",
   "auto_applied": true,
   "requires_human_approval": false,
   "approval_status": "not_required",
-  "created_at": "2026-10-29T04:50:39.013219Z",
+  "created_at": "2026-10-29T13:49:03.279559Z",
   "simulation_run_id": "8826d916-cdfb-21c6-c1ff-91a761565a70",
   "is_persisted": false
 }
@@ -198,40 +243,85 @@ Below are 3 authentic decision record JSON objects extracted directly from simul
 </details>
 
 <details>
-<summary><strong>2. Within-Guardrails Tier Decision Record (Real Run)</strong></summary>
+<summary><strong>2. Within-Guardrails Tier Decision Record (Real Run: mixed_portfolio, seed 42)</strong></summary>
+
+* **Scenario:** `mixed_portfolio` | **Seed:** `42` | **Run ID:** `8826d916-cdfb-21c6-c1ff-91a761565a70`
+* **Advertisement ID:** `9e85e7c0-8602-9246-dbaa-63c54648cea7` | **Creative ID:** `creative_poor`
 
 ```json
 {
-  "id": "f761ef99-3e1e-4e33-9d13-800d887a6059",
-  "advertisement_id": "71445abc-2f0d-dac2-4097-acb7a3823bc9",
-  "estimate_snapshot_id": "ef2e3c6f-d85d-4ecb-bbfa-01fcdd3b0e65",
+  "id": "f7771afc-64a1-47e9-b8b6-6589be5cfb47",
+  "advertisement_id": "9e85e7c0-8602-9246-dbaa-63c54648cea7",
+  "estimate_snapshot_id": "f3a4f6ce-fd5f-464f-94db-1b5e62ef9364",
   "policy_version": "v0.2.0",
   "action": "consider_pause",
-  "reason": "With 120 mature contacts (2 qualified), the 90% credible interval for qualification rate is [0.7%, 5.0%], sitting entirely below threshold 10.0%. Reachability is adequate (73.2%), confirming poor buying intent. Recommending pause for human review (spend: $8000.00, guardrail cap: $500.00).",
+  "reason": "With 75 mature contacts (3 qualified), the 90% credible interval for qualification rate is [1.8%, 9.6%], sitting entirely below threshold 10.0%. Reachability is adequate (68.5%), confirming poor buying intent. Recommending pause for human review (spend: ₹3000.00, guardrail cap: ₹500.00).",
   "supporting_metrics": {
     "inputs": {
-      "ad_spend": 8000.0,
-      "n_leads": 229,
-      "n_mature_leads": 211,
-      "n_contacts": 167,
-      "n_mature_contacts": 120,
-      "k_qualified": 2,
-      "maturity_fraction_contact": 0.9214,
-      "maturity_fraction_qualification": 0.7186
+      "ad_spend": 3000.0,
+      "n_leads": 157,
+      "n_mature_leads": 141,
+      "n_contacts": 105,
+      "n_mature_contacts": 75,
+      "k_qualified": 3,
+      "maturity_fraction_contact": 0.8981,
+      "maturity_fraction_qualification": 0.7143
     },
     "posterior_summary": {
       "ci_level": 0.9,
-      "reachability_mean": 0.7324,
-      "reachability_ci": [0.6814, 0.7809],
-      "qualification_mean": 0.024,
-      "qualification_ci": [0.0066, 0.0499],
-      "eql_mean": 3.73,
-      "cpql_mean": 2797.74,
-      "cpql_ci": [942.93, 6756.7],
+      "reachability_mean": 0.6854,
+      "reachability_ci": [
+        0.6292,
+        0.7395
+      ],
+      "qualification_mean": 0.0508,
+      "qualification_ci": [
+        0.018,
+        0.0962
+      ],
+      "eql_mean": 4.93,
+      "cpql_mean": 714.58,
+      "cpql_ci": [
+        284.48,
+        1543.49
+      ],
       "cpql_unstable": false,
-      "zero_eql_fraction": 0.0089
+      "zero_eql_fraction": 0.0007
     },
     "thresholds": {
+      "min_mature_leads": 30,
+      "min_mature_contacts": 20,
+      "min_maturity_fraction": 0.6,
+      "low_reachability_upper_bound": 0.25,
+      "low_qualification_upper_bound": 0.1,
+      "high_cpql_lower_bound": 500.0,
+      "target_cpql": 75.0,
+      "budget_guardrail_min_spend": 100.0,
+      "spend_shift_cap_fraction": 0.25,
+      "guardrail_action_spend_cap": 500.0
+    },
+    "tier": "within_guardrails",
+    "auto_applied": false,
+    "policy_version": "v0.2.0",
+    "n_leads": 157,
+    "n_mature_leads": 141,
+    "n_contacts": 105,
+    "n_mature_contacts": 75,
+    "k_qualified": 3,
+    "maturity_fraction_contact": 0.8981,
+    "reachability_mean": 0.6854,
+    "reachability_ci_low": 0.6292,
+    "reachability_ci_high": 0.7395,
+    "qualification_mean": 0.0508,
+    "qualification_ci_low": 0.018,
+    "qualification_ci_high": 0.0962,
+    "eql_mean": 4.93,
+    "cpql_mean": 714.58,
+    "cpql_unstable": false,
+    "evidence_sufficient_reachability": true,
+    "evidence_sufficient_qualification": true,
+    "ci_level": 0.9,
+    "thresholds_applied": {
       "min_mature_leads": 30,
       "min_mature_contacts": 20,
       "min_maturity_fraction": 0.6,
@@ -249,7 +339,7 @@ Below are 3 authentic decision record JSON objects extracted directly from simul
   "auto_applied": false,
   "requires_human_approval": true,
   "approval_status": "pending",
-  "created_at": "2026-10-29T04:50:39.076303Z",
+  "created_at": "2026-10-29T13:49:03.279559Z",
   "simulation_run_id": "8826d916-cdfb-21c6-c1ff-91a761565a70",
   "is_persisted": false
 }
@@ -257,16 +347,19 @@ Below are 3 authentic decision record JSON objects extracted directly from simul
 </details>
 
 <details>
-<summary><strong>3. Gated Tier Decision Record (Real Run)</strong></summary>
+<summary><strong>3. Gated Tier Decision Record (Real Run: healthy_campaign, seed 42)</strong></summary>
+
+* **Scenario:** `healthy_campaign` | **Seed:** `42` | **Run ID:** `8826d916-cdfb-21c6-c1ff-91a761565a70`
+* **Advertisement ID:** `239c93ad-43a8-6c24-feb5-cf09346a821c` | **Creative ID:** `creative_C`
 
 ```json
 {
-  "id": "215983d8-ed04-4690-9a59-3f73a11c24ab",
+  "id": "8dbeddeb-28f1-483f-bec4-0d766ffa60e5",
   "advertisement_id": "239c93ad-43a8-6c24-feb5-cf09346a821c",
-  "estimate_snapshot_id": "3eb2e4f5-5eb1-48a2-8d37-c4d27dbc1ee6",
+  "estimate_snapshot_id": "0948460f-da62-44b3-8576-c31760c6d2d2",
   "policy_version": "v0.2.0",
   "action": "raise_budget",
-  "reason": "Mature evidence confirmed (133 mature leads, 61 contacts, 13 qualified). Credible interval upper bound for CPQL ($31.61) is strictly below target CPQL ($500.00) with mean CPQL $23.44. Recommend raising budget (gated tier: human approval required).",
+  "reason": "Mature evidence confirmed (133 mature leads, 61 contacts, 13 qualified). Credible interval upper bound for CPQL (₹31.61) is strictly below target CPQL (₹75.00) with mean CPQL ₹23.44. Recommend raising budget (gated tier: human approval required).",
   "supporting_metrics": {
     "inputs": {
       "ad_spend": 500.0,
@@ -281,12 +374,21 @@ Below are 3 authentic decision record JSON objects extracted directly from simul
     "posterior_summary": {
       "ci_level": 0.9,
       "reachability_mean": 0.6408,
-      "reachability_ci": [0.5818, 0.6981],
+      "reachability_ci": [
+        0.5818,
+        0.6981
+      ],
       "qualification_mean": 0.2279,
-      "qualification_ci": [0.1656, 0.2958],
+      "qualification_ci": [
+        0.1656,
+        0.2958
+      ],
       "eql_mean": 19.44,
       "cpql_mean": 23.44,
-      "cpql_ci": [17.28, 31.61],
+      "cpql_ci": [
+        17.28,
+        31.61
+      ],
       "cpql_unstable": false,
       "zero_eql_fraction": 0.0
     },
@@ -297,7 +399,40 @@ Below are 3 authentic decision record JSON objects extracted directly from simul
       "low_reachability_upper_bound": 0.25,
       "low_qualification_upper_bound": 0.1,
       "high_cpql_lower_bound": 500.0,
-      "target_cpql": 500.0,
+      "target_cpql": 75.0,
+      "budget_guardrail_min_spend": 100.0,
+      "spend_shift_cap_fraction": 0.25,
+      "guardrail_action_spend_cap": 500.0
+    },
+    "tier": "gated",
+    "auto_applied": false,
+    "policy_version": "v0.2.0",
+    "n_leads": 151,
+    "n_mature_leads": 133,
+    "n_contacts": 93,
+    "n_mature_contacts": 61,
+    "k_qualified": 13,
+    "maturity_fraction_contact": 0.8808,
+    "reachability_mean": 0.6408,
+    "reachability_ci_low": 0.5818,
+    "reachability_ci_high": 0.6981,
+    "qualification_mean": 0.2279,
+    "qualification_ci_low": 0.1656,
+    "qualification_ci_high": 0.2958,
+    "eql_mean": 19.44,
+    "cpql_mean": 23.44,
+    "cpql_unstable": false,
+    "evidence_sufficient_reachability": true,
+    "evidence_sufficient_qualification": true,
+    "ci_level": 0.9,
+    "thresholds_applied": {
+      "min_mature_leads": 30,
+      "min_mature_contacts": 20,
+      "min_maturity_fraction": 0.6,
+      "low_reachability_upper_bound": 0.25,
+      "low_qualification_upper_bound": 0.1,
+      "high_cpql_lower_bound": 500.0,
+      "target_cpql": 75.0,
       "budget_guardrail_min_spend": 100.0,
       "spend_shift_cap_fraction": 0.25,
       "guardrail_action_spend_cap": 500.0
@@ -308,7 +443,7 @@ Below are 3 authentic decision record JSON objects extracted directly from simul
   "auto_applied": false,
   "requires_human_approval": true,
   "approval_status": "pending",
-  "created_at": "2026-10-29T04:50:01.480413Z",
+  "created_at": "2026-10-29T13:49:03.434462Z",
   "simulation_run_id": "8826d916-cdfb-21c6-c1ff-91a761565a70",
   "is_persisted": false
 }

@@ -245,8 +245,8 @@ def evaluate(
                 action=DecisionAction.CONTINUE_MONITORING,
                 reason=(
                     f"Qualification rate interval [{estimate.qualification_ci_low:.1%}, {estimate.qualification_ci_high:.1%}] "
-                    f"(mean {estimate.qualification_mean:.1%}) is low, but ad spend (${ad_spend:.2f}) is below minimum "
-                    f"guardrail (${policy.budget_guardrail_min_spend:.2f}). Continue monitoring to reach statistical significance."
+                    f"(mean {estimate.qualification_mean:.1%}) is low, but ad spend (₹{ad_spend:.2f}) is below minimum "
+                    f"guardrail (₹{policy.budget_guardrail_min_spend:.2f}). Continue monitoring to reach statistical significance."
                 ),
                 policy=policy,
                 now=now,
@@ -264,7 +264,7 @@ def evaluate(
                 f"interval for qualification rate is [{estimate.qualification_ci_low:.1%}, {estimate.qualification_ci_high:.1%}], "
                 f"sitting entirely below threshold {policy.low_qualification_upper_bound:.1%}. Reachability is adequate "
                 f"({estimate.reachability_mean:.1%}), confirming poor buying intent. "
-                f"{action_verb} (spend: ${ad_spend:.2f}, guardrail cap: ${policy.guardrail_action_spend_cap:.2f})."
+                f"{action_verb} (spend: ₹{ad_spend:.2f}, guardrail cap: ₹{policy.guardrail_action_spend_cap:.2f})."
             ),
             policy=policy,
             now=now,
@@ -293,9 +293,9 @@ def evaluate(
                         action=DecisionAction.SHIFT_SPEND,
                         reason=(
                             f"Cost-per-qualified-lead interval for ad '{estimate.advertisement_id}' "
-                            f"[${estimate.cpql_ci_low:.2f}, ${estimate.cpql_ci_high:.2f}] (mean: ${estimate.cpql_mean:.2f}) "
+                            f"[₹{estimate.cpql_ci_low:.2f}, ₹{estimate.cpql_ci_high:.2f}] (mean: ₹{estimate.cpql_mean:.2f}) "
                             f"sits entirely above ad '{other.advertisement_id}' interval "
-                            f"[${other.cpql_ci_low:.2f}, ${other.cpql_ci_high:.2f}] (mean: ${other.cpql_mean:.2f}). "
+                            f"[₹{other.cpql_ci_low:.2f}, ₹{other.cpql_ci_high:.2f}] (mean: ₹{other.cpql_mean:.2f}). "
                             f"Recommend guardrailed spend shift of up to {shift_percent}% from ad '{estimate.advertisement_id}' "
                             f"to ad '{other.advertisement_id}'."
                         ),
@@ -327,9 +327,9 @@ def evaluate(
                 action=action,
                 reason=(
                     f"Estimated cost per qualified lead has a {ci_pct}% credible interval lower bound of "
-                    f"${estimate.cpql_ci_low:.2f} (mean: ${estimate.cpql_mean:.2f}), exceeding threshold "
-                    f"${policy.high_cpql_lower_bound:.2f} on spend ${ad_spend:.2f} and EQL {estimate.eql_mean:.1f}. "
-                    f"{action_verb} (spend: ${ad_spend:.2f}, guardrail cap: ${policy.guardrail_action_spend_cap:.2f})."
+                    f"₹{estimate.cpql_ci_low:.2f} (mean: ₹{estimate.cpql_mean:.2f}), exceeding threshold "
+                    f"₹{policy.high_cpql_lower_bound:.2f} on spend ₹{ad_spend:.2f} and EQL {estimate.eql_mean:.1f}. "
+                    f"{action_verb} (spend: ₹{ad_spend:.2f}, guardrail cap: ₹{policy.guardrail_action_spend_cap:.2f})."
                 ),
                 policy=policy,
                 now=now,
@@ -349,8 +349,8 @@ def evaluate(
             action=DecisionAction.RAISE_BUDGET,
             reason=(
                 f"Mature evidence confirmed ({estimate.n_mature_leads} mature leads, {estimate.n_mature_contacts} contacts, "
-                f"{estimate.k_qualified} qualified). Credible interval upper bound for CPQL (${estimate.cpql_ci_high:.2f}) "
-                f"is strictly below target CPQL (${policy.target_cpql:.2f}) with mean CPQL ${estimate.cpql_mean:.2f}. "
+                f"{estimate.k_qualified} qualified). Credible interval upper bound for CPQL (₹{estimate.cpql_ci_high:.2f}) "
+                f"is strictly below target CPQL (₹{policy.target_cpql:.2f}) with mean CPQL ₹{estimate.cpql_mean:.2f}. "
                 f"Recommend raising budget (gated tier: human approval required)."
             ),
             policy=policy,
@@ -368,7 +368,7 @@ def evaluate(
             f"({ci_pct}% CI: [{estimate.reachability_ci_low:.1%}, {estimate.reachability_ci_high:.1%}]), "
             f"qualification mean {estimate.qualification_mean:.1%} "
             f"({ci_pct}% CI: [{estimate.qualification_ci_low:.1%}, {estimate.qualification_ci_high:.1%}]), "
-            f"EQL {estimate.eql_mean:.1f}, spend ${ad_spend:.2f}. No failure threshold triggered; continue autonomous monitoring."
+            f"EQL {estimate.eql_mean:.1f}, spend ₹{ad_spend:.2f}. No failure threshold triggered; continue autonomous monitoring."
         ),
         policy=policy,
         now=now,
