@@ -87,6 +87,8 @@ def test_no_scratch_imports_in_backend():
     violations = []
 
     for py_file in backend_dir.rglob("*.py"):
+        if any(p.startswith(".") or p in ("venv", "build", "dist", "__pycache__") for p in py_file.parts):
+            continue
         with open(py_file, "r", encoding="utf-8") as f:
             try:
                 tree = ast.parse(f.read(), filename=str(py_file))
