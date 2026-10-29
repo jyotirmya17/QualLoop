@@ -122,7 +122,7 @@ export const CampaignAdTable: React.FC<CampaignAdTableProps> = ({ campaigns, onS
                 </div>
               </th>
               <th>Est. Qualified Leads (EQL)</th>
-              <th>Est. CPQL</th>
+              <th>Est. CPQL (Truncated Mean)</th>
               <th>Cohort Maturity</th>
               <th>Recommendation</th>
               <th>Action</th>

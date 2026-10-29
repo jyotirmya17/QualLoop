@@ -215,7 +215,7 @@ export const AdDetailModal: React.FC<AdDetailModalProps> = ({ adAnalysis, onClos
             </div>
 
             <div>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Cost Per Qualified Lead (CPQL):</span>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Cost Per Qualified Lead (CPQL, Truncated Mean):</span>
               <div style={{ fontSize: '1.3rem', fontWeight: 700, color: est.cpql_unstable ? '#f59e0b' : '#34d399' }}>
                 {est.cpql_unstable || est.cpql_mean === null ? 'Unstable' : `$${est.cpql_mean.toFixed(0)}`}
               </div>

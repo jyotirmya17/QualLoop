@@ -417,6 +417,66 @@ class TestCPQLEstimator:
         assert res.unstable is True
         assert res.zero_eql_fraction == 1.0
 
+    def test_cpql_maturity_fraction_scales_spend_consistently(self):
+        """
+        Verify that maturity_fraction scales both leads (in EQL) and spend (in CPQL numerator)
+        consistently, so that CPQL estimates remain unbiased across cohorts with varying maturity.
+        """
+        reach = self._make_estimate(100, 70)
+        qual = self._make_estimate(70, 35)
+
+        # Baseline: 100 leads, $5000 spend, 100% mature
+        rng_full = np.random.default_rng(999)
+        full_mature = estimate_cpql(
+            spend=5000.0,
+            n_leads=100,
+            maturity_fraction=1.0,
+            reachability_estimate=reach,
+            qualification_estimate=qual,
+            n_samples=10_000,
+            rng=rng_full,
+        )
+
+        # 50% mature: 100 leads, $5000 total spend, maturity_fraction=0.5
+        # Under consistent scaling, effective_spend = $2500 and mature_leads = 50.
+        # CPQL = $2500 / (50 * p_r * p_q) == $5000 / (100 * p_r * p_q).
+        rng_half = np.random.default_rng(999)
+        half_mature = estimate_cpql(
+            spend=5000.0,
+            n_leads=100,
+            maturity_fraction=0.5,
+            reachability_estimate=reach,
+            qualification_estimate=qual,
+            n_samples=10_000,
+            rng=rng_half,
+        )
+
+        # The EQL for half_mature is half of full_mature
+        assert abs(half_mature.eql_mean - (full_mature.eql_mean * 0.5)) < 0.1
+        # CPQL should be virtually identical because effective spend is also halved
+        assert half_mature.cpql_mean is not None
+        assert full_mature.cpql_mean is not None
+        assert abs(half_mature.cpql_mean - full_mature.cpql_mean) < 1.0
+
+    def test_cpql_reports_median_and_truncated_mean(self):
+        """Verify that CPQLEstimate reports both truncated conditional mean and median."""
+        reach = self._make_estimate(80, 50)
+        qual = self._make_estimate(50, 20)
+        res = estimate_cpql(
+            spend=4000.0,
+            n_leads=80,
+            maturity_fraction=1.0,
+            reachability_estimate=reach,
+            qualification_estimate=qual,
+            seed=42,
+        )
+        assert res.cpql_mean is not None
+        assert res.cpql_median is not None
+        assert res.is_truncated_mean is True
+        # Due to positive skew of 1/x, mean CPQL >= median CPQL
+        assert res.cpql_mean >= res.cpql_median
+
+
 
 # ---------------------------------------------------------------------------
 # Full compute_estimates integration test

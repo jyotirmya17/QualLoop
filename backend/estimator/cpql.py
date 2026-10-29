@@ -64,6 +64,8 @@ class CPQLEstimate:
     zero_eql_fraction: float
     unstable: bool
     n_samples: int
+    cpql_median: float | None = None
+    is_truncated_mean: bool = True
 
 
 def estimate_cpql(
@@ -101,6 +103,9 @@ def estimate_cpql(
     Notes:
         EQL = n_leads * maturity_fraction * reachability * qualification
         When n_leads = 0 or spend = 0, returns a degenerate result with flags set.
+        Spend is scaled by maturity_fraction (mature_spend) so spend and leads
+        are treated consistently across cohorts.
+        Mean CPQL is a truncated conditional mean over samples with EQL >= 0.5.
     """
     if rng is None:
         rng = derive_rng(seed, ad_id)
@@ -114,18 +119,20 @@ def estimate_cpql(
             eql_ci_low=0.0,
             eql_ci_high=0.0,
             cpql_mean=None,
+            cpql_median=None,
             cpql_ci_low=None,
             cpql_ci_high=None,
             zero_eql_fraction=1.0,
             unstable=True,
             n_samples=n_samples,
+            is_truncated_mean=True,
         )
 
     # Draw posterior samples
     p_r_samples = sample_posterior(reachability_estimate, n_samples=n_samples, rng=rng)
     p_q_samples = sample_posterior(qualification_estimate, n_samples=n_samples, rng=rng)
 
-    # EQL Monte Carlo
+    # EQL Monte Carlo (mature expected qualified leads)
     eql_samples = n_leads * maturity_fraction * p_r_samples * p_q_samples
 
     eql_mean = float(np.mean(eql_samples))
@@ -136,23 +143,27 @@ def estimate_cpql(
     zero_eql_fraction = float(np.mean(eql_samples < 0.5))
     unstable = zero_eql_fraction > instability_threshold
 
-    # CPQL from non-zero EQL samples only
+    # CPQL from non-zero EQL samples only (truncated conditional distribution)
     valid_mask = eql_samples >= 0.5
-    if not np.any(valid_mask) or spend == 0.0:
+    effective_spend = spend * maturity_fraction
+    if not np.any(valid_mask) or spend == 0.0 or effective_spend <= 0.0:
         return CPQLEstimate(
             eql_mean=eql_mean,
             eql_ci_low=eql_ci_low,
             eql_ci_high=eql_ci_high,
             cpql_mean=None,
+            cpql_median=None,
             cpql_ci_low=None,
             cpql_ci_high=None,
             zero_eql_fraction=zero_eql_fraction,
             unstable=True,
             n_samples=n_samples,
+            is_truncated_mean=True,
         )
 
-    cpql_samples = spend / eql_samples[valid_mask]
+    cpql_samples = effective_spend / eql_samples[valid_mask]
     cpql_mean = float(np.mean(cpql_samples))
+    cpql_median = float(np.median(cpql_samples))
     cpql_ci_low = float(np.percentile(cpql_samples, alpha_tail * 100))
     cpql_ci_high = float(np.percentile(cpql_samples, (1.0 - alpha_tail) * 100))
 
@@ -161,9 +172,11 @@ def estimate_cpql(
         eql_ci_low=eql_ci_low,
         eql_ci_high=eql_ci_high,
         cpql_mean=cpql_mean,
+        cpql_median=cpql_median,
         cpql_ci_low=cpql_ci_low,
         cpql_ci_high=cpql_ci_high,
         zero_eql_fraction=zero_eql_fraction,
         unstable=unstable,
         n_samples=n_samples,
+        is_truncated_mean=True,
     )

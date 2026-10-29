@@ -146,10 +146,12 @@ class EstimateSnapshot(BaseModel):
     eql_ci_high: float
 
     # Cost per qualified lead (Monte Carlo)
-    cpql_mean: Optional[float] = None
+    cpql_mean: Optional[float] = None  # Truncated conditional mean over samples with EQL >= 0.5
+    cpql_median: Optional[float] = None  # Conditional median over samples with EQL >= 0.5
     cpql_ci_low: Optional[float] = None
     cpql_ci_high: Optional[float] = None
     cpql_unstable: bool = False  # True when EQL near zero
+    is_truncated_mean: bool = True
 
     # Evidence quality flags
     evidence_sufficient_reachability: bool
@@ -199,7 +201,7 @@ class FeedbackEvent(BaseModel):
     """
     A validated Meta Conversions API event payload.
 
-    Based on Meta Graph API v21.0 Conversions API specification.
+    Based on Meta Graph API (version unverified) Conversions API specification.
     All user PII fields must be SHA-256 hashed before this object is created.
     In dry-run mode (v1), this object is logged but never transmitted.
     """
